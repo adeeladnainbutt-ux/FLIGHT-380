@@ -53,6 +53,7 @@ class AmadeusService:
                 'adults': adults,
                 'travelClass': travel_class,
                 'nonStop': 'true' if non_stop else 'false',
+                'currencyCode': currency,
                 'max': max_results
             }
             
