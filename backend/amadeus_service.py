@@ -1,6 +1,7 @@
 from amadeus import Client, ResponseError
 import os
 import asyncio
+from concurrent.futures import ThreadPoolExecutor
 from typing import Optional, Dict, List
 from datetime import datetime, timedelta
 
