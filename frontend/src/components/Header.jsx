@@ -3,20 +3,34 @@ import { Button } from './ui/button';
 import { Plane, Menu, User } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
 
-export const Header = () => {
+export const Header = ({ onNavigateHome }) => {
   const navLinks = [
-    { name: 'Home', href: '#home' },
-    { name: 'Destinations', href: '#destinations' },
-    { name: 'Deals', href: '#deals' },
-    { name: 'About', href: '#about' },
-    { name: 'Contact', href: '#contact' }
+    { name: 'Home', href: '#home', isHome: true },
+    { name: 'Destinations', href: '#destinations', isHome: false },
+    { name: 'Deals', href: '#deals', isHome: false },
+    { name: 'About', href: '#about', isHome: false },
+    { name: 'Contact', href: '#contact', isHome: false }
   ];
+
+  const handleNavClick = (e, link) => {
+    if (link.isHome && onNavigateHome) {
+      e.preventDefault();
+      onNavigateHome();
+    }
+  };
+
+  const handleLogoClick = (e) => {
+    if (onNavigateHome) {
+      e.preventDefault();
+      onNavigateHome();
+    }
+  };
 
   return (
     <header className="fixed top-0 w-full bg-white/90 backdrop-blur-md shadow-sm z-50">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
-        <a href="#home" className="flex items-center gap-2 group">
+        <a href="#home" onClick={handleLogoClick} className="flex items-center gap-2 group cursor-pointer">
           <div className="bg-gradient-to-br from-brand-600 to-brand-600 p-2 rounded-lg group-hover:shadow-lg transition-all duration-300">
             <Plane className="h-5 w-5 text-white" />
           </div>
@@ -31,7 +45,8 @@ export const Header = () => {
             <a
               key={link.name}
               href={link.href}
-              className="text-slate-700 hover:text-brand-600 font-medium transition-colors duration-200"
+              onClick={(e) => handleNavClick(e, link)}
+              className="text-slate-700 hover:text-brand-600 font-medium transition-colors duration-200 cursor-pointer"
             >
               {link.name}
             </a>
@@ -61,6 +76,7 @@ export const Header = () => {
                 <a
                   key={link.name}
                   href={link.href}
+                  onClick={(e) => handleNavClick(e, link)}
                   className="text-lg font-medium text-slate-700 hover:text-brand-600 transition-colors py-2"
                 >
                   {link.name}
