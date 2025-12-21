@@ -106,18 +106,31 @@ async def search_flights(request: FlightSearchRequest):
         # Calculate total passengers
         total_adults = request.adults + request.youth  # Youth counted as adults in Amadeus
         
-        # Search flights
-        result = await amadeus_service.search_flights(
-            origin=request.origin,
-            destination=request.destination,
-            departure_date=request.departure_date,
-            return_date=request.return_date,
-            adults=total_adults,
-            children=request.children,
-            infants=request.infants,
-            travel_class=amadeus_class,
-            non_stop=request.direct_flights
-        )
+        # Search flights - use flexible search if requested
+        if request.flexible_dates:
+            result = await amadeus_service.search_flights_flexible(
+                origin=request.origin,
+                destination=request.destination,
+                departure_date=request.departure_date,
+                return_date=request.return_date,
+                adults=total_adults,
+                children=request.children,
+                infants=request.infants,
+                travel_class=amadeus_class,
+                non_stop=request.direct_flights
+            )
+        else:
+            result = await amadeus_service.search_flights(
+                origin=request.origin,
+                destination=request.destination,
+                departure_date=request.departure_date,
+                return_date=request.return_date,
+                adults=total_adults,
+                children=request.children,
+                infants=request.infants,
+                travel_class=amadeus_class,
+                non_stop=request.direct_flights
+            )
         
         if result.get('success'):
             # Format the results for frontend
