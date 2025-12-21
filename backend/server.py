@@ -41,6 +41,23 @@ class StatusCheck(BaseModel):
 class StatusCheckCreate(BaseModel):
     client_name: str
 
+# Flight Search Models
+class FlightSearchRequest(BaseModel):
+    origin: str
+    destination: str
+    departure_date: str
+    return_date: Optional[str] = None
+    adults: int = 1
+    youth: int = 0
+    children: int = 0
+    infants: int = 0
+    travel_class: str = 'ECONOMY'
+    direct_flights: bool = False
+    airline: Optional[str] = None
+
+class AirportSearchRequest(BaseModel):
+    keyword: str
+
 # Add your routes to the router instead of directly to app
 @api_router.get("/")
 async def root():
