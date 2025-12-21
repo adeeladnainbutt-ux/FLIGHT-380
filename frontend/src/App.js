@@ -153,13 +153,18 @@ function App() {
           <div className="container mx-auto px-4 text-center">
             <div className="flex flex-col items-center gap-4">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
-              <p className="text-lg text-slate-600">Searching for flights...</p>
+              <p className="text-lg text-slate-600">
+                {isFlexibleSearch ? 'Searching flights across multiple dates...' : 'Searching for flights...'}
+              </p>
+              {isFlexibleSearch && (
+                <p className="text-sm text-slate-500">This may take 20-30 seconds as we check 7 date combinations</p>
+              )}
             </div>
           </div>
         </section>
       )}
       
-      {searchError && (
+      {searchError && !isLoading && (
         <section className="py-16 bg-white">
           <div className="container mx-auto px-4">
             <Card className="p-6 bg-red-50 border-red-200">
@@ -170,65 +175,14 @@ function App() {
         </section>
       )}
       
-      {showResults && searchResults.length > 0 && (
-        <section id="search-results" className="py-16 bg-white">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-slate-900 mb-8">Available Flights ({searchResults.length} results)</h2>
-            <div className="space-y-4">
-              {searchResults.map((flight) => (
-                <Card key={flight.id} className="hover:shadow-lg transition-shadow duration-300">
-                  <CardContent className="p-6">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                      <div className="flex-1 space-y-2">
-                        <div className="flex items-center gap-4">
-                          <div className="text-lg font-semibold text-slate-900">{flight.from}</div>
-                          <Plane className="h-5 w-5 text-teal-600" />
-                          <div className="text-lg font-semibold text-slate-900">{flight.to}</div>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600">
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-4 w-4" />
-                            <span>{flight.duration?.replace('PT', '').replace('H', 'h ').replace('M', 'm')}</span>
-                          </div>
-                          <div>{flight.is_direct ? 'Direct' : `${flight.stops} stop${flight.stops > 1 ? 's' : ''}`}</div>
-                          <div className="font-medium">{flight.airline}</div>
-                        </div>
-                        {flight.departure_time && (
-                          <div className="text-xs text-slate-500">
-                            Departs: {new Date(flight.departure_time).toLocaleString()}
-                            {flight.date_offset && flight.date_offset !== 0 && (
-                              <Badge className="ml-2 bg-blue-100 text-blue-700 hover:bg-blue-200">
-                                {flight.date_offset > 0 ? '+' : ''}{flight.date_offset} day{Math.abs(flight.date_offset) > 1 ? 's' : ''}
-                              </Badge>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
-                        <div className="text-right">
-                          <div className="text-3xl font-bold text-teal-600">
-                            £{Math.round(flight.price)}
-                          </div>
-                          <div className="text-sm text-slate-500">Total price</div>
-                          {flight.number_of_bookable_seats && flight.number_of_bookable_seats < 5 && (
-                            <div className="text-xs text-orange-600 font-medium">
-                              Only {flight.number_of_bookable_seats} seats left!
-                            </div>
-                          )}
-                        </div>
-                        <Button 
-                          onClick={() => handleBookFlight(flight)}
-                          className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 font-semibold whitespace-nowrap"
-                        >
-                          Select Flight
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
+      {showResults && searchResults.length > 0 && !isLoading && (
+        <section id="search-results" className="py-8 bg-slate-50">
+          <FlightResults 
+            flights={searchResults} 
+            isFlexible={isFlexibleSearch}
+            onSelectFlight={handleSelectFlight}
+            searchParams={searchParams}
+          />
         </section>
       )}
 
