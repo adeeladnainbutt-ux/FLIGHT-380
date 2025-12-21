@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { FlightSearch } from './components/FlightSearch';
+import { FlightResults } from './components/FlightResults';
 import { Button } from './components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card';
 import { Badge } from './components/ui/badge';
@@ -16,9 +17,7 @@ import {
   Gift,
   Star,
   ArrowRight,
-  Clock,
-  CheckCircle2,
-  Plane
+  CheckCircle2
 } from 'lucide-react';
 import { popularDestinations, testimonials, features } from './mock';
 import { toast } from 'sonner';
@@ -32,6 +31,8 @@ function App() {
   const [showResults, setShowResults] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [searchError, setSearchError] = useState(null);
+  const [searchParams, setSearchParams] = useState(null);
+  const [isFlexibleSearch, setIsFlexibleSearch] = useState(false);
 
   const handleSearch = async (searchData) => {
     console.log('Search data:', searchData);
