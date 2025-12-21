@@ -228,7 +228,7 @@ export const FlightSearch = ({ onSearch }) => {
               {/* Depart Date */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium">Depart</Label>
-                <Popover>
+                <Popover open={openDepartDate} onOpenChange={setOpenDepartDate}>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
@@ -245,7 +245,7 @@ export const FlightSearch = ({ onSearch }) => {
                     <Calendar
                       mode="single"
                       selected={departDate}
-                      onSelect={setDepartDate}
+                      onSelect={handleDepartDateSelect}
                       disabled={(date) => date < new Date()}
                       initialFocus
                     />
@@ -257,7 +257,7 @@ export const FlightSearch = ({ onSearch }) => {
               {tripType === 'round-trip' && (
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">Return</Label>
-                  <Popover>
+                  <Popover open={openReturnDate} onOpenChange={setOpenReturnDate}>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
@@ -274,7 +274,7 @@ export const FlightSearch = ({ onSearch }) => {
                       <Calendar
                         mode="single"
                         selected={returnDate}
-                        onSelect={setReturnDate}
+                        onSelect={handleReturnDateSelect}
                         disabled={(date) => date < (departDate || new Date())}
                         initialFocus
                       />
