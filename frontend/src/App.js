@@ -38,6 +38,8 @@ function App() {
     console.log('Search data:', searchData);
     setIsLoading(true);
     setSearchError(null);
+    setSearchParams(searchData);
+    setIsFlexibleSearch(searchData.flexiDates || false);
     
     try {
       // Call real Amadeus API via backend
@@ -81,8 +83,10 @@ function App() {
     }
   };
 
-  const handleBookFlight = (flight) => {
-    toast.success(`Booking initiated for ${flight.from} to ${flight.to}`);
+  const handleSelectFlight = (flight) => {
+    toast.success(`Selected flight: ${flight.airline} - £${Math.round(flight.price)}`);
+    console.log('Selected flight:', flight);
+    // Here you would navigate to booking page or show booking modal
   };
 
   const iconMap = {
