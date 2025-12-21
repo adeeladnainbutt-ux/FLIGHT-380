@@ -26,17 +26,52 @@ import { Toaster } from './components/ui/sonner';
 function App() {
   const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [searchError, setSearchError] = useState(null);
 
-  const handleSearch = (searchData) => {
+  const handleSearch = async (searchData) => {
     console.log('Search data:', searchData);
-    setSearchResults(mockFlightSearchResults);
-    setShowResults(true);
-    toast.success('Found ' + mockFlightSearchResults.length + ' flights for you!');
+    setIsLoading(true);
+    setSearchError(null);
     
-    // Scroll to results
-    setTimeout(() => {
-      document.getElementById('search-results')?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
+    try {
+      // Call real Amadeus API via backend
+      const response = await axios.post(`${API}/flights/search`, {
+        origin: searchData.origin,
+        destination: searchData.destination,
+        departure_date: searchData.departure_date,
+        return_date: searchData.return_date,
+        adults: searchData.adults,
+        youth: searchData.youth,
+        children: searchData.children,
+        infants: searchData.infants,
+        travel_class: searchData.travel_class,
+        direct_flights: searchData.direct_flights,
+        airline: searchData.airline?.code || null
+      });
+      
+      if (response.data.success) {
+        setSearchResults(response.data.flights);
+        setShowResults(true);
+        toast.success(`Found ${response.data.flights.length} flights for you!`);
+        
+        // Scroll to results
+        setTimeout(() => {
+          document.getElementById('search-results')?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      } else {
+        toast.error('No flights found. Please try different dates or destinations.');
+        setSearchError(response.data.error);
+        setSearchResults([]);
+      }
+    } catch (error) {
+      console.error('Flight search error:', error);
+      toast.error('Failed to search flights. Please try again.');
+      setSearchError(error.message);
+      setSearchResults([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleBookFlight = (flight) => {
