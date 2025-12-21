@@ -207,6 +207,8 @@ export const airlines = [
   { code: 'WS', name: 'WestJet', country: 'Canada' },
   { code: 'AS', name: 'Alaska Airlines', country: 'USA' }
 ];
+
+export const features = [
   {
     id: '1',
     title: 'Best Price Guarantee',
