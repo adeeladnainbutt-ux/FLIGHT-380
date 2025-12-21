@@ -149,18 +149,28 @@ export const FlightSearch = ({ onSearch }) => {
         });
       }
     } else if (fromAirport && toAirport && departDate) {
+      // Extract airport code (handle both individual airports and groups)
+      const originCode = fromAirport.isGroup ? fromAirport.airports[0] : fromAirport.code;
+      const destinationCode = toAirport.isGroup ? toAirport.airports[0] : toAirport.code;
+      
       onSearch({
         tripType,
+        origin: originCode,
+        destination: destinationCode,
         from: fromAirport,
         to: toAirport,
         departDate,
+        departure_date: departDate ? format(departDate, 'yyyy-MM-dd') : null,
         returnDate: tripType === 'round-trip' ? returnDate : null,
+        return_date: tripType === 'round-trip' && returnDate ? format(returnDate, 'yyyy-MM-dd') : null,
         adults,
         youth,
         children,
         infants,
         travelClass,
+        travel_class: travelClass,
         directFlights,
+        direct_flights: directFlights,
         flexiDates,
         airline: selectedAirline
       });
