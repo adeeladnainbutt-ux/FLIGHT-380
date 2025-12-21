@@ -1024,17 +1024,17 @@ export const FlightSearch = ({ onSearch }) => {
                 </label>
               </div>
 
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 opacity-50">
                 <Checkbox
                   id="flexi-dates-mc"
-                  checked={flexiDates}
-                  onCheckedChange={setFlexiDates}
+                  checked={false}
+                  disabled={true}
                 />
                 <label
                   htmlFor="flexi-dates-mc"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                  className="text-sm font-medium leading-none cursor-not-allowed"
                 >
-                  Flexible dates (±3 days)
+                  Flexible dates (±3 days) - Not available for multi-city
                 </label>
               </div>
             </div>
