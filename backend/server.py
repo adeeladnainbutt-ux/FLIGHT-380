@@ -1,12 +1,14 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, HTTPException
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
+import random
+import string
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List, Optional
+from pydantic import BaseModel, Field, ConfigDict, EmailStr
+from typing import List, Optional, Dict, Any
 import uuid
 from datetime import datetime, timezone
 from amadeus_service import AmadeusService
@@ -29,10 +31,13 @@ app = FastAPI()
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
+# Agent email for confirmations
+AGENT_EMAIL = "info@flight380.co.uk"
+
 
 # Define Models
 class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
+    model_config = ConfigDict(extra="ignore")
     
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     client_name: str
@@ -58,6 +63,45 @@ class FlightSearchRequest(BaseModel):
 
 class AirportSearchRequest(BaseModel):
     keyword: str
+
+# Booking Models
+class PassengerInfo(BaseModel):
+    type: str  # ADULT, CHILD, YOUTH, INFANT
+    title: str  # Mr, Mrs, Ms, Miss
+    first_name: str
+    last_name: str
+    date_of_birth: str
+    gender: str
+    nationality: str
+    passport_number: Optional[str] = None
+    passport_expiry: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+
+class ContactInfo(BaseModel):
+    email: str
+    phone: str
+    address: Optional[str] = None
+    city: Optional[str] = None
+    country: Optional[str] = None
+    postal_code: Optional[str] = None
+
+class BookingRequest(BaseModel):
+    flight_id: str
+    flight_data: Dict[str, Any]
+    passengers: List[PassengerInfo]
+    contact: ContactInfo
+    passenger_counts: Dict[str, int]  # {adults: 1, youth: 0, children: 0, infants: 0}
+    total_price: float
+    currency: str = "GBP"
+
+class BookingResponse(BaseModel):
+    success: bool
+    booking_id: str
+    pnr: str
+    message: str
+    booking_details: Optional[Dict[str, Any]] = None
+    emails_sent: Optional[List[Dict[str, Any]]] = None
 
 # Add your routes to the router instead of directly to app
 @api_router.get("/")
