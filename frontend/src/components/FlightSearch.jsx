@@ -75,9 +75,24 @@ export const FlightSearch = ({ onSearch }) => {
     });
   };
 
-  // Filtered airport lists  
+  // Filtered airport lists
   const filteredFromAirports = filterAirports(allAirportOptions, fromSearchTerm);
   const filteredToAirports = filterAirports(allAirportOptions, toSearchTerm);
+  
+  // Function to get filtered airports for multi-city legs
+  const getFilteredMultiCityAirports = (legIndex, field) => {
+    const searchKey = `${legIndex}-${field}`;
+    const searchTerm = multiCitySearchTerms[searchKey] || '';
+    return filterAirports(allAirportOptions, searchTerm);
+  };
+  
+  const updateMultiCitySearchTerm = (legIndex, field, value) => {
+    const searchKey = `${legIndex}-${field}`;
+    setMultiCitySearchTerms(prev => ({
+      ...prev,
+      [searchKey]: value
+    }));
+  };
 
   const addMultiCityLeg = () => {
     if (multiCityLegs.length < 5) {
