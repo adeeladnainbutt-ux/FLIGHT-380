@@ -189,7 +189,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Flexible dates search and price matrix display"
+    - "Complete booking flow (3-step process)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
