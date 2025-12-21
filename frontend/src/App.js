@@ -114,6 +114,19 @@ function App() {
     setSearchParams(null);
   };
 
+  // Navigate to Home - resets all state and scrolls to home
+  const handleNavigateHome = () => {
+    setShowBooking(false);
+    setSelectedFlight(null);
+    setShowResults(false);
+    setIsLoading(false);
+    setSearchError(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(() => {
+      document.getElementById('home')?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  };
+
   const iconMap = {
     BadgePoundSterling,
     Zap,
@@ -131,7 +144,7 @@ function App() {
   return (
     <div className="App min-h-screen bg-slate-50">
       <Toaster position="top-right" richColors />
-      <Header />
+      <Header onNavigateHome={handleNavigateHome} />
 
       {/* Booking Flow */}
       {showBooking && selectedFlight && (
