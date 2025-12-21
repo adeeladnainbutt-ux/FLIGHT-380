@@ -485,7 +485,7 @@ export const FlightResults = ({
                   <Filter className="h-5 w-5 text-brand-600" />
                   <h3 className="font-bold text-lg text-slate-900">{filteredFlights.length} Flights</h3>
                 </div>
-                {(filters.stops || filters.airlines.length > 0 || filters.departureTime || filters.arrivalTime || filters.layoverTime || filters.minPrice || filters.maxPrice) && (
+                {(filters.stopsOutbound || filters.stopsReturn || filters.airlines.length > 0 || filters.outboundDepartureTime || filters.outboundArrivalTime || filters.returnDepartureTime || filters.returnArrivalTime || filters.connectionLengthOutbound || filters.connectionLengthReturn || filters.baggage || filters.fareType || filters.minPrice || filters.maxPrice) && (
                   <Button variant="ghost" size="sm" onClick={clearAllFilters} className="text-brand-600 hover:text-brand-700 text-xs">
                     Clear All
                   </Button>
@@ -495,7 +495,7 @@ export const FlightResults = ({
             
             {/* Scrollable Filter Content with VISIBLE scrollbar */}
             <div 
-              className="overflow-y-auto p-4" 
+              className="overflow-y-auto p-4 filter-scroll" 
               style={{ 
                 maxHeight: 'calc(100vh - 200px)',
                 scrollbarWidth: 'thin',
@@ -519,17 +519,36 @@ export const FlightResults = ({
                 }
               `}</style>
               
-              {/* Stops Filter */}
-              <FilterSection title="Stops" name="stops">
+              {/* Fare Type Filter */}
+              <FilterSection title="Fare Type" name="fareType">
                 <RadioGroup 
-                  value={filters.stops || ''} 
-                  onValueChange={(value) => setFilters(prev => ({ ...prev, stops: value || null }))}
+                  value={filters.fareType || ''} 
+                  onValueChange={(value) => setFilters(prev => ({ ...prev, fareType: value || null }))}
+                >
+                  {fareTypeOptions.map(option => (
+                    <div key={option.value} className="flex items-center space-x-2 py-1.5">
+                      <RadioGroupItem value={option.value} id={`fare-${option.value}`} />
+                      <Label htmlFor={`fare-${option.value}`} className="text-sm cursor-pointer">
+                        {option.label}
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </FilterSection>
+
+              <Separator className="my-3" />
+
+              {/* Stops from Origin Filter */}
+              <FilterSection title={`Stops from ${searchParams?.origin || 'Origin'}`} name="stopsOutbound">
+                <RadioGroup 
+                  value={filters.stopsOutbound || ''} 
+                  onValueChange={(value) => setFilters(prev => ({ ...prev, stopsOutbound: value || null }))}
                 >
                   {stopOptions.map(option => (
                     <div key={option.value} className="flex items-center justify-between py-1.5">
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value={option.value} id={`stop-${option.value}`} />
-                        <Label htmlFor={`stop-${option.value}`} className="text-sm cursor-pointer">
+                        <RadioGroupItem value={option.value} id={`stopOut-${option.value}`} />
+                        <Label htmlFor={`stopOut-${option.value}`} className="text-sm cursor-pointer">
                           {option.label}
                         </Label>
                       </div>
@@ -544,25 +563,35 @@ export const FlightResults = ({
                 </RadioGroup>
               </FilterSection>
 
-              <Separator className="my-3" />
-
-              {/* Layover Time Filter */}
-              <FilterSection title="Layover Time" name="layoverTime">
-                <RadioGroup 
-                  value={filters.layoverTime || ''} 
-                  onValueChange={(value) => setFilters(prev => ({ ...prev, layoverTime: value || null }))}
-                >
-                  {layoverTimeOptions.map(option => (
-                    <div key={option.value} className="flex items-center space-x-2 py-1.5">
-                      <RadioGroupItem value={option.value} id={`layover-${option.value}`} />
-                      <Label htmlFor={`layover-${option.value}`} className="text-sm cursor-pointer">
-                        <span className="font-medium">{option.label}</span>
-                        {option.time && <span className="text-slate-500 text-xs ml-1">({option.time})</span>}
-                      </Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              </FilterSection>
+              {isRoundTrip && (
+                <>
+                  <Separator className="my-3" />
+                  {/* Stops from Destination Filter */}
+                  <FilterSection title={`Stops from ${searchParams?.destination || 'Destination'}`} name="stopsReturn">
+                    <RadioGroup 
+                      value={filters.stopsReturn || ''} 
+                      onValueChange={(value) => setFilters(prev => ({ ...prev, stopsReturn: value || null }))}
+                    >
+                      {stopOptions.map(option => (
+                        <div key={option.value} className="flex items-center justify-between py-1.5">
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value={option.value} id={`stopRet-${option.value}`} />
+                            <Label htmlFor={`stopRet-${option.value}`} className="text-sm cursor-pointer">
+                              {option.label}
+                            </Label>
+                          </div>
+                          <div className="text-right">
+                            {option.minPrice && (
+                              <span className="text-sm font-medium text-brand-600">£{Math.round(option.minPrice)}</span>
+                            )}
+                            <span className="text-xs text-slate-400 ml-1">({option.count})</span>
+                          </div>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  </FilterSection>
+                </>
+              )}
 
               <Separator className="my-3" />
 
@@ -587,7 +616,7 @@ export const FlightResults = ({
 
               {/* Airline Filter */}
               <FilterSection title="Airline" name="airlines">
-                <div className="space-y-2 max-h-40 overflow-y-auto pr-2">
+                <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
                   {uniqueAirlines.map(airline => (
                     <div key={airline.name} className="flex items-center justify-between py-1">
                       <div className="flex items-center space-x-2">
@@ -608,19 +637,19 @@ export const FlightResults = ({
 
               <Separator className="my-3" />
 
-              {/* Departure Time Filter */}
-              <FilterSection title="Departure Time" name="departureTime">
+              {/* Outbound Departure Time Filter */}
+              <FilterSection title="Outbound Departure Time" name="outboundDepartureTime">
                 <RadioGroup 
-                  value={filters.departureTime || ''} 
-                  onValueChange={(value) => setFilters(prev => ({ ...prev, departureTime: value || null }))}
+                  value={filters.outboundDepartureTime || ''} 
+                  onValueChange={(value) => setFilters(prev => ({ ...prev, outboundDepartureTime: value || null }))}
                 >
                   {timeOptions.map(option => {
                     const Icon = option.icon;
                     return (
                       <div key={option.value} className="flex items-center space-x-2 py-1.5">
-                        <RadioGroupItem value={option.value} id={`dep-${option.value}`} />
+                        <RadioGroupItem value={option.value} id={`outDep-${option.value}`} />
                         <Icon className="h-4 w-4 text-slate-500" />
-                        <Label htmlFor={`dep-${option.value}`} className="text-sm cursor-pointer">
+                        <Label htmlFor={`outDep-${option.value}`} className="text-sm cursor-pointer">
                           <span className="font-medium">{option.label}</span>
                           <span className="text-slate-500 text-xs ml-1">({option.time})</span>
                         </Label>
@@ -632,19 +661,19 @@ export const FlightResults = ({
 
               <Separator className="my-3" />
 
-              {/* Arrival Time Filter */}
-              <FilterSection title="Arrival Time" name="arrivalTime">
+              {/* Outbound Arrival Time Filter */}
+              <FilterSection title="Outbound Arrival Time" name="outboundArrivalTime">
                 <RadioGroup 
-                  value={filters.arrivalTime || ''} 
-                  onValueChange={(value) => setFilters(prev => ({ ...prev, arrivalTime: value || null }))}
+                  value={filters.outboundArrivalTime || ''} 
+                  onValueChange={(value) => setFilters(prev => ({ ...prev, outboundArrivalTime: value || null }))}
                 >
                   {timeOptions.map(option => {
                     const Icon = option.icon;
                     return (
                       <div key={option.value} className="flex items-center space-x-2 py-1.5">
-                        <RadioGroupItem value={option.value} id={`arr-${option.value}`} />
+                        <RadioGroupItem value={option.value} id={`outArr-${option.value}`} />
                         <Icon className="h-4 w-4 text-slate-500" />
-                        <Label htmlFor={`arr-${option.value}`} className="text-sm cursor-pointer">
+                        <Label htmlFor={`outArr-${option.value}`} className="text-sm cursor-pointer">
                           <span className="font-medium">{option.label}</span>
                           <span className="text-slate-500 text-xs ml-1">({option.time})</span>
                         </Label>
@@ -653,6 +682,58 @@ export const FlightResults = ({
                   })}
                 </RadioGroup>
               </FilterSection>
+
+              {isRoundTrip && (
+                <>
+                  <Separator className="my-3" />
+
+                  {/* Return Departure Time Filter */}
+                  <FilterSection title="Return Departure Time" name="returnDepartureTime">
+                    <RadioGroup 
+                      value={filters.returnDepartureTime || ''} 
+                      onValueChange={(value) => setFilters(prev => ({ ...prev, returnDepartureTime: value || null }))}
+                    >
+                      {timeOptions.map(option => {
+                        const Icon = option.icon;
+                        return (
+                          <div key={option.value} className="flex items-center space-x-2 py-1.5">
+                            <RadioGroupItem value={option.value} id={`retDep-${option.value}`} />
+                            <Icon className="h-4 w-4 text-slate-500" />
+                            <Label htmlFor={`retDep-${option.value}`} className="text-sm cursor-pointer">
+                              <span className="font-medium">{option.label}</span>
+                              <span className="text-slate-500 text-xs ml-1">({option.time})</span>
+                            </Label>
+                          </div>
+                        );
+                      })}
+                    </RadioGroup>
+                  </FilterSection>
+
+                  <Separator className="my-3" />
+
+                  {/* Return Arrival Time Filter */}
+                  <FilterSection title="Return Arrival Time" name="returnArrivalTime">
+                    <RadioGroup 
+                      value={filters.returnArrivalTime || ''} 
+                      onValueChange={(value) => setFilters(prev => ({ ...prev, returnArrivalTime: value || null }))}
+                    >
+                      {timeOptions.map(option => {
+                        const Icon = option.icon;
+                        return (
+                          <div key={option.value} className="flex items-center space-x-2 py-1.5">
+                            <RadioGroupItem value={option.value} id={`retArr-${option.value}`} />
+                            <Icon className="h-4 w-4 text-slate-500" />
+                            <Label htmlFor={`retArr-${option.value}`} className="text-sm cursor-pointer">
+                              <span className="font-medium">{option.label}</span>
+                              <span className="text-slate-500 text-xs ml-1">({option.time})</span>
+                            </Label>
+                          </div>
+                        );
+                      })}
+                    </RadioGroup>
+                  </FilterSection>
+                </>
+              )}
 
               <Separator className="my-3" />
 
@@ -681,6 +762,50 @@ export const FlightResults = ({
                   </div>
                 </div>
               </FilterSection>
+
+              <Separator className="my-3" />
+
+              {/* Connection Length Outbound Filter */}
+              <FilterSection title={`Connection Length (${searchParams?.origin || 'Origin'} - ${searchParams?.destination || 'Dest'})`} name="connectionLengthOutbound">
+                <RadioGroup 
+                  value={filters.connectionLengthOutbound || ''} 
+                  onValueChange={(value) => setFilters(prev => ({ ...prev, connectionLengthOutbound: value || null }))}
+                >
+                  {connectionLengthOptions.map(option => (
+                    <div key={option.value} className="flex items-center space-x-2 py-1.5">
+                      <RadioGroupItem value={option.value} id={`connOut-${option.value}`} />
+                      <Label htmlFor={`connOut-${option.value}`} className="text-sm cursor-pointer">
+                        <span className="font-medium">{option.label}</span>
+                        {option.time && <span className="text-slate-500 text-xs ml-1">({option.time})</span>}
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </FilterSection>
+
+              {isRoundTrip && (
+                <>
+                  <Separator className="my-3" />
+
+                  {/* Connection Length Return Filter */}
+                  <FilterSection title={`Connection Length (${searchParams?.destination || 'Dest'} - ${searchParams?.origin || 'Origin'})`} name="connectionLengthReturn">
+                    <RadioGroup 
+                      value={filters.connectionLengthReturn || ''} 
+                      onValueChange={(value) => setFilters(prev => ({ ...prev, connectionLengthReturn: value || null }))}
+                    >
+                      {connectionLengthOptions.map(option => (
+                        <div key={option.value} className="flex items-center space-x-2 py-1.5">
+                          <RadioGroupItem value={option.value} id={`connRet-${option.value}`} />
+                          <Label htmlFor={`connRet-${option.value}`} className="text-sm cursor-pointer">
+                            <span className="font-medium">{option.label}</span>
+                            {option.time && <span className="text-slate-500 text-xs ml-1">({option.time})</span>}
+                          </Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  </FilterSection>
+                </>
+              )}
             </div>
           </Card>
         </div>
