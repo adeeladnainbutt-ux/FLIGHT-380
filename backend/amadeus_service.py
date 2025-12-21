@@ -28,51 +28,64 @@ class AmadeusService:
     ) -> Dict:
         """
         Search for flights with flexible dates (±3 days)
-        Makes multiple API calls and combines results
+        Makes multiple API calls for ALL combinations of departure and return dates
+        Creates a full matrix of date combinations
         """
         try:
             all_flights = []
-            base_date = datetime.strptime(departure_date, '%Y-%m-%d')
+            base_dep_date = datetime.strptime(departure_date, '%Y-%m-%d')
             
-            # Search for dates from -3 to +3 days
+            # Generate all departure dates (-3 to +3)
+            departure_dates = []
             for day_offset in range(-3, 4):
-                search_date = base_date + timedelta(days=day_offset)
-                search_date_str = search_date.strftime('%Y-%m-%d')
-                
-                # Calculate return date if round trip
-                return_date_str = None
-                if return_date:
-                    return_base = datetime.strptime(return_date, '%Y-%m-%d')
-                    return_search = return_base + timedelta(days=day_offset)
-                    return_date_str = return_search.strftime('%Y-%m-%d')
-                
-                # Make API call for this date combination
-                result = await self.search_flights(
-                    origin=origin,
-                    destination=destination,
-                    departure_date=search_date_str,
-                    return_date=return_date_str,
-                    adults=adults,
-                    children=children,
-                    infants=infants,
-                    travel_class=travel_class,
-                    non_stop=non_stop,
-                    max_results=20,  # Fewer results per date to avoid overwhelming
-                    currency=currency
-                )
-                
-                if result.get('success') and result.get('data'):
-                    # Add date offset info to each flight
-                    for flight in result['data']:
-                        flight['date_offset'] = day_offset
-                        flight['search_date'] = search_date_str
-                    all_flights.extend(result['data'])
+                dep_date = base_dep_date + timedelta(days=day_offset)
+                departure_dates.append((dep_date.strftime('%Y-%m-%d'), day_offset))
+            
+            # Generate all return dates (-3 to +3) if round trip
+            return_dates = [(None, 0)]  # Default for one-way
+            if return_date:
+                base_ret_date = datetime.strptime(return_date, '%Y-%m-%d')
+                return_dates = []
+                for day_offset in range(-3, 4):
+                    ret_date = base_ret_date + timedelta(days=day_offset)
+                    return_dates.append((ret_date.strftime('%Y-%m-%d'), day_offset))
+            
+            # Search ALL combinations of departure and return dates
+            for dep_date_str, dep_offset in departure_dates:
+                for ret_date_str, ret_offset in return_dates:
+                    # Skip invalid combinations where return is before departure
+                    if ret_date_str and dep_date_str >= ret_date_str:
+                        continue
+                    
+                    # Make API call for this date combination
+                    result = await self.search_flights(
+                        origin=origin,
+                        destination=destination,
+                        departure_date=dep_date_str,
+                        return_date=ret_date_str,
+                        adults=adults,
+                        children=children,
+                        infants=infants,
+                        travel_class=travel_class,
+                        non_stop=non_stop,
+                        max_results=5,  # Fewer results per combination to manage API calls
+                        currency=currency
+                    )
+                    
+                    if result.get('success') and result.get('data'):
+                        # Add date offset info to each flight
+                        for flight in result['data']:
+                            flight['dep_date_offset'] = dep_offset
+                            flight['ret_date_offset'] = ret_offset
+                            flight['search_dep_date'] = dep_date_str
+                            flight['search_ret_date'] = ret_date_str
+                        all_flights.extend(result['data'])
             
             # Sort all flights by price
             all_flights.sort(key=lambda x: float(x.get('price', {}).get('total', 999999)))
             
-            # Limit to top 50 results
-            all_flights = all_flights[:50]
+            # Limit to top 100 results to cover most date combinations
+            all_flights = all_flights[:100]
             
             return {
                 'success': True,
