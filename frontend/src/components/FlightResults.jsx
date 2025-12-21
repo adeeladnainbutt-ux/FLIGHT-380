@@ -7,11 +7,10 @@ import { Separator } from './ui/separator';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
-import { ScrollArea } from './ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { 
   Plane, 
   Clock, 
-  Luggage, 
   Filter, 
   ChevronDown, 
   ChevronUp,
@@ -19,7 +18,10 @@ import {
   Sunset,
   Moon,
   Edit3,
-  Loader2
+  ArrowRight,
+  Check,
+  PlaneTakeoff,
+  PlaneLanding
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -38,11 +40,14 @@ export const FlightResults = ({
     airlines: [],
     departureTime: null,
     arrivalTime: null,
-    connectionLength: null,
+    layoverTime: null,
     minPrice: '',
     maxPrice: ''
   });
   const [sortBy, setSortBy] = useState('price');
+  const [selectedOutbound, setSelectedOutbound] = useState(null);
+  const [selectedReturn, setSelectedReturn] = useState(null);
+  const [viewMode, setViewMode] = useState('combined'); // 'combined' or 'separate'
   
   // Collapsible sections
   const [expandedSections, setExpandedSections] = useState({
@@ -52,12 +57,15 @@ export const FlightResults = ({
     departureTime: true,
     arrivalTime: true,
     price: true,
-    connectionLength: true
+    layoverTime: true
   });
 
   const toggleSection = (section) => {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
+
+  // Check if this is a round-trip search
+  const isRoundTrip = searchParams?.return_date && flights.some(f => f.return_departure_time);
 
   // Extract unique values for filters
   const uniqueAirlines = useMemo(() => {
@@ -108,13 +116,13 @@ export const FlightResults = ({
     { value: 'evening', label: 'Evening', time: '18:00 - 23:59', icon: Moon }
   ];
 
-  // Connection length options with duration ranges in minutes
-  const connectionLengthOptions = [
+  // Layover time filter options (actual layover/connection time)
+  const layoverTimeOptions = [
     { value: 'none', label: 'Direct Only', minMinutes: 0, maxMinutes: 0 },
-    { value: 'short', label: 'Short Connection', time: '0 - 2 hours', minMinutes: 1, maxMinutes: 120 },
-    { value: 'relaxed', label: 'Relaxed Connection', time: '2 - 4 hours', minMinutes: 121, maxMinutes: 240 },
-    { value: 'long', label: 'Long Connection', time: '4 - 8 hours', minMinutes: 241, maxMinutes: 480 },
-    { value: 'veryLong', label: 'Very Long Connection', time: '8+ hours', minMinutes: 481, maxMinutes: Infinity }
+    { value: 'short', label: 'Short Layover', time: '< 2 hours', minMinutes: 1, maxMinutes: 120 },
+    { value: 'medium', label: 'Medium Layover', time: '2 - 4 hours', minMinutes: 121, maxMinutes: 240 },
+    { value: 'long', label: 'Long Layover', time: '4 - 8 hours', minMinutes: 241, maxMinutes: 480 },
+    { value: 'overnight', label: 'Overnight Layover', time: '8+ hours', minMinutes: 481, maxMinutes: Infinity }
   ];
 
   // Baggage options
@@ -128,29 +136,6 @@ export const FlightResults = ({
   const getHour = (dateTime) => {
     if (!dateTime) return 12;
     return new Date(dateTime).getHours();
-  };
-
-  // Calculate connection/layover time in minutes
-  const getConnectionMinutes = (flight) => {
-    // If direct flight, return 0
-    if (flight.is_direct || flight.stops === 0) return 0;
-    
-    // Try to get connection time from flight data
-    if (flight.connection_duration) {
-      const match = flight.connection_duration.match(/PT(\d+)H(\d+)?M?/);
-      if (match) {
-        const hours = parseInt(match[1]) || 0;
-        const minutes = parseInt(match[2]) || 0;
-        return hours * 60 + minutes;
-      }
-    }
-    
-    // Estimate based on total duration minus flight segments
-    // Average connection for 1 stop is ~2 hours (120 min)
-    if (flight.stops === 1) return 120;
-    if (flight.stops >= 2) return 240; // ~4 hours for 2+ stops
-    
-    return 0;
   };
 
   // Filter flights
@@ -194,20 +179,18 @@ export const FlightResults = ({
       });
     }
 
-    // Apply connection length filter - FIXED
-    if (filters.connectionLength) {
-      const selectedOption = connectionLengthOptions.find(opt => opt.value === filters.connectionLength);
+    // Apply layover time filter (actual connection/layover duration)
+    if (filters.layoverTime) {
+      const selectedOption = layoverTimeOptions.find(opt => opt.value === filters.layoverTime);
       if (selectedOption) {
         result = result.filter(flight => {
-          const connectionMins = getConnectionMinutes(flight);
+          const layoverMins = flight.total_layover_minutes || 0;
           
-          // Special case for direct flights
           if (selectedOption.value === 'none') {
             return flight.is_direct || flight.stops === 0;
           }
           
-          // Filter by connection duration range
-          return connectionMins >= selectedOption.minMinutes && connectionMins <= selectedOption.maxMinutes;
+          return layoverMins >= selectedOption.minMinutes && layoverMins <= selectedOption.maxMinutes;
         });
       }
     }
@@ -280,15 +263,31 @@ export const FlightResults = ({
       airlines: [],
       departureTime: null,
       arrivalTime: null,
-      connectionLength: null,
+      layoverTime: null,
       minPrice: '',
       maxPrice: ''
     });
   };
 
+  // Calculate combined price for mixed flights
+  const getCombinedPrice = () => {
+    if (selectedOutbound && selectedReturn) {
+      // For mixed flights, we estimate by using half the price of each
+      // since the API returns round-trip prices
+      return Math.round((selectedOutbound.price + selectedReturn.price) / 2);
+    }
+    return null;
+  };
+
+  // Get cheapest combination
+  const cheapestPrice = useMemo(() => {
+    if (filteredFlights.length === 0) return null;
+    return Math.min(...filteredFlights.map(f => f.price));
+  }, [filteredFlights]);
+
   // If flexible dates, show matrix view
   if (isFlexible && flights.length > 0 && !isLoading) {
-    return <FlexibleDatesMatrix flights={flights} searchParams={searchParams} onSelectFlight={onSelectFlight} onModifySearch={onModifySearch} isLoading={isLoading} />;
+    return <FlexibleDatesMatrix flights={flights} searchParams={searchParams} onSelectFlight={onSelectFlight} onModifySearch={onModifySearch} />;
   }
 
   // Filter Section Component
@@ -303,6 +302,82 @@ export const FlightResults = ({
       </button>
       {expandedSections[name] && <div className="mt-2">{children}</div>}
     </div>
+  );
+
+  // Flight Card Component for single flight display
+  const FlightCard = ({ flight, type = 'outbound', isSelected, onSelect }) => (
+    <Card 
+      className={`hover:shadow-lg transition-all cursor-pointer border-l-4 ${
+        isSelected ? 'border-l-green-500 bg-green-50 ring-2 ring-green-200' : 'border-l-brand-600'
+      }`}
+      onClick={() => onSelect && onSelect(flight)}
+    >
+      <CardContent className="p-4">
+        <div className="flex items-center gap-4">
+          {/* Airline Logo */}
+          <div className="flex-shrink-0">
+            <div className="w-12 h-12 bg-gradient-to-br from-brand-100 to-brand-200 rounded-lg flex items-center justify-center">
+              <span className="text-xs font-bold text-brand-700">{flight.airline_code}</span>
+            </div>
+          </div>
+
+          {/* Flight Details */}
+          <div className="flex-1">
+            <div className="flex items-center gap-6">
+              {/* Departure */}
+              <div className="text-center">
+                <div className="text-xl font-bold text-slate-900">{formatTime(type === 'return' ? flight.return_departure_time : flight.departure_time)}</div>
+                <div className="text-xs text-slate-500">{type === 'return' ? flight.to : flight.from}</div>
+              </div>
+
+              {/* Duration & Stops */}
+              <div className="flex flex-col items-center flex-1">
+                <div className="text-xs text-slate-500">{formatDuration(type === 'return' ? flight.return_duration : flight.duration)}</div>
+                <div className="flex items-center w-full">
+                  <div className="w-2 h-2 rounded-full bg-brand-500"></div>
+                  <div className="flex-1 h-px bg-slate-300 relative mx-1">
+                    {((type === 'return' ? flight.return_stops : flight.stops) > 0) && (
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-orange-400"></div>
+                    )}
+                  </div>
+                  <div className="w-2 h-2 rounded-full bg-brand-500"></div>
+                </div>
+                <div className="text-xs text-brand-600 font-medium">
+                  {(type === 'return' ? (flight.return_is_direct || flight.return_stops === 0) : (flight.is_direct || flight.stops === 0)) 
+                    ? 'Direct' 
+                    : `${type === 'return' ? flight.return_stops : flight.stops} stop`}
+                </div>
+                {/* Layover Time Display */}
+                {((type === 'return' ? flight.return_layover_display : flight.layover_display)) && (
+                  <div className="text-xs text-orange-600 mt-0.5">
+                    Layover: {type === 'return' ? flight.return_layover_display : flight.layover_display}
+                  </div>
+                )}
+              </div>
+
+              {/* Arrival */}
+              <div className="text-center">
+                <div className="text-xl font-bold text-slate-900">{formatTime(type === 'return' ? flight.return_arrival_time : flight.arrival_time)}</div>
+                <div className="text-xs text-slate-500">{type === 'return' ? flight.from : flight.to}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Price */}
+          <div className="text-right">
+            <div className="text-xl font-bold text-brand-600">£{Math.round(flight.price / (isRoundTrip ? 2 : 1))}</div>
+            <div className="text-xs text-slate-500">{type === 'outbound' ? 'outbound' : 'return'}</div>
+          </div>
+
+          {/* Selection indicator */}
+          {isSelected && (
+            <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
+              <Check className="h-5 w-5 text-white" />
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 
   return (
@@ -324,6 +399,9 @@ export const FlightResults = ({
             {isFlexible && (
               <Badge className="bg-brand-100 text-brand-700">±3 Days Flexible</Badge>
             )}
+            {isRoundTrip && (
+              <Badge className="bg-blue-100 text-blue-700">Round Trip</Badge>
+            )}
           </div>
           <Button 
             onClick={onModifySearch}
@@ -337,7 +415,7 @@ export const FlightResults = ({
       </div>
 
       <div className="flex gap-6">
-        {/* Left Sidebar - Filters with Scroll */}
+        {/* Left Sidebar - Filters with VISIBLE Scrollbar */}
         <div className="w-72 flex-shrink-0">
           <Card className="sticky top-4 overflow-hidden">
             <div className="p-4 border-b bg-slate-50">
@@ -346,7 +424,7 @@ export const FlightResults = ({
                   <Filter className="h-5 w-5 text-brand-600" />
                   <h3 className="font-bold text-lg text-slate-900">{filteredFlights.length} Flights</h3>
                 </div>
-                {(filters.stops || filters.airlines.length > 0 || filters.departureTime || filters.arrivalTime || filters.connectionLength || filters.minPrice || filters.maxPrice) && (
+                {(filters.stops || filters.airlines.length > 0 || filters.departureTime || filters.arrivalTime || filters.layoverTime || filters.minPrice || filters.maxPrice) && (
                   <Button variant="ghost" size="sm" onClick={clearAllFilters} className="text-brand-600 hover:text-brand-700 text-xs">
                     Clear All
                   </Button>
@@ -354,178 +432,226 @@ export const FlightResults = ({
               </div>
             </div>
             
-            {/* Scrollable Filter Content */}
-            <ScrollArea className="h-[calc(100vh-200px)] max-h-[600px]">
-              <div className="p-4">
-                {/* Stops Filter */}
-                <FilterSection title="Stops" name="stops">
-                  <RadioGroup 
-                    value={filters.stops || ''} 
-                    onValueChange={(value) => setFilters(prev => ({ ...prev, stops: value || null }))}
-                  >
-                    {stopOptions.map(option => (
-                      <div key={option.value} className="flex items-center justify-between py-1.5">
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value={option.value} id={`stop-${option.value}`} />
-                          <Label htmlFor={`stop-${option.value}`} className="text-sm cursor-pointer">
-                            {option.label}
-                          </Label>
-                        </div>
-                        <div className="text-right">
-                          {option.minPrice && (
-                            <span className="text-sm font-medium text-brand-600">£{Math.round(option.minPrice)}</span>
-                          )}
-                          <span className="text-xs text-slate-400 ml-1">({option.count})</span>
-                        </div>
-                      </div>
-                    ))}
-                  </RadioGroup>
-                </FilterSection>
-
-                <Separator className="my-3" />
-
-                {/* Baggage Filter */}
-                <FilterSection title="Baggage" name="baggage">
-                  <RadioGroup 
-                    value={filters.baggage || ''} 
-                    onValueChange={(value) => setFilters(prev => ({ ...prev, baggage: value || null }))}
-                  >
-                    {baggageOptions.map(option => (
-                      <div key={option.value} className="flex items-center space-x-2 py-1.5">
-                        <RadioGroupItem value={option.value} id={`baggage-${option.value}`} />
-                        <Label htmlFor={`baggage-${option.value}`} className="text-sm cursor-pointer">
+            {/* Scrollable Filter Content with VISIBLE scrollbar */}
+            <div 
+              className="overflow-y-auto p-4" 
+              style={{ 
+                maxHeight: 'calc(100vh - 200px)',
+                scrollbarWidth: 'thin',
+                scrollbarColor: '#E73121 #f1f5f9'
+              }}
+            >
+              <style>{`
+                .filter-scroll::-webkit-scrollbar {
+                  width: 8px;
+                }
+                .filter-scroll::-webkit-scrollbar-track {
+                  background: #f1f5f9;
+                  border-radius: 4px;
+                }
+                .filter-scroll::-webkit-scrollbar-thumb {
+                  background: #E73121;
+                  border-radius: 4px;
+                }
+                .filter-scroll::-webkit-scrollbar-thumb:hover {
+                  background: #c72a1c;
+                }
+              `}</style>
+              
+              {/* Stops Filter */}
+              <FilterSection title="Stops" name="stops">
+                <RadioGroup 
+                  value={filters.stops || ''} 
+                  onValueChange={(value) => setFilters(prev => ({ ...prev, stops: value || null }))}
+                >
+                  {stopOptions.map(option => (
+                    <div key={option.value} className="flex items-center justify-between py-1.5">
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value={option.value} id={`stop-${option.value}`} />
+                        <Label htmlFor={`stop-${option.value}`} className="text-sm cursor-pointer">
                           {option.label}
                         </Label>
                       </div>
-                    ))}
-                  </RadioGroup>
-                </FilterSection>
-
-                <Separator className="my-3" />
-
-                {/* Airline Filter */}
-                <FilterSection title="Airline" name="airlines">
-                  <div className="space-y-2 max-h-40 overflow-y-auto pr-2">
-                    {uniqueAirlines.map(airline => (
-                      <div key={airline.name} className="flex items-center justify-between py-1">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`airline-${airline.name}`}
-                            checked={filters.airlines.includes(airline.name)}
-                            onCheckedChange={() => toggleAirlineFilter(airline.name)}
-                          />
-                          <Label htmlFor={`airline-${airline.name}`} className="text-sm cursor-pointer truncate max-w-[120px]">
-                            {airline.name}
-                          </Label>
-                        </div>
-                        <span className="text-sm font-medium text-brand-600">£{Math.round(airline.minPrice)}</span>
+                      <div className="text-right">
+                        {option.minPrice && (
+                          <span className="text-sm font-medium text-brand-600">£{Math.round(option.minPrice)}</span>
+                        )}
+                        <span className="text-xs text-slate-400 ml-1">({option.count})</span>
                       </div>
-                    ))}
-                  </div>
-                </FilterSection>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </FilterSection>
 
-                <Separator className="my-3" />
+              <Separator className="my-3" />
 
-                {/* Departure Time Filter */}
-                <FilterSection title="Departure Time" name="departureTime">
-                  <RadioGroup 
-                    value={filters.departureTime || ''} 
-                    onValueChange={(value) => setFilters(prev => ({ ...prev, departureTime: value || null }))}
-                  >
-                    {timeOptions.map(option => {
-                      const Icon = option.icon;
-                      return (
-                        <div key={option.value} className="flex items-center space-x-2 py-1.5">
-                          <RadioGroupItem value={option.value} id={`dep-${option.value}`} />
-                          <Icon className="h-4 w-4 text-slate-500" />
-                          <Label htmlFor={`dep-${option.value}`} className="text-sm cursor-pointer">
-                            <span className="font-medium">{option.label}</span>
-                            <span className="text-slate-500 text-xs ml-1">({option.time})</span>
-                          </Label>
-                        </div>
-                      );
-                    })}
-                  </RadioGroup>
-                </FilterSection>
+              {/* Layover Time Filter */}
+              <FilterSection title="Layover Time" name="layoverTime">
+                <RadioGroup 
+                  value={filters.layoverTime || ''} 
+                  onValueChange={(value) => setFilters(prev => ({ ...prev, layoverTime: value || null }))}
+                >
+                  {layoverTimeOptions.map(option => (
+                    <div key={option.value} className="flex items-center space-x-2 py-1.5">
+                      <RadioGroupItem value={option.value} id={`layover-${option.value}`} />
+                      <Label htmlFor={`layover-${option.value}`} className="text-sm cursor-pointer">
+                        <span className="font-medium">{option.label}</span>
+                        {option.time && <span className="text-slate-500 text-xs ml-1">({option.time})</span>}
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </FilterSection>
 
-                <Separator className="my-3" />
+              <Separator className="my-3" />
 
-                {/* Arrival Time Filter */}
-                <FilterSection title="Arrival Time" name="arrivalTime">
-                  <RadioGroup 
-                    value={filters.arrivalTime || ''} 
-                    onValueChange={(value) => setFilters(prev => ({ ...prev, arrivalTime: value || null }))}
-                  >
-                    {timeOptions.map(option => {
-                      const Icon = option.icon;
-                      return (
-                        <div key={option.value} className="flex items-center space-x-2 py-1.5">
-                          <RadioGroupItem value={option.value} id={`arr-${option.value}`} />
-                          <Icon className="h-4 w-4 text-slate-500" />
-                          <Label htmlFor={`arr-${option.value}`} className="text-sm cursor-pointer">
-                            <span className="font-medium">{option.label}</span>
-                            <span className="text-slate-500 text-xs ml-1">({option.time})</span>
-                          </Label>
-                        </div>
-                      );
-                    })}
-                  </RadioGroup>
-                </FilterSection>
+              {/* Baggage Filter */}
+              <FilterSection title="Baggage" name="baggage">
+                <RadioGroup 
+                  value={filters.baggage || ''} 
+                  onValueChange={(value) => setFilters(prev => ({ ...prev, baggage: value || null }))}
+                >
+                  {baggageOptions.map(option => (
+                    <div key={option.value} className="flex items-center space-x-2 py-1.5">
+                      <RadioGroupItem value={option.value} id={`baggage-${option.value}`} />
+                      <Label htmlFor={`baggage-${option.value}`} className="text-sm cursor-pointer">
+                        {option.label}
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </FilterSection>
 
-                <Separator className="my-3" />
+              <Separator className="my-3" />
 
-                {/* Connection Length Filter - FIXED */}
-                <FilterSection title="Connection Length" name="connectionLength">
-                  <RadioGroup 
-                    value={filters.connectionLength || ''} 
-                    onValueChange={(value) => setFilters(prev => ({ ...prev, connectionLength: value || null }))}
-                  >
-                    {connectionLengthOptions.map(option => (
-                      <div key={option.value} className="flex items-center space-x-2 py-1.5">
-                        <RadioGroupItem value={option.value} id={`conn-${option.value}`} />
-                        <Label htmlFor={`conn-${option.value}`} className="text-sm cursor-pointer">
-                          <span className="font-medium">{option.label}</span>
-                          {option.time && <span className="text-slate-500 text-xs ml-1">({option.time})</span>}
+              {/* Airline Filter */}
+              <FilterSection title="Airline" name="airlines">
+                <div className="space-y-2 max-h-40 overflow-y-auto pr-2">
+                  {uniqueAirlines.map(airline => (
+                    <div key={airline.name} className="flex items-center justify-between py-1">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`airline-${airline.name}`}
+                          checked={filters.airlines.includes(airline.name)}
+                          onCheckedChange={() => toggleAirlineFilter(airline.name)}
+                        />
+                        <Label htmlFor={`airline-${airline.name}`} className="text-sm cursor-pointer truncate max-w-[120px]">
+                          {airline.name}
                         </Label>
                       </div>
-                    ))}
-                  </RadioGroup>
-                </FilterSection>
-
-                <Separator className="my-3" />
-
-                {/* Price Filter */}
-                <FilterSection title="Total Price (£)" name="price">
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1">
-                      <Label className="text-xs text-slate-500">From</Label>
-                      <Input
-                        type="number"
-                        placeholder="Min"
-                        value={filters.minPrice}
-                        onChange={(e) => setFilters(prev => ({ ...prev, minPrice: e.target.value }))}
-                        className="h-8 text-sm"
-                      />
+                      <span className="text-sm font-medium text-brand-600">£{Math.round(airline.minPrice)}</span>
                     </div>
-                    <div className="flex-1">
-                      <Label className="text-xs text-slate-500">To</Label>
-                      <Input
-                        type="number"
-                        placeholder="Max"
-                        value={filters.maxPrice}
-                        onChange={(e) => setFilters(prev => ({ ...prev, maxPrice: e.target.value }))}
-                        className="h-8 text-sm"
-                      />
-                    </div>
+                  ))}
+                </div>
+              </FilterSection>
+
+              <Separator className="my-3" />
+
+              {/* Departure Time Filter */}
+              <FilterSection title="Departure Time" name="departureTime">
+                <RadioGroup 
+                  value={filters.departureTime || ''} 
+                  onValueChange={(value) => setFilters(prev => ({ ...prev, departureTime: value || null }))}
+                >
+                  {timeOptions.map(option => {
+                    const Icon = option.icon;
+                    return (
+                      <div key={option.value} className="flex items-center space-x-2 py-1.5">
+                        <RadioGroupItem value={option.value} id={`dep-${option.value}`} />
+                        <Icon className="h-4 w-4 text-slate-500" />
+                        <Label htmlFor={`dep-${option.value}`} className="text-sm cursor-pointer">
+                          <span className="font-medium">{option.label}</span>
+                          <span className="text-slate-500 text-xs ml-1">({option.time})</span>
+                        </Label>
+                      </div>
+                    );
+                  })}
+                </RadioGroup>
+              </FilterSection>
+
+              <Separator className="my-3" />
+
+              {/* Arrival Time Filter */}
+              <FilterSection title="Arrival Time" name="arrivalTime">
+                <RadioGroup 
+                  value={filters.arrivalTime || ''} 
+                  onValueChange={(value) => setFilters(prev => ({ ...prev, arrivalTime: value || null }))}
+                >
+                  {timeOptions.map(option => {
+                    const Icon = option.icon;
+                    return (
+                      <div key={option.value} className="flex items-center space-x-2 py-1.5">
+                        <RadioGroupItem value={option.value} id={`arr-${option.value}`} />
+                        <Icon className="h-4 w-4 text-slate-500" />
+                        <Label htmlFor={`arr-${option.value}`} className="text-sm cursor-pointer">
+                          <span className="font-medium">{option.label}</span>
+                          <span className="text-slate-500 text-xs ml-1">({option.time})</span>
+                        </Label>
+                      </div>
+                    );
+                  })}
+                </RadioGroup>
+              </FilterSection>
+
+              <Separator className="my-3" />
+
+              {/* Price Filter */}
+              <FilterSection title="Total Price (£)" name="price">
+                <div className="flex items-center gap-2">
+                  <div className="flex-1">
+                    <Label className="text-xs text-slate-500">From</Label>
+                    <Input
+                      type="number"
+                      placeholder="Min"
+                      value={filters.minPrice}
+                      onChange={(e) => setFilters(prev => ({ ...prev, minPrice: e.target.value }))}
+                      className="h-8 text-sm"
+                    />
                   </div>
-                </FilterSection>
-              </div>
-            </ScrollArea>
+                  <div className="flex-1">
+                    <Label className="text-xs text-slate-500">To</Label>
+                    <Input
+                      type="number"
+                      placeholder="Max"
+                      value={filters.maxPrice}
+                      onChange={(e) => setFilters(prev => ({ ...prev, maxPrice: e.target.value }))}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                </div>
+              </FilterSection>
+            </div>
           </Card>
         </div>
 
         {/* Right Side - Flight Results */}
         <div className="flex-1">
+          {/* View Toggle for Round Trip */}
+          {isRoundTrip && (
+            <div className="mb-4 flex items-center justify-between">
+              <Tabs value={viewMode} onValueChange={setViewMode} className="w-auto">
+                <TabsList>
+                  <TabsTrigger value="combined">Combined View</TabsTrigger>
+                  <TabsTrigger value="separate">Mix & Match</TabsTrigger>
+                </TabsList>
+              </Tabs>
+              
+              {viewMode === 'separate' && selectedOutbound && selectedReturn && (
+                <div className="flex items-center gap-4 bg-green-50 p-3 rounded-lg border border-green-200">
+                  <div className="text-sm">
+                    <span className="font-medium">Your Selection:</span> £{getCombinedPrice()} total
+                  </div>
+                  <Button 
+                    onClick={() => onSelectFlight({ outbound: selectedOutbound, return: selectedReturn, combinedPrice: getCombinedPrice() })}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    Book This Combination
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-slate-900">
               {filteredFlights.length} Flight{filteredFlights.length !== 1 ? 's' : ''} Available
@@ -558,22 +684,33 @@ export const FlightResults = ({
             </div>
           </div>
 
-          <div className="space-y-4">
-            {filteredFlights.map((flight, index) => (
-              <Card key={flight.id || index} className="hover:shadow-lg transition-shadow border-l-4 border-l-brand-600">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-6">
-                    {/* Airline Logo */}
-                    <div className="flex-shrink-0">
-                      <div className="w-14 h-14 bg-gradient-to-br from-brand-100 to-brand-200 rounded-lg flex items-center justify-center">
-                        <span className="text-sm font-bold text-brand-700">{flight.airline_code}</span>
+          {/* Combined View - Shows full round-trip packages */}
+          {(!isRoundTrip || viewMode === 'combined') && (
+            <div className="space-y-4">
+              {filteredFlights.map((flight, index) => (
+                <Card key={flight.id || index} className="hover:shadow-lg transition-shadow border-l-4 border-l-brand-600">
+                  <CardContent className="p-6">
+                    {/* Outbound Flight */}
+                    <div className="flex items-center gap-6 mb-4">
+                      <div className="flex items-center gap-2 text-sm text-slate-600">
+                        <PlaneTakeoff className="h-4 w-4" />
+                        <span className="font-medium">Outbound</span>
+                        <span className="text-slate-400">•</span>
+                        <span>{formatDate(flight.departure_time)}</span>
                       </div>
-                      <div className="text-xs text-center mt-1 text-slate-600">{flight.airline_code}</div>
                     </div>
+                    
+                    <div className="flex items-start gap-6">
+                      {/* Airline Logo */}
+                      <div className="flex-shrink-0">
+                        <div className="w-14 h-14 bg-gradient-to-br from-brand-100 to-brand-200 rounded-lg flex items-center justify-center">
+                          <span className="text-sm font-bold text-brand-700">{flight.airline_code}</span>
+                        </div>
+                        <div className="text-xs text-center mt-1 text-slate-600">{flight.airline_code}</div>
+                      </div>
 
-                    {/* Flight Details */}
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-4">
+                      {/* Flight Details */}
+                      <div className="flex-1">
                         <div className="flex items-center gap-8">
                           {/* Departure */}
                           <div>
@@ -597,6 +734,12 @@ export const FlightResults = ({
                             <div className="text-xs text-brand-600 font-medium mt-1">
                               {flight.is_direct || flight.stops === 0 ? 'Direct' : `${flight.stops} stop${flight.stops > 1 ? 's' : ''}`}
                             </div>
+                            {/* Layover Display */}
+                            {flight.layover_display && (
+                              <div className="text-xs text-orange-600 mt-0.5">
+                                Layover: {flight.layover_display}
+                              </div>
+                            )}
                           </div>
 
                           {/* Arrival */}
@@ -607,8 +750,68 @@ export const FlightResults = ({
                           </div>
                         </div>
                       </div>
+                    </div>
 
-                      {/* Additional Info */}
+                    {/* Return Flight (if round-trip) */}
+                    {isRoundTrip && flight.return_departure_time && (
+                      <>
+                        <Separator className="my-4" />
+                        <div className="flex items-center gap-2 text-sm text-slate-600 mb-4">
+                          <PlaneLanding className="h-4 w-4" />
+                          <span className="font-medium">Return</span>
+                          <span className="text-slate-400">•</span>
+                          <span>{formatDate(flight.return_departure_time)}</span>
+                        </div>
+                        
+                        <div className="flex items-start gap-6">
+                          <div className="flex-shrink-0">
+                            <div className="w-14 h-14 bg-gradient-to-br from-brand-100 to-brand-200 rounded-lg flex items-center justify-center">
+                              <span className="text-sm font-bold text-brand-700">{flight.return_airline_code || flight.airline_code}</span>
+                            </div>
+                          </div>
+
+                          <div className="flex-1">
+                            <div className="flex items-center gap-8">
+                              <div>
+                                <div className="text-2xl font-bold text-slate-900">{formatTime(flight.return_departure_time)}</div>
+                                <div className="text-sm text-slate-600">{formatDate(flight.return_departure_time)}</div>
+                                <div className="text-sm font-medium text-slate-700">{flight.to}</div>
+                              </div>
+
+                              <div className="flex flex-col items-center px-4">
+                                <div className="text-xs text-slate-500 mb-1">{formatDuration(flight.return_duration)}</div>
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 rounded-full bg-brand-500"></div>
+                                  <div className="w-20 h-px bg-slate-300 relative">
+                                    {flight.return_stops > 0 && (
+                                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-orange-400"></div>
+                                    )}
+                                  </div>
+                                  <div className="w-2 h-2 rounded-full bg-brand-500"></div>
+                                </div>
+                                <div className="text-xs text-brand-600 font-medium mt-1">
+                                  {flight.return_is_direct || flight.return_stops === 0 ? 'Direct' : `${flight.return_stops} stop${flight.return_stops > 1 ? 's' : ''}`}
+                                </div>
+                                {flight.return_layover_display && (
+                                  <div className="text-xs text-orange-600 mt-0.5">
+                                    Layover: {flight.return_layover_display}
+                                  </div>
+                                )}
+                              </div>
+
+                              <div>
+                                <div className="text-2xl font-bold text-slate-900">{formatTime(flight.return_arrival_time)}</div>
+                                <div className="text-sm text-slate-600">{formatDate(flight.return_arrival_time)}</div>
+                                <div className="text-sm font-medium text-slate-700">{flight.from}</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Price & Action */}
+                    <div className="flex items-center justify-between mt-6 pt-4 border-t">
                       <div className="flex items-center gap-4 text-sm text-slate-600">
                         <span className="font-medium">{flight.airline}</span>
                         {flight.number_of_bookable_seats && flight.number_of_bookable_seats < 5 && (
@@ -616,37 +819,80 @@ export const FlightResults = ({
                             Only {flight.number_of_bookable_seats} seats left!
                           </Badge>
                         )}
+                        {flight.price === cheapestPrice && (
+                          <Badge className="bg-green-100 text-green-700">Cheapest</Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <div className="text-3xl font-bold text-brand-600">£{Math.round(flight.price)}</div>
+                          <div className="text-xs text-slate-500">{isRoundTrip ? 'total round trip' : 'total price'}</div>
+                        </div>
+                        <Button
+                          onClick={() => onSelectFlight(flight)}
+                          className="bg-brand-600 hover:bg-brand-700 font-semibold px-8"
+                        >
+                          Continue →
+                        </Button>
                       </div>
                     </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
 
-                    {/* Price & Action */}
-                    <div className="flex flex-col items-end justify-between flex-shrink-0">
-                      <div className="text-right mb-4">
-                        <div className="text-3xl font-bold text-brand-600">£{Math.round(flight.price)}</div>
-                        <div className="text-xs text-slate-500">total price</div>
-                        <div className="text-xs text-slate-500">inc. taxes and fees</div>
-                      </div>
-                      <Button
-                        onClick={() => onSelectFlight(flight)}
-                        className="bg-brand-600 hover:bg-brand-700 font-semibold px-8"
-                      >
-                        Continue →
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          {/* Separate View - Mix & Match for Round Trip */}
+          {isRoundTrip && viewMode === 'separate' && (
+            <div className="grid grid-cols-2 gap-6">
+              {/* Outbound Flights */}
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                  <PlaneTakeoff className="h-5 w-5 text-brand-600" />
+                  Outbound Flights
+                </h3>
+                <div className="space-y-3">
+                  {filteredFlights.map((flight, index) => (
+                    <FlightCard 
+                      key={`out-${flight.id || index}`}
+                      flight={flight}
+                      type="outbound"
+                      isSelected={selectedOutbound?.id === flight.id}
+                      onSelect={setSelectedOutbound}
+                    />
+                  ))}
+                </div>
+              </div>
 
-            {filteredFlights.length === 0 && (
-              <Card className="p-12 text-center">
-                <p className="text-lg text-slate-600">No flights match your filters. Try adjusting your search criteria.</p>
-                <Button variant="outline" onClick={clearAllFilters} className="mt-4 text-brand-600 border-brand-600 hover:bg-brand-50">
-                  Clear All Filters
-                </Button>
-              </Card>
-            )}
-          </div>
+              {/* Return Flights */}
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                  <PlaneLanding className="h-5 w-5 text-brand-600" />
+                  Return Flights
+                </h3>
+                <div className="space-y-3">
+                  {filteredFlights.filter(f => f.return_departure_time).map((flight, index) => (
+                    <FlightCard 
+                      key={`ret-${flight.id || index}`}
+                      flight={flight}
+                      type="return"
+                      isSelected={selectedReturn?.id === flight.id}
+                      onSelect={setSelectedReturn}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {filteredFlights.length === 0 && (
+            <Card className="p-12 text-center">
+              <p className="text-lg text-slate-600">No flights match your filters. Try adjusting your search criteria.</p>
+              <Button variant="outline" onClick={clearAllFilters} className="mt-4 text-brand-600 border-brand-600 hover:bg-brand-50">
+                Clear All Filters
+              </Button>
+            </Card>
+          )}
         </div>
       </div>
     </div>
@@ -654,8 +900,7 @@ export const FlightResults = ({
 };
 
 // Flexible Dates Matrix Component
-const FlexibleDatesMatrix = ({ flights, searchParams, onSelectFlight, onModifySearch, isLoading }) => {
-  // Group flights by departure and return dates
+const FlexibleDatesMatrix = ({ flights, searchParams, onSelectFlight, onModifySearch }) => {
   const priceMatrix = useMemo(() => {
     const matrix = {};
     
@@ -677,7 +922,6 @@ const FlexibleDatesMatrix = ({ flights, searchParams, onSelectFlight, onModifySe
     return matrix;
   }, [flights]);
 
-  // Get unique sorted dates
   const departureDates = useMemo(() => {
     const dates = [...new Set(Object.values(priceMatrix).map(f => f.departureDate))].filter(Boolean);
     return dates.sort();
@@ -708,7 +952,7 @@ const FlexibleDatesMatrix = ({ flights, searchParams, onSelectFlight, onModifySe
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Search Summary Bar with Modify Button */}
+      {/* Search Summary Bar */}
       <div className="mb-6 bg-white rounded-lg shadow-sm border p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
@@ -717,10 +961,6 @@ const FlexibleDatesMatrix = ({ flights, searchParams, onSelectFlight, onModifySe
               <span className="font-semibold">{searchParams?.origin}</span>
               <span className="text-slate-400">→</span>
               <span className="font-semibold">{searchParams?.destination}</span>
-            </div>
-            <div className="text-sm text-slate-600">
-              {searchParams?.departure_date && format(new Date(searchParams.departure_date), 'dd MMM yyyy')}
-              {searchParams?.return_date && ` - ${format(new Date(searchParams.return_date), 'dd MMM yyyy')}`}
             </div>
             <Badge className="bg-brand-100 text-brand-700">±3 Days Flexible</Badge>
           </div>
