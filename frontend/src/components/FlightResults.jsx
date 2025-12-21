@@ -901,6 +901,8 @@ export const FlightResults = ({
 
 // Flexible Dates Matrix Component
 const FlexibleDatesMatrix = ({ flights, searchParams, onSelectFlight, onModifySearch }) => {
+  const [selectedDates, setSelectedDates] = useState(null); // { depDate, retDate }
+  
   const priceMatrix = useMemo(() => {
     const matrix = {};
     
@@ -910,12 +912,18 @@ const FlexibleDatesMatrix = ({ flights, searchParams, onSelectFlight, onModifySe
       
       const key = `${depDate}_${retDate}`;
       
-      if (!matrix[key] || matrix[key].price > flight.price) {
+      if (!matrix[key]) {
         matrix[key] = {
-          ...flight,
+          cheapestFlight: flight,
           departureDate: depDate,
-          returnDate: retDate
+          returnDate: retDate,
+          allFlights: [flight]
         };
+      } else {
+        matrix[key].allFlights.push(flight);
+        if (flight.price < matrix[key].cheapestFlight.price) {
+          matrix[key].cheapestFlight = flight;
+        }
       }
     });
     
@@ -943,12 +951,43 @@ const FlexibleDatesMatrix = ({ flights, searchParams, onSelectFlight, onModifySe
     return format(date, 'EEE\nMMM dd');
   };
 
+  const formatDateLong = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return format(date, 'EEEE, MMM dd, yyyy');
+  };
+
   const getLowestPrice = () => {
-    const prices = Object.values(priceMatrix).map(f => f.price);
+    const prices = Object.values(priceMatrix).map(f => f.cheapestFlight.price);
     return Math.min(...prices);
   };
 
   const lowestPrice = getLowestPrice();
+
+  // Get flights for selected date combination
+  const selectedFlights = useMemo(() => {
+    if (!selectedDates) return [];
+    const key = `${selectedDates.depDate}_${selectedDates.retDate}`;
+    return priceMatrix[key]?.allFlights || [];
+  }, [selectedDates, priceMatrix]);
+
+  const handleCellClick = (depDate, retDate, flight) => {
+    if (!flight) return;
+    setSelectedDates({ depDate, retDate });
+  };
+
+  const formatTime = (dateTime) => {
+    if (!dateTime) return '';
+    return new Date(dateTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const formatDuration = (duration) => {
+    if (!duration) return 'N/A';
+    return duration.replace('PT', '').replace('H', 'h ').replace('M', 'm');
+  };
+
+  // Count total unique date combinations (cells in matrix)
+  const totalCombinations = Object.keys(priceMatrix).length;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -978,10 +1017,10 @@ const FlexibleDatesMatrix = ({ flights, searchParams, onSelectFlight, onModifySe
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-900">Flexible Dates Price Grid</h2>
-          <p className="text-slate-600">Select your preferred dates to see available flights</p>
+          <p className="text-slate-600">Click on a date combination to see all available flights</p>
         </div>
         <Badge className="bg-brand-100 text-brand-700 px-4 py-2">
-          Found {flights.length} flights (±3 days)!
+          {totalCombinations} date combinations • {flights.length} total flights
         </Badge>
       </div>
 
@@ -1008,24 +1047,43 @@ const FlexibleDatesMatrix = ({ flights, searchParams, onSelectFlight, onModifySe
                     <div className="text-sm whitespace-pre-line text-brand-700">{formatDateHeader(depDate)}</div>
                   </td>
                   {returnDates.map(retDate => {
-                    const flight = getPrice(depDate, retDate);
+                    const cellData = getPrice(depDate, retDate);
+                    const flight = cellData?.cheapestFlight;
                     const isLowest = flight && flight.price === lowestPrice;
+                    const isSelected = selectedDates?.depDate === depDate && selectedDates?.retDate === retDate;
                     
                     return (
                       <td
                         key={`${depDate}_${retDate}`}
-                        className={`border p-2 text-center cursor-pointer hover:bg-brand-50 transition-colors ${
-                          isLowest ? 'bg-green-50' : ''
+                        className={`border p-2 text-center cursor-pointer transition-colors ${
+                          isSelected 
+                            ? 'bg-brand-600 text-white ring-2 ring-brand-600 ring-offset-1' 
+                            : isLowest 
+                              ? 'bg-green-50 hover:bg-green-100' 
+                              : 'hover:bg-brand-50'
                         }`}
-                        onClick={() => flight && onSelectFlight(flight)}
+                        onClick={() => handleCellClick(depDate, retDate, cellData)}
                       >
-                        {flight ? (
+                        {cellData ? (
                           <div>
-                            <div className={`text-sm font-bold ${isLowest ? 'text-green-700' : 'text-slate-700'}`}>
+                            <div className={`text-sm font-bold ${
+                              isSelected 
+                                ? 'text-white' 
+                                : isLowest 
+                                  ? 'text-green-700' 
+                                  : 'text-slate-700'
+                            }`}>
                               £{Math.round(flight.price)}
                             </div>
-                            <div className="text-xs text-slate-500">{flight.airline_code}</div>
-                            {isLowest && (
+                            <div className={`text-xs ${isSelected ? 'text-white/80' : 'text-slate-500'}`}>
+                              {flight.airline_code}
+                            </div>
+                            {cellData.allFlights.length > 1 && (
+                              <div className={`text-xs ${isSelected ? 'text-white/70' : 'text-slate-400'}`}>
+                                +{cellData.allFlights.length - 1} more
+                              </div>
+                            )}
+                            {isLowest && !isSelected && (
                               <div className="text-xs text-green-700 font-semibold mt-1">Lowest</div>
                             )}
                           </div>
@@ -1042,9 +1100,132 @@ const FlexibleDatesMatrix = ({ flights, searchParams, onSelectFlight, onModifySe
         </Card>
       </div>
 
-      <div className="mt-6 text-sm text-slate-600">
-        <p>All prices in GBP • Click on a price to view flight details and book</p>
+      <div className="mt-4 text-sm text-slate-600">
+        <p>All prices in GBP (£) • Click on a cell to view all flights for that date combination</p>
       </div>
+
+      {/* Selected Date Flights */}
+      {selectedDates && selectedFlights.length > 0 && (
+        <div className="mt-8">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-xl font-bold text-slate-900">
+                Flights for {formatDateLong(selectedDates.depDate)} → {formatDateLong(selectedDates.retDate)}
+              </h3>
+              <p className="text-slate-600">{selectedFlights.length} flight(s) available</p>
+            </div>
+            <Button 
+              variant="outline" 
+              onClick={() => setSelectedDates(null)}
+              className="text-slate-600"
+            >
+              Clear Selection
+            </Button>
+          </div>
+          
+          <div className="space-y-4">
+            {selectedFlights
+              .sort((a, b) => a.price - b.price)
+              .map((flight, index) => (
+              <Card 
+                key={index} 
+                className="hover:shadow-lg transition-shadow cursor-pointer border-slate-200 hover:border-brand-300"
+                onClick={() => onSelectFlight(flight)}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    {/* Airline Info */}
+                    <div className="flex items-center gap-4 min-w-[150px]">
+                      <div className="w-12 h-12 bg-brand-100 rounded-lg flex items-center justify-center">
+                        <span className="font-bold text-brand-700">{flight.airline_code}</span>
+                      </div>
+                      <div>
+                        <div className="font-semibold text-slate-900">{flight.airline}</div>
+                        <div className="text-sm text-slate-500">{flight.airline_code}</div>
+                      </div>
+                    </div>
+
+                    {/* Outbound Flight */}
+                    <div className="flex-1 px-6">
+                      <div className="flex items-center justify-between">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-slate-900">{formatTime(flight.departure_time)}</div>
+                          <div className="text-sm font-medium text-brand-600">{flight.from}</div>
+                        </div>
+                        <div className="flex-1 px-4">
+                          <div className="text-center text-xs text-slate-500 mb-1">{formatDuration(flight.duration)}</div>
+                          <div className="flex items-center">
+                            <div className="w-2 h-2 rounded-full bg-brand-500"></div>
+                            <div className="flex-1 h-px bg-slate-300 mx-2"></div>
+                            <Plane className="h-4 w-4 text-brand-500 transform rotate-90" />
+                            <div className="flex-1 h-px bg-slate-300 mx-2"></div>
+                            <div className="w-2 h-2 rounded-full bg-brand-500"></div>
+                          </div>
+                          <div className="text-center text-xs font-medium text-brand-600 mt-1">
+                            {flight.is_direct ? 'Direct' : `${flight.stops} stop(s)`}
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-slate-900">{formatTime(flight.arrival_time)}</div>
+                          <div className="text-sm font-medium text-brand-600">{flight.to}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Return Flight (if round-trip) */}
+                    {flight.return_departure_time && (
+                      <div className="flex-1 px-6 border-l">
+                        <div className="flex items-center justify-between">
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-slate-900">{formatTime(flight.return_departure_time)}</div>
+                            <div className="text-sm font-medium text-brand-600">{flight.to}</div>
+                          </div>
+                          <div className="flex-1 px-4">
+                            <div className="text-center text-xs text-slate-500 mb-1">{formatDuration(flight.return_duration)}</div>
+                            <div className="flex items-center">
+                              <div className="w-2 h-2 rounded-full bg-brand-500"></div>
+                              <div className="flex-1 h-px bg-slate-300 mx-2"></div>
+                              <Plane className="h-4 w-4 text-brand-500 transform -rotate-90" />
+                              <div className="flex-1 h-px bg-slate-300 mx-2"></div>
+                              <div className="w-2 h-2 rounded-full bg-brand-500"></div>
+                            </div>
+                            <div className="text-center text-xs font-medium text-brand-600 mt-1">
+                              {flight.return_is_direct ? 'Direct' : `${flight.return_stops} stop(s)`}
+                            </div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-slate-900">{formatTime(flight.return_arrival_time)}</div>
+                            <div className="text-sm font-medium text-brand-600">{flight.from}</div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Price & Book */}
+                    <div className="text-right min-w-[140px] pl-6">
+                      <div className="text-3xl font-bold text-brand-600">£{Math.round(flight.price)}</div>
+                      <div className="text-sm text-slate-500 mb-2">per person</div>
+                      <Button className="bg-brand-600 hover:bg-brand-700 w-full">
+                        Select
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* No selection prompt */}
+      {!selectedDates && (
+        <div className="mt-8 text-center py-12 bg-slate-50 rounded-lg border-2 border-dashed border-slate-300">
+          <Plane className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-slate-700">Select dates from the grid above</h3>
+          <p className="text-slate-500">Click on any price cell to view all available flights for that date combination</p>
+        </div>
+      )}
     </div>
   );
 };
