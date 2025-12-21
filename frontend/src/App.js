@@ -1,52 +1,287 @@
-import { useEffect } from "react";
-import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
-
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
-
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
+import React, { useState } from 'react';
+import './App.css';
+import { Header } from './components/Header';
+import { Footer } from './components/Footer';
+import { FlightSearch } from './components/FlightSearch';
+import { Button } from './components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card';
+import { Badge } from './components/ui/badge';
+import { 
+  BadgePoundSterling, 
+  Zap, 
+  Headphones, 
+  CalendarClock, 
+  Shield, 
+  Gift,
+  Star,
+  ArrowRight,
+  Clock,
+  CheckCircle2,
+  Plane
+} from 'lucide-react';
+import { popularDestinations, testimonials, features, mockFlightSearchResults } from './mock';
+import { toast } from 'sonner';
+import { Toaster } from './components/ui/sonner';
 
 function App() {
+  const [searchResults, setSearchResults] = useState([]);
+  const [showResults, setShowResults] = useState(false);
+
+  const handleSearch = (searchData) => {
+    console.log('Search data:', searchData);
+    setSearchResults(mockFlightSearchResults);
+    setShowResults(true);
+    toast.success('Found ' + mockFlightSearchResults.length + ' flights for you!');
+    
+    // Scroll to results
+    setTimeout(() => {
+      document.getElementById('search-results')?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  };
+
+  const handleBookFlight = (flight) => {
+    toast.success(`Booking initiated for ${flight.from} to ${flight.to}`);
+  };
+
+  const iconMap = {
+    BadgePoundSterling,
+    Zap,
+    Headphones,
+    CalendarClock,
+    Shield,
+    Gift
+  };
+
   return (
-    <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+    <div className="App min-h-screen bg-slate-50">
+      <Toaster position="top-right" richColors />
+      <Header />
+
+      {/* Hero Section */}
+      <section id="home" className="relative pt-24 pb-16 md:pt-32 md:pb-24 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-teal-50 via-cyan-50 to-slate-50 -z-10"></div>
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12 space-y-4">
+            <Badge className="bg-teal-100 text-teal-700 hover:bg-teal-200 px-4 py-1.5 text-sm font-medium">
+              Book with Confidence
+            </Badge>
+            <h1 className="text-4xl md:text-6xl font-bold text-slate-900 leading-tight">
+              Find Your Perfect
+              <span className="block bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
+                Flight Deal
+              </span>
+            </h1>
+            <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto">
+              Compare prices from hundreds of airlines and travel agents. Save up to 40% on your next trip.
+            </p>
+          </div>
+
+          {/* Flight Search Component */}
+          <FlightSearch onSearch={handleSearch} />
+
+          {/* Trust Indicators */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12 max-w-4xl mx-auto">
+            <div className="text-center p-4">
+              <div className="text-2xl md:text-3xl font-bold text-slate-900">1M+</div>
+              <div className="text-sm text-slate-600">Happy Travelers</div>
+            </div>
+            <div className="text-center p-4">
+              <div className="text-2xl md:text-3xl font-bold text-slate-900">500+</div>
+              <div className="text-sm text-slate-600">Airlines</div>
+            </div>
+            <div className="text-center p-4">
+              <div className="text-2xl md:text-3xl font-bold text-slate-900">180+</div>
+              <div className="text-sm text-slate-600">Countries</div>
+            </div>
+            <div className="text-center p-4">
+              <div className="text-2xl md:text-3xl font-bold text-slate-900">24/7</div>
+              <div className="text-sm text-slate-600">Support</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Search Results Section */}
+      {showResults && (
+        <section id="search-results" className="py-16 bg-white">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl font-bold text-slate-900 mb-8">Available Flights</h2>
+            <div className="space-y-4">
+              {searchResults.map((flight) => (
+                <Card key={flight.id} className="hover:shadow-lg transition-shadow duration-300">
+                  <CardContent className="p-6">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <div className="flex-1 space-y-2">
+                        <div className="flex items-center gap-4">
+                          <div className="text-lg font-semibold text-slate-900">{flight.from}</div>
+                          <Plane className="h-5 w-5 text-teal-600" />
+                          <div className="text-lg font-semibold text-slate-900">{flight.to}</div>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600">
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-4 w-4" />
+                            <span>{flight.duration}</span>
+                          </div>
+                          <div>{flight.stops}</div>
+                          <div className="font-medium">{flight.airline}</div>
+                        </div>
+                      </div>
+                      <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+                        <div className="text-right">
+                          <div className="text-3xl font-bold text-teal-600">£{flight.price}</div>
+                          <div className="text-sm text-slate-500">per person</div>
+                        </div>
+                        <Button 
+                          onClick={() => handleBookFlight(flight)}
+                          className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 font-semibold whitespace-nowrap"
+                        >
+                          Book Now
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Features Section */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Why Choose Flight380?</h2>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              We make flight booking simple, secure, and rewarding
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {features.map((feature) => {
+              const IconComponent = iconMap[feature.icon];
+              return (
+                <Card key={feature.id} className="group hover:shadow-xl transition-all duration-300 border-slate-200 hover:border-teal-300">
+                  <CardHeader>
+                    <div className="w-12 h-12 bg-gradient-to-br from-teal-100 to-cyan-100 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                      <IconComponent className="h-6 w-6 text-teal-600" />
+                    </div>
+                    <CardTitle className="text-xl">{feature.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <CardDescription className="text-slate-600">{feature.description}</CardDescription>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Popular Destinations */}
+      <section id="destinations" className="py-20 bg-slate-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Popular Destinations</h2>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              Explore the world's most amazing destinations at unbeatable prices
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {popularDestinations.map((destination) => (
+              <Card key={destination.id} className="group overflow-hidden hover:shadow-2xl transition-all duration-300 cursor-pointer">
+                <div className="relative h-48 overflow-hidden">
+                  <img 
+                    src={destination.imageUrl} 
+                    alt={destination.city}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                  <Badge className="absolute top-4 right-4 bg-teal-600 hover:bg-teal-700 text-white font-semibold">
+                    From £{destination.price}
+                  </Badge>
+                </div>
+                <CardHeader>
+                  <CardTitle className="text-2xl">{destination.city}</CardTitle>
+                  <CardDescription className="text-slate-600">{destination.country}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-slate-600 mb-4">{destination.description}</p>
+                  <Button variant="ghost" className="group/btn w-full justify-between hover:bg-teal-50 hover:text-teal-700">
+                    View Flights
+                    <ArrowRight className="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Trusted by Travelers</h2>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              See what our customers say about their experience
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {testimonials.map((testimonial) => (
+              <Card key={testimonial.id} className="hover:shadow-xl transition-shadow duration-300">
+                <CardHeader>
+                  <div className="flex gap-1 mb-2">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className="h-5 w-5 fill-amber-400 text-amber-400" />
+                    ))}
+                  </div>
+                  <CardTitle className="text-lg">{testimonial.name}</CardTitle>
+                  <CardDescription>{testimonial.role}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-slate-600 italic">"{testimonial.content}"</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section id="deals" className="py-20 bg-gradient-to-br from-teal-600 to-cyan-600 text-white">
+        <div className="container mx-auto px-4 text-center">
+          <div className="max-w-3xl mx-auto space-y-6">
+            <h2 className="text-3xl md:text-5xl font-bold">Ready to Start Your Journey?</h2>
+            <p className="text-lg md:text-xl text-teal-50">
+              Join over 1 million happy travelers and discover your next adventure with exclusive deals and offers.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+              <Button size="lg" className="bg-white text-teal-600 hover:bg-slate-100 font-semibold text-lg px-8">
+                Search Flights Now
+              </Button>
+              <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white/10 font-semibold text-lg px-8">
+                View All Deals
+              </Button>
+            </div>
+            <div className="flex flex-wrap justify-center gap-6 pt-8">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5" />
+                <span>No Hidden Fees</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5" />
+                <span>Best Price Guarantee</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5" />
+                <span>24/7 Support</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <Footer />
     </div>
   );
 }
