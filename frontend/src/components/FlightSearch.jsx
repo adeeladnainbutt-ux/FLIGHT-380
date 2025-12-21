@@ -7,7 +7,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from './ui/command';
 import { Calendar } from './ui/calendar';
-import { CalendarIcon, MapPin, Users, Plane } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Checkbox } from './ui/checkbox';
+import { CalendarIcon, MapPin, Users, Plane, Plus, Minus, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { airports } from '../mock';
 import { cn } from '../lib/utils';
@@ -18,9 +20,20 @@ export const FlightSearch = ({ onSearch }) => {
   const [toAirport, setToAirport] = useState(null);
   const [departDate, setDepartDate] = useState(null);
   const [returnDate, setReturnDate] = useState(null);
-  const [passengers, setPassengers] = useState(1);
+  const [adults, setAdults] = useState(1);
+  const [children, setChildren] = useState(0);
+  const [infants, setInfants] = useState(0);
+  const [travelClass, setTravelClass] = useState('economy');
+  const [directFlights, setDirectFlights] = useState(false);
+  const [flexiDates, setFlexiDates] = useState(false);
+  const [selectedAirline, setSelectedAirline] = useState('all');
   const [openFrom, setOpenFrom] = useState(false);
   const [openTo, setOpenTo] = useState(false);
+  const [openPassengers, setOpenPassengers] = useState(false);
+  const [multiCityLegs, setMultiCityLegs] = useState([
+    { from: null, to: null, date: null },
+    { from: null, to: null, date: null }
+  ]);
 
   const handleSearch = () => {
     if (fromAirport && toAirport && departDate) {
