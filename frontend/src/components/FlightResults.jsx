@@ -159,12 +159,22 @@ export const FlightResults = ({
   const filteredFlights = useMemo(() => {
     let result = [...flights];
 
-    // Apply stops filter
-    if (filters.stops) {
+    // Apply outbound stops filter
+    if (filters.stopsOutbound) {
       result = result.filter(flight => {
-        if (filters.stops === 'direct') return flight.is_direct || flight.stops === 0;
-        if (filters.stops === '1') return flight.stops === 1;
-        if (filters.stops === '2+') return flight.stops >= 2;
+        if (filters.stopsOutbound === 'direct') return flight.is_direct || flight.stops === 0;
+        if (filters.stopsOutbound === '1') return flight.stops === 1;
+        if (filters.stopsOutbound === '2+') return flight.stops >= 2;
+        return true;
+      });
+    }
+
+    // Apply return stops filter
+    if (filters.stopsReturn && isRoundTrip) {
+      result = result.filter(flight => {
+        if (filters.stopsReturn === 'direct') return flight.return_is_direct || flight.return_stops === 0;
+        if (filters.stopsReturn === '1') return flight.return_stops === 1;
+        if (filters.stopsReturn === '2+') return flight.return_stops >= 2;
         return true;
       });
     }
@@ -174,39 +184,73 @@ export const FlightResults = ({
       result = result.filter(flight => filters.airlines.includes(flight.airline));
     }
 
-    // Apply departure time filter
-    if (filters.departureTime) {
+    // Apply outbound departure time filter
+    if (filters.outboundDepartureTime) {
       result = result.filter(flight => {
         const hour = getHour(flight.departure_time);
-        if (filters.departureTime === 'morning') return hour >= 5 && hour < 12;
-        if (filters.departureTime === 'afternoon') return hour >= 12 && hour < 18;
-        if (filters.departureTime === 'evening') return hour >= 18 || hour < 5;
+        if (filters.outboundDepartureTime === 'morning') return hour >= 5 && hour < 12;
+        if (filters.outboundDepartureTime === 'afternoon') return hour >= 12 && hour < 18;
+        if (filters.outboundDepartureTime === 'evening') return hour >= 18 || hour < 5;
         return true;
       });
     }
 
-    // Apply arrival time filter
-    if (filters.arrivalTime) {
+    // Apply outbound arrival time filter
+    if (filters.outboundArrivalTime) {
       result = result.filter(flight => {
         const hour = getHour(flight.arrival_time);
-        if (filters.arrivalTime === 'morning') return hour >= 5 && hour < 12;
-        if (filters.arrivalTime === 'afternoon') return hour >= 12 && hour < 18;
-        if (filters.arrivalTime === 'evening') return hour >= 18 || hour < 5;
+        if (filters.outboundArrivalTime === 'morning') return hour >= 5 && hour < 12;
+        if (filters.outboundArrivalTime === 'afternoon') return hour >= 12 && hour < 18;
+        if (filters.outboundArrivalTime === 'evening') return hour >= 18 || hour < 5;
         return true;
       });
     }
 
-    // Apply layover time filter (actual connection/layover duration)
-    if (filters.layoverTime) {
-      const selectedOption = layoverTimeOptions.find(opt => opt.value === filters.layoverTime);
+    // Apply return departure time filter
+    if (filters.returnDepartureTime && isRoundTrip) {
+      result = result.filter(flight => {
+        const hour = getHour(flight.return_departure_time);
+        if (filters.returnDepartureTime === 'morning') return hour >= 5 && hour < 12;
+        if (filters.returnDepartureTime === 'afternoon') return hour >= 12 && hour < 18;
+        if (filters.returnDepartureTime === 'evening') return hour >= 18 || hour < 5;
+        return true;
+      });
+    }
+
+    // Apply return arrival time filter
+    if (filters.returnArrivalTime && isRoundTrip) {
+      result = result.filter(flight => {
+        const hour = getHour(flight.return_arrival_time);
+        if (filters.returnArrivalTime === 'morning') return hour >= 5 && hour < 12;
+        if (filters.returnArrivalTime === 'afternoon') return hour >= 12 && hour < 18;
+        if (filters.returnArrivalTime === 'evening') return hour >= 18 || hour < 5;
+        return true;
+      });
+    }
+
+    // Apply connection length outbound filter
+    if (filters.connectionLengthOutbound) {
+      const selectedOption = connectionLengthOptions.find(opt => opt.value === filters.connectionLengthOutbound);
       if (selectedOption) {
         result = result.filter(flight => {
-          const layoverMins = flight.total_layover_minutes || 0;
-          
           if (selectedOption.value === 'none') {
             return flight.is_direct || flight.stops === 0;
           }
-          
+          const layoverMins = flight.total_layover_minutes || 0;
+          return layoverMins >= selectedOption.minMinutes && layoverMins <= selectedOption.maxMinutes;
+        });
+      }
+    }
+
+    // Apply connection length return filter
+    if (filters.connectionLengthReturn && isRoundTrip) {
+      const selectedOption = connectionLengthOptions.find(opt => opt.value === filters.connectionLengthReturn);
+      if (selectedOption) {
+        result = result.filter(flight => {
+          if (selectedOption.value === 'none') {
+            return flight.return_is_direct || flight.return_stops === 0;
+          }
+          const layoverMins = flight.return_total_layover_minutes || 0;
           return layoverMins >= selectedOption.minMinutes && layoverMins <= selectedOption.maxMinutes;
         });
       }
