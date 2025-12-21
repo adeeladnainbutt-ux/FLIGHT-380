@@ -126,13 +126,20 @@ export const FlightResults = ({
     { value: 'evening', label: 'Evening', time: '18:00 - 23:59', icon: Moon }
   ];
 
-  // Layover time filter options (actual layover/connection time)
-  const layoverTimeOptions = [
-    { value: 'none', label: 'Direct Only', minMinutes: 0, maxMinutes: 0 },
-    { value: 'short', label: 'Short Layover', time: '< 2 hours', minMinutes: 1, maxMinutes: 120 },
-    { value: 'medium', label: 'Medium Layover', time: '2 - 4 hours', minMinutes: 121, maxMinutes: 240 },
-    { value: 'long', label: 'Long Layover', time: '4 - 8 hours', minMinutes: 241, maxMinutes: 480 },
-    { value: 'overnight', label: 'Overnight Layover', time: '8+ hours', minMinutes: 481, maxMinutes: Infinity }
+  // Connection length filter options
+  const connectionLengthOptions = [
+    { value: 'none', label: 'No Connections' },
+    { value: 'short', label: 'Short Connection', time: '0 - 2 hours', minMinutes: 0, maxMinutes: 120 },
+    { value: 'relaxed', label: 'Relaxed Connection', time: '2 - 4 hours', minMinutes: 121, maxMinutes: 240 },
+    { value: 'long', label: 'Long Connection', time: '4 - 8 hours', minMinutes: 241, maxMinutes: 480 },
+    { value: 'verylong', label: 'Very Long Connection', time: '8+ hours', minMinutes: 481, maxMinutes: Infinity }
+  ];
+
+  // Fare type options
+  const fareTypeOptions = [
+    { value: 'IT', label: 'IT' },
+    { value: 'Net', label: 'Net' },
+    { value: 'Pub', label: 'Pub' }
   ];
 
   // Baggage options
