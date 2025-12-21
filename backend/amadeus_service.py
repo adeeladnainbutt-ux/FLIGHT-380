@@ -1,7 +1,7 @@
 from amadeus import Client, ResponseError
 import os
 from typing import Optional, Dict, List
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class AmadeusService:
     """Service to interact with Amadeus Flight Search API"""
