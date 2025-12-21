@@ -130,8 +130,8 @@ function App() {
               </p>
             </div>
 
-            {/* Flight Search Component */}
-            <FlightSearch onSearch={handleSearch} />
+            {/* Flight Search Component - Pass saved data for modify */}
+            <FlightSearch onSearch={handleSearch} initialData={savedSearchData} />
 
             {/* Trust Indicators */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12 max-w-4xl mx-auto">
@@ -159,7 +159,7 @@ function App() {
       {/* Hidden Search Form for Modify - shows when results are visible */}
       {(showResults || isLoading) && (
         <section id="home" className="hidden">
-          <FlightSearch onSearch={handleSearch} />
+          <FlightSearch onSearch={handleSearch} initialData={savedSearchData} />
         </section>
       )}
 
