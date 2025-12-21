@@ -67,6 +67,23 @@ export const FlightSearch = ({ onSearch }) => {
 
   const totalPassengers = adults + children + infants;
 
+  const handleDepartDateSelect = (date) => {
+    setDepartDate(date);
+    setOpenDepartDate(false);
+    
+    // Auto-open return date calendar for round-trip after selecting departure date
+    if (tripType === 'round-trip' && date) {
+      setTimeout(() => {
+        setOpenReturnDate(true);
+      }, 300);
+    }
+  };
+
+  const handleReturnDateSelect = (date) => {
+    setReturnDate(date);
+    setOpenReturnDate(false);
+  };
+
   const handleSearch = () => {
     if (tripType === 'multi-city') {
       const validLegs = multiCityLegs.filter(leg => leg.from && leg.to && leg.date);
