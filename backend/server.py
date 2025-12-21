@@ -235,6 +235,299 @@ async def search_airports(keyword: str):
             }
         }
 
+
+# Booking Endpoints
+def generate_pnr():
+    """Generate a 6-character PNR code"""
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+
+
+def create_email_content(booking_data: dict, recipient_type: str) -> dict:
+    """Create email content for booking confirmation"""
+    pnr = booking_data['pnr']
+    flight = booking_data['flight_data']
+    passengers = booking_data['passengers']
+    contact = booking_data['contact']
+    total_price = booking_data['total_price']
+    currency = booking_data.get('currency', 'GBP')
+    
+    # Build passenger list
+    passenger_list = "\n".join([
+        f"  - {p['title']} {p['first_name']} {p['last_name']} ({p['type']})"
+        for p in passengers
+    ])
+    
+    # Build flight details
+    outbound_info = f"""
+    From: {flight.get('from', 'N/A')} → To: {flight.get('to', 'N/A')}
+    Date: {flight.get('departure_time', 'N/A')[:10] if flight.get('departure_time') else 'N/A'}
+    Departure: {flight.get('departure_time', 'N/A')[11:16] if flight.get('departure_time') else 'N/A'}
+    Arrival: {flight.get('arrival_time', 'N/A')[11:16] if flight.get('arrival_time') else 'N/A'}
+    Duration: {flight.get('duration', 'N/A').replace('PT', '').replace('H', 'h ').replace('M', 'm')}
+    Airline: {flight.get('airline', 'N/A')} ({flight.get('airline_code', 'N/A')})
+    Stops: {'Direct' if flight.get('is_direct') else str(flight.get('stops', 0)) + ' stop(s)'}
+    """
+    
+    return_info = ""
+    if flight.get('return_departure_time'):
+        return_info = f"""
+    
+    RETURN FLIGHT:
+    From: {flight.get('to', 'N/A')} → To: {flight.get('from', 'N/A')}
+    Date: {flight.get('return_departure_time', 'N/A')[:10]}
+    Departure: {flight.get('return_departure_time', 'N/A')[11:16]}
+    Arrival: {flight.get('return_arrival_time', 'N/A')[11:16]}
+    Duration: {flight.get('return_duration', 'N/A').replace('PT', '').replace('H', 'h ').replace('M', 'm') if flight.get('return_duration') else 'N/A'}
+    Stops: {'Direct' if flight.get('return_is_direct') else str(flight.get('return_stops', 0)) + ' stop(s)'}
+    """
+    
+    if recipient_type == "customer":
+        subject = f"Flight380 - Booking Confirmation - PNR: {pnr}"
+        body = f"""
+Dear {passengers[0]['first_name']} {passengers[0]['last_name']},
+
+Thank you for booking with Flight380!
+
+Your booking has been confirmed. Please find your details below:
+
+═══════════════════════════════════════════════════════════════
+BOOKING REFERENCE (PNR): {pnr}
+═══════════════════════════════════════════════════════════════
+
+FLIGHT DETAILS:
+---------------
+OUTBOUND FLIGHT:{outbound_info}{return_info}
+
+PASSENGERS:
+-----------
+{passenger_list}
+
+TOTAL PRICE: £{total_price:.2f} {currency}
+
+CONTACT DETAILS:
+---------------
+Email: {contact['email']}
+Phone: {contact['phone']}
+
+═══════════════════════════════════════════════════════════════
+
+IMPORTANT INFORMATION:
+- Please arrive at the airport at least 2-3 hours before departure
+- Carry a valid passport/ID and this booking confirmation
+- Check airline website for baggage allowance
+
+For any queries, contact us at: info@flight380.co.uk
+
+Thank you for choosing Flight380!
+
+Best regards,
+Flight380 Team
+www.flight380.co.uk
+        """
+    else:  # agent
+        subject = f"New Booking - PNR: {pnr} - {flight.get('from')} to {flight.get('to')}"
+        body = f"""
+NEW BOOKING NOTIFICATION
+
+═══════════════════════════════════════════════════════════════
+BOOKING REFERENCE (PNR): {pnr}
+BOOKING TIME: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
+═══════════════════════════════════════════════════════════════
+
+CUSTOMER DETAILS:
+-----------------
+Name: {passengers[0]['first_name']} {passengers[0]['last_name']}
+Email: {contact['email']}
+Phone: {contact['phone']}
+
+FLIGHT DETAILS:
+---------------
+OUTBOUND FLIGHT:{outbound_info}{return_info}
+
+ALL PASSENGERS:
+---------------
+{passenger_list}
+
+PRICING:
+--------
+Total Amount: £{total_price:.2f} {currency}
+
+═══════════════════════════════════════════════════════════════
+This is an automated notification from Flight380 Booking System.
+        """
+    
+    return {
+        "subject": subject,
+        "body": body
+    }
+
+
+@api_router.post("/bookings/create")
+async def create_booking(request: BookingRequest):
+    """Create a new flight booking and generate PNR"""
+    try:
+        # Generate unique PNR
+        pnr = generate_pnr()
+        booking_id = str(uuid.uuid4())
+        
+        # Create booking record
+        booking_record = {
+            "id": booking_id,
+            "pnr": pnr,
+            "flight_id": request.flight_id,
+            "flight_data": request.flight_data,
+            "passengers": [p.model_dump() for p in request.passengers],
+            "contact": request.contact.model_dump(),
+            "passenger_counts": request.passenger_counts,
+            "total_price": request.total_price,
+            "currency": request.currency,
+            "status": "CONFIRMED",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        # Save booking to database
+        await db.bookings.insert_one(booking_record)
+        
+        # Create mock emails (stored in database)
+        customer_email_content = create_email_content(booking_record, "customer")
+        agent_email_content = create_email_content(booking_record, "agent")
+        
+        customer_email = {
+            "id": str(uuid.uuid4()),
+            "booking_id": booking_id,
+            "pnr": pnr,
+            "type": "customer_confirmation",
+            "to": request.contact.email,
+            "subject": customer_email_content["subject"],
+            "body": customer_email_content["body"],
+            "status": "SENT",  # Mock - marked as sent
+            "sent_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        agent_email = {
+            "id": str(uuid.uuid4()),
+            "booking_id": booking_id,
+            "pnr": pnr,
+            "type": "agent_notification",
+            "to": AGENT_EMAIL,
+            "subject": agent_email_content["subject"],
+            "body": agent_email_content["body"],
+            "status": "SENT",  # Mock - marked as sent
+            "sent_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        # Save emails to database
+        await db.emails.insert_one(customer_email)
+        await db.emails.insert_one(agent_email)
+        
+        logger.info(f"Booking created: PNR={pnr}, BookingID={booking_id}")
+        
+        return {
+            "success": True,
+            "booking_id": booking_id,
+            "pnr": pnr,
+            "message": "Booking confirmed successfully!",
+            "booking_details": {
+                "pnr": pnr,
+                "status": "CONFIRMED",
+                "flight": request.flight_data,
+                "passengers": [p.model_dump() for p in request.passengers],
+                "contact": request.contact.model_dump(),
+                "total_price": request.total_price,
+                "currency": request.currency,
+                "created_at": booking_record["created_at"]
+            },
+            "emails_sent": [
+                {
+                    "to": request.contact.email,
+                    "type": "Customer Confirmation",
+                    "subject": customer_email_content["subject"],
+                    "body": customer_email_content["body"],
+                    "status": "SENT"
+                },
+                {
+                    "to": AGENT_EMAIL,
+                    "type": "Agent Notification",
+                    "subject": agent_email_content["subject"],
+                    "body": agent_email_content["body"],
+                    "status": "SENT"
+                }
+            ]
+        }
+        
+    except Exception as e:
+        logger.error(f"Booking creation error: {str(e)}")
+        return {
+            "success": False,
+            "message": f"Failed to create booking: {str(e)}"
+        }
+
+
+@api_router.get("/bookings/{pnr}")
+async def get_booking(pnr: str):
+    """Get booking details by PNR"""
+    try:
+        booking = await db.bookings.find_one({"pnr": pnr.upper()}, {"_id": 0})
+        
+        if not booking:
+            return {
+                "success": False,
+                "message": "Booking not found"
+            }
+        
+        # Get associated emails
+        emails = await db.emails.find({"pnr": pnr.upper()}, {"_id": 0}).to_list(10)
+        
+        return {
+            "success": True,
+            "booking": booking,
+            "emails": emails
+        }
+        
+    except Exception as e:
+        logger.error(f"Get booking error: {str(e)}")
+        return {
+            "success": False,
+            "message": f"Error retrieving booking: {str(e)}"
+        }
+
+
+@api_router.get("/bookings")
+async def list_bookings(limit: int = 20):
+    """List all bookings"""
+    try:
+        bookings = await db.bookings.find({}, {"_id": 0}).sort("created_at", -1).to_list(limit)
+        return {
+            "success": True,
+            "bookings": bookings,
+            "count": len(bookings)
+        }
+    except Exception as e:
+        logger.error(f"List bookings error: {str(e)}")
+        return {
+            "success": False,
+            "message": str(e)
+        }
+
+
+@api_router.get("/emails/{booking_id}")
+async def get_booking_emails(booking_id: str):
+    """Get all emails for a booking"""
+    try:
+        emails = await db.emails.find({"booking_id": booking_id}, {"_id": 0}).to_list(10)
+        return {
+            "success": True,
+            "emails": emails
+        }
+    except Exception as e:
+        logger.error(f"Get emails error: {str(e)}")
+        return {
+            "success": False,
+            "message": str(e)
+        }
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
