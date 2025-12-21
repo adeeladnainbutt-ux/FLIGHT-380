@@ -191,6 +191,11 @@ function App() {
                         {flight.departure_time && (
                           <div className="text-xs text-slate-500">
                             Departs: {new Date(flight.departure_time).toLocaleString()}
+                            {flight.date_offset && flight.date_offset !== 0 && (
+                              <Badge className="ml-2 bg-blue-100 text-blue-700 hover:bg-blue-200">
+                                {flight.date_offset > 0 ? '+' : ''}{flight.date_offset} day{Math.abs(flight.date_offset) > 1 ? 's' : ''}
+                              </Badge>
+                            )}
                           </div>
                         )}
                       </div>
