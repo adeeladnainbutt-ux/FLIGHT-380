@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -13,7 +13,7 @@ import { format } from 'date-fns';
 import { airports, airportGroups, airlines } from '../mock';
 import { cn } from '../lib/utils';
 
-export const FlightSearch = ({ onSearch }) => {
+export const FlightSearch = ({ onSearch, initialData }) => {
   const [tripType, setTripType] = useState('round-trip');
   const [fromAirport, setFromAirport] = useState(null);
   const [toAirport, setToAirport] = useState(null);
@@ -40,6 +40,49 @@ export const FlightSearch = ({ onSearch }) => {
     { from: null, to: null, date: null },
     { from: null, to: null, date: null }
   ]);
+
+  // Load initial data when modifying search
+  useEffect(() => {
+    if (initialData) {
+      // Restore trip type
+      if (initialData.return_date) {
+        setTripType('round-trip');
+      } else {
+        setTripType('one-way');
+      }
+      
+      // Find and set airports
+      const allOptions = [...airportGroups.map(g => ({ ...g, isGroup: true })), ...airports];
+      const fromApt = allOptions.find(a => a.code === initialData.origin);
+      const toApt = allOptions.find(a => a.code === initialData.destination);
+      if (fromApt) setFromAirport(fromApt);
+      if (toApt) setToAirport(toApt);
+      
+      // Set dates
+      if (initialData.departure_date) {
+        setDepartDate(new Date(initialData.departure_date));
+      }
+      if (initialData.return_date) {
+        setReturnDate(new Date(initialData.return_date));
+      }
+      
+      // Set passengers
+      if (initialData.adults) setAdults(initialData.adults);
+      if (initialData.youth) setYouth(initialData.youth);
+      if (initialData.children) setChildren(initialData.children);
+      if (initialData.infants) setInfants(initialData.infants);
+      
+      // Set travel class
+      if (initialData.travel_class) setTravelClass(initialData.travel_class);
+      
+      // Set options
+      if (initialData.direct_flights !== undefined) setDirectFlights(initialData.direct_flights);
+      if (initialData.flexiDates !== undefined) setFlexiDates(initialData.flexiDates);
+      
+      // Set airline if any
+      if (initialData.airline) setSelectedAirline(initialData.airline);
+    }
+  }, [initialData]);
 
   // Combine airport groups and individual airports for search
   const allAirportOptions = [
