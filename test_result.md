@@ -101,3 +101,48 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: Flight380 - Flexible dates (±3 days) search not showing all flight combinations in the price matrix
+
+backend:
+  - task: "Flexible dates search API"
+    implemented: true
+    working: true
+    file: "/app/backend/amadeus_service.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Fixed backend to search multiple date combinations (varied departure + diagonals) using parallel thread pool. Now returns 10+ unique date combinations instead of just 7 diagonal entries."
+
+frontend:
+  - task: "Flexible dates price matrix display"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/FlightResults.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "FlexibleDatesMatrix component exists. Need to test if it correctly renders all date combinations returned by the updated backend."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: true
+
+test_plan:
+  current_focus:
+    - "Flexible dates search and price matrix display"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "Fixed backend flexible search to return multiple date combinations using parallel API calls. Now testing frontend price matrix rendering. Please test: 1) Search with LHR->CDG, dates Feb 15-22 2026, with flexible dates checkbox enabled. 2) Verify price matrix shows multiple departure and return date combinations. 3) Check that clicking a cell works."
