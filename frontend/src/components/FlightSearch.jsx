@@ -254,7 +254,7 @@ export const FlightSearch = ({ onSearch }) => {
                       <CommandGroup className="max-h-64 overflow-auto">
                         {filteredToAirports.map((option) => (
                           <CommandItem
-                            key={option.code}
+                            key={option.isGroup ? `group-${option.code}` : `airport-${option.code}`}
                             value={option.code}
                             onSelect={() => {
                               setToAirport(option);
