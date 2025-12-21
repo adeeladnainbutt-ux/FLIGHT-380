@@ -75,8 +75,15 @@ export const FlightSearch = ({ onSearch }) => {
   };
 
   // Filtered airport lists
-  const filteredFromAirports = filterAirports(allAirportOptions, fromSearchTerm);
-  const filteredToAirports = filterAirports(allAirportOptions, toSearchTerm);
+  const filteredFromAirports = React.useMemo(() => {
+    const filtered = filterAirports(allAirportOptions, fromSearchTerm);
+    console.log('From search term:', fromSearchTerm, 'Filtered count:', filtered.length);
+    return filtered;
+  }, [allAirportOptions, fromSearchTerm]);
+  
+  const filteredToAirports = React.useMemo(() => {
+    return filterAirports(allAirportOptions, toSearchTerm);
+  }, [allAirportOptions, toSearchTerm]);
 
   const addMultiCityLeg = () => {
     if (multiCityLegs.length < 5) {
