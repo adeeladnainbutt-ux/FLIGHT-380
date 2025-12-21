@@ -211,6 +211,51 @@ frontend:
         agent: "testing"
         comment: "TESTED: Date of birth input sequence is correctly implemented in passport-style order. ✅ CORRECT SEQUENCE: Located at lines 1272-1341, follows standard order: Title → First Name → Last Name → Date of Birth → Gender → Nationality. ✅ FORM STRUCTURE: Passenger forms are properly ordered (Adults → Youth → Children → Infants), each with grid layout, proper labels, and input types. ✅ VALIDATION: Includes age restrictions based on passenger type (Adult 18+, Youth 12-17, Child 2-11, Infant 0-2) with date validation and age range indicators. The implementation follows international passport application standards and provides clear user guidance."
 
+  - task: "Date of Birth calendar size increase"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/index.css"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Date input fields should be larger (16px font, 44px min-height, larger calendar picker icon). CSS added to index.css for input[type='date'] styling."
+      - working: true
+        agent: "testing"
+        comment: "TESTED: Date of Birth calendar size increase successfully implemented. ✅ CSS STYLING: Added to index.css lines 117-133 with input[type='date'] rules - font-size: 16px, min-height: 44px, padding: 10px 12px. ✅ CALENDAR PICKER ICON: Increased to 24px x 24px (lines 124-133) with hover effects and proper cursor styling. ✅ INLINE STYLING: BookingFlow.jsx lines 1302-1309 includes additional inline styles (fontSize: '16px', padding: '12px') and CSS classes for enhanced appearance. The date input fields are now significantly larger and more user-friendly with improved accessibility."
+
+  - task: "Remove Nationality and Passport fields from passenger details"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/BookingFlow.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Nationality, Passport Number, and Passport Expiry Date fields should be REMOVED from passenger details form. Only Title, First Name, Last Name, Date of Birth, Gender should remain. Validation also updated to not require nationality."
+      - working: true
+        agent: "testing"
+        comment: "TESTED: Nationality and Passport fields successfully removed from passenger details form. ✅ REMOVED FIELDS: Nationality field, Passport Number field, and Passport Expiry Date field are no longer present in the form (confirmed via code analysis of BookingFlow.jsx lines 1262-1327). ✅ REMAINING FIELDS: Only required fields remain - Title (lines 1265-1280), First Name (lines 1282-1289), Last Name (lines 1291-1298), Date of Birth (lines 1300-1309), Gender (lines 1311-1325). ✅ VALIDATION UPDATED: Form validation logic (lines 192-228) no longer requires nationality field, only validates title, first_name, last_name, date_of_birth, and gender. The passenger details form is now streamlined with only essential information required."
+
+  - task: "Flexible dates matrix fix"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/FlightResults.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "FlexibleDatesMatrix component completely rewritten with new behavior: 7x7 grid, cell selection with highlighting, flight list below when cell selected, Clear Selection button, and no-selection prompt."
+      - working: true
+        agent: "testing"
+        comment: "TESTED: Flexible dates matrix fix successfully implemented with complete rewrite. ✅ 7x7 GRID STRUCTURE: FlexibleDatesMatrix component (lines 903-1231) implements proper table structure with departure dates as rows and return dates as columns (lines 1029-1100). ✅ CELL SELECTION: Click functionality with red highlighting (bg-brand-600, ring-2) for selected cells (lines 1058-1064). ✅ FLIGHT LIST BELOW: When dates selected, displays comprehensive flight list with airline info, route details, and pricing (lines 1108-1218). ✅ CLEAR SELECTION BUTTON: Functional button to deselect dates and return to grid view (lines 1117-1123). ✅ NO-SELECTION PROMPT: Shows 'Select dates from the grid above' message when no dates are selected (lines 1222-1228). The matrix now provides full interactive functionality with proper user feedback and flight selection capabilities."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
