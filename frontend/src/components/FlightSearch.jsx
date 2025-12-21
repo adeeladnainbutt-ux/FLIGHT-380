@@ -30,6 +30,8 @@ export const FlightSearch = ({ onSearch }) => {
   const [openFrom, setOpenFrom] = useState(false);
   const [openTo, setOpenTo] = useState(false);
   const [openPassengers, setOpenPassengers] = useState(false);
+  const [openDepartDate, setOpenDepartDate] = useState(false);
+  const [openReturnDate, setOpenReturnDate] = useState(false);
   const [multiCityLegs, setMultiCityLegs] = useState([
     { from: null, to: null, date: null },
     { from: null, to: null, date: null }
