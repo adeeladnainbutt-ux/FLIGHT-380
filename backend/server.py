@@ -53,6 +53,7 @@ class FlightSearchRequest(BaseModel):
     infants: int = 0
     travel_class: str = 'ECONOMY'
     direct_flights: bool = False
+    flexible_dates: bool = False
     airline: Optional[str] = None
 
 class AirportSearchRequest(BaseModel):
