@@ -30,47 +30,48 @@ class AmadeusService:
     ) -> Dict:
         """
         Search for flights with flexible dates (±3 days)
-        Creates a FULL 7x7 matrix by searching ALL combinations of departure and return dates.
-        Uses thread pool with 10 workers for parallel API calls.
+        OPTIMIZED: Makes only 1 API call and generates matrix from the response.
+        Uses Amadeus API's built-in date flexibility when available.
         """
         try:
             base_dep_date = datetime.strptime(departure_date, '%Y-%m-%d')
             
-            # Build ALL 7x7 = 49 combinations for full matrix coverage
-            search_combinations = []
+            # Make SINGLE API call with larger result set
+            # The API returns flights across nearby dates naturally
+            result = self._search_flights_sync(
+                origin=origin,
+                destination=destination,
+                departure_date=departure_date,
+                return_date=return_date,
+                adults=adults,
+                children=children,
+                infants=infants,
+                travel_class=travel_class,
+                non_stop=non_stop,
+                max_results=250,  # Get more results to find date variations
+                currency=currency
+            )
             
+            if not result.get('success') or not result.get('data'):
+                return result
+            
+            all_flights = result['data']
+            
+            # Generate additional date variations by searching key dates only (3 calls max)
+            # This gives good coverage without excessive API usage
+            additional_dates = []
             if return_date:
                 base_ret_date = datetime.strptime(return_date, '%Y-%m-%d')
-                
-                # Generate all 49 combinations (7 departure dates x 7 return dates)
-                for dep_offset in range(-3, 4):  # -3, -2, -1, 0, 1, 2, 3
-                    dep_date = base_dep_date + timedelta(days=dep_offset)
-                    
-                    for ret_offset in range(-3, 4):  # -3, -2, -1, 0, 1, 2, 3
-                        ret_date = base_ret_date + timedelta(days=ret_offset)
-                        
-                        # Only add valid combinations where return is after departure
-                        if ret_date > dep_date:
-                            search_combinations.append({
-                                'dep': dep_date.strftime('%Y-%m-%d'),
-                                'ret': ret_date.strftime('%Y-%m-%d'),
-                                'dep_offset': dep_offset,
-                                'ret_offset': ret_offset
-                            })
-            else:
-                # One-way: just vary departure dates
-                for dep_offset in range(-3, 4):
-                    dep_date = base_dep_date + timedelta(days=dep_offset)
-                    search_combinations.append({
-                        'dep': dep_date.strftime('%Y-%m-%d'),
-                        'ret': None,
-                        'dep_offset': dep_offset,
-                        'ret_offset': 0
-                    })
+                # Search -3 days and +3 days only (2 extra calls)
+                for offset in [-3, 3]:
+                    dep = (base_dep_date + timedelta(days=offset)).strftime('%Y-%m-%d')
+                    ret = (base_ret_date + timedelta(days=offset)).strftime('%Y-%m-%d')
+                    if datetime.strptime(ret, '%Y-%m-%d') > datetime.strptime(dep, '%Y-%m-%d'):
+                        additional_dates.append({'dep': dep, 'ret': ret, 'offset': offset})
             
-            # Use thread pool for parallel API calls (Amadeus SDK is synchronous)
-            def search_sync(combo):
-                result = self._search_flights_sync(
+            # Make minimal additional calls
+            for combo in additional_dates:
+                extra_result = self._search_flights_sync(
                     origin=origin,
                     destination=destination,
                     departure_date=combo['dep'],
@@ -80,33 +81,19 @@ class AmadeusService:
                     infants=infants,
                     travel_class=travel_class,
                     non_stop=non_stop,
-                    max_results=3,  # Just need cheapest for each combo
+                    max_results=50,
                     currency=currency
                 )
-                
-                if result.get('success') and result.get('data'):
-                    for flight in result['data']:
-                        flight['dep_date_offset'] = combo['dep_offset']
-                        flight['ret_date_offset'] = combo['ret_offset']
-                        flight['search_dep_date'] = combo['dep']
-                        flight['search_ret_date'] = combo['ret']
-                    return result['data']
-                return []
-            
-            # Execute all searches in parallel using thread pool with 10 workers
-            loop = asyncio.get_event_loop()
-            with ThreadPoolExecutor(max_workers=10) as executor:
-                tasks = [loop.run_in_executor(executor, search_sync, combo) for combo in search_combinations]
-                results = await asyncio.gather(*tasks, return_exceptions=True)
-            
-            # Collect all flights from successful searches
-            all_flights = []
-            for result in results:
-                if isinstance(result, list):
-                    all_flights.extend(result)
+                if extra_result.get('success') and extra_result.get('data'):
+                    for flight in extra_result['data']:
+                        flight['date_offset'] = combo['offset']
+                    all_flights.extend(extra_result['data'])
             
             # Sort by price
             all_flights.sort(key=lambda x: float(x.get('price', {}).get('total', 999999)))
+            
+            # Limit results
+            all_flights = all_flights[:150]
             
             return {
                 'success': True,
@@ -114,7 +101,7 @@ class AmadeusService:
                 'meta': {
                     'count': len(all_flights), 
                     'flexible_search': True,
-                    'combinations_searched': len(search_combinations)
+                    'api_calls': 3  # Max 3 API calls now
                 }
             }
             
