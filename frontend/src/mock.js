@@ -1085,3 +1085,207 @@ export const airports = [
   { code: 'PUJ', name: 'Punta Cana Intl', city: 'Punta Cana' },
   { code: 'SJU', name: 'San Juan Luis Muñoz Marín Intl', city: 'San Juan' }
 ];
+
+// Airport groups for "Any" options
+export const airportGroups = [
+  { 
+    code: 'LON', 
+    name: 'Any London Airport', 
+    city: 'London',
+    airports: ['LHR', 'LGW', 'LTN', 'STN', 'LCY', 'SEN']
+  },
+  { 
+    code: 'NYC', 
+    name: 'Any New York Airport', 
+    city: 'New York',
+    airports: ['JFK', 'LGA', 'EWR']
+  },
+  { 
+    code: 'PAR', 
+    name: 'Any Paris Airport', 
+    city: 'Paris',
+    airports: ['CDG', 'ORY', 'BVA']
+  },
+  { 
+    code: 'MIL', 
+    name: 'Any Milan Airport', 
+    city: 'Milan',
+    airports: ['MXP', 'LIN', 'BGY']
+  },
+  { 
+    code: 'ROM', 
+    name: 'Any Rome Airport', 
+    city: 'Rome',
+    airports: ['FCO', 'CIA']
+  },
+  { 
+    code: 'BER', 
+    name: 'Any Berlin Airport', 
+    city: 'Berlin',
+    airports: ['BER']
+  },
+  { 
+    code: 'STO', 
+    name: 'Any Stockholm Airport', 
+    city: 'Stockholm',
+    airports: ['ARN', 'BMA', 'NYO']
+  },
+  { 
+    code: 'BRU', 
+    name: 'Any Brussels Airport', 
+    city: 'Brussels',
+    airports: ['BRU', 'CRL']
+  },
+  { 
+    code: 'TYO', 
+    name: 'Any Tokyo Airport', 
+    city: 'Tokyo',
+    airports: ['HND', 'NRT']
+  },
+  { 
+    code: 'OSA', 
+    name: 'Any Osaka Airport', 
+    city: 'Osaka',
+    airports: ['KIX', 'ITM']
+  },
+  { 
+    code: 'SHA', 
+    name: 'Any Shanghai Airport', 
+    city: 'Shanghai',
+    airports: ['PVG', 'SHA']
+  },
+  { 
+    code: 'BJS', 
+    name: 'Any Beijing Airport', 
+    city: 'Beijing',
+    airports: ['PEK', 'PKX']
+  },
+  { 
+    code: 'BKK', 
+    name: 'Any Bangkok Airport', 
+    city: 'Bangkok',
+    airports: ['BKK', 'DMK']
+  },
+  { 
+    code: 'SEL', 
+    name: 'Any Seoul Airport', 
+    city: 'Seoul',
+    airports: ['ICN', 'GMP']
+  },
+  { 
+    code: 'IST', 
+    name: 'Any Istanbul Airport', 
+    city: 'Istanbul',
+    airports: ['IST', 'SAW']
+  },
+  { 
+    code: 'DXB', 
+    name: 'Any Dubai Airport', 
+    city: 'Dubai',
+    airports: ['DXB', 'DWC', 'SHJ']
+  },
+  { 
+    code: 'SAO', 
+    name: 'Any São Paulo Airport', 
+    city: 'São Paulo',
+    airports: ['GRU', 'CGH', 'VCP']
+  },
+  { 
+    code: 'RIO', 
+    name: 'Any Rio de Janeiro Airport', 
+    city: 'Rio de Janeiro',
+    airports: ['GIG', 'SDU']
+  },
+  { 
+    code: 'BUE', 
+    name: 'Any Buenos Aires Airport', 
+    city: 'Buenos Aires',
+    airports: ['EZE', 'AEP']
+  },
+  { 
+    code: 'JKT', 
+    name: 'Any Jakarta Airport', 
+    city: 'Jakarta',
+    airports: ['CGK', 'HLP']
+  },
+  { 
+    code: 'TPE', 
+    name: 'Any Taipei Airport', 
+    city: 'Taipei',
+    airports: ['TPE', 'TSA']
+  },
+  { 
+    code: 'WAS', 
+    name: 'Any Washington DC Airport', 
+    city: 'Washington DC',
+    airports: ['DCA', 'IAD', 'BWI']
+  },
+  { 
+    code: 'CHI', 
+    name: 'Any Chicago Airport', 
+    city: 'Chicago',
+    airports: ['ORD', 'MDW']
+  },
+  { 
+    code: 'MIA', 
+    name: 'Any Miami Airport', 
+    city: 'Miami',
+    airports: ['MIA', 'FLL', 'PBI']
+  },
+  { 
+    code: 'LAX', 
+    name: 'Any Los Angeles Airport', 
+    city: 'Los Angeles',
+    airports: ['LAX', 'BUR', 'ONT', 'SNA', 'LGB']
+  },
+  { 
+    code: 'SFO', 
+    name: 'Any San Francisco Bay Area Airport', 
+    city: 'San Francisco',
+    airports: ['SFO', 'OAK', 'SJC']
+  },
+  { 
+    code: 'HOU', 
+    name: 'Any Houston Airport', 
+    city: 'Houston',
+    airports: ['IAH', 'HOU']
+  },
+  { 
+    code: 'DAL', 
+    name: 'Any Dallas Airport', 
+    city: 'Dallas',
+    airports: ['DFW', 'DAL']
+  },
+  { 
+    code: 'TOR', 
+    name: 'Any Toronto Airport', 
+    city: 'Toronto',
+    airports: ['YYZ', 'YTZ']
+  },
+  { 
+    code: 'MNL', 
+    name: 'Any Manila Airport', 
+    city: 'Manila',
+    airports: ['MNL', 'CRK']
+  },
+  { 
+    code: 'MEL', 
+    name: 'Any Melbourne Airport', 
+    city: 'Melbourne',
+    airports: ['MEL', 'AVV']
+  },
+  { 
+    code: 'IND', 
+    name: 'Any India Airport', 
+    city: 'India',
+    airports: ['DEL', 'BOM', 'BLR', 'HYD', 'MAA', 'CCU', 'GOI', 'COK', 'AMD', 'PNQ', 'JAI']
+  },
+  { 
+    code: 'PAK', 
+    name: 'Any Pakistan Airport', 
+    city: 'Pakistan',
+    airports: ['KHI', 'LHE', 'ISB']
+  }
+];
+
+export const features = [
