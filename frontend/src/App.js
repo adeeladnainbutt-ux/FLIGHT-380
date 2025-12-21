@@ -5,6 +5,7 @@ import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { FlightSearch } from './components/FlightSearch';
 import { FlightResults } from './components/FlightResults';
+import { BookingFlow } from './components/BookingFlow';
 import { Button } from './components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card';
 import { Badge } from './components/ui/badge';
@@ -33,15 +34,19 @@ function App() {
   const [searchError, setSearchError] = useState(null);
   const [searchParams, setSearchParams] = useState(null);
   const [isFlexibleSearch, setIsFlexibleSearch] = useState(false);
-  const [savedSearchData, setSavedSearchData] = useState(null); // Store full search data for Modify
+  const [savedSearchData, setSavedSearchData] = useState(null);
+  const [showBooking, setShowBooking] = useState(false);
+  const [selectedFlight, setSelectedFlight] = useState(null);
 
   const handleSearch = async (searchData) => {
     console.log('Search data:', searchData);
     setIsLoading(true);
     setSearchError(null);
     setSearchParams(searchData);
-    setSavedSearchData(searchData); // Save full search data for modify
+    setSavedSearchData(searchData);
     setIsFlexibleSearch(searchData.flexiDates || false);
+    setShowBooking(false);
+    setSelectedFlight(null);
     
     try {
       // Call real Amadeus API via backend
