@@ -449,6 +449,277 @@ function App() {
         </div>
       </section>
 
+      {/* About Section */}
+      <section id="about" className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            {/* Section Header */}
+            <div className="text-center mb-16">
+              <Badge className="bg-brand-100 text-brand-700 hover:bg-brand-200 px-4 py-1.5 text-sm font-medium mb-4">
+                About Us
+              </Badge>
+              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Your Trusted Travel Partner</h2>
+              <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+                Flight380 has been helping travelers find the best flight deals since 2015. We're passionate about making air travel accessible and affordable for everyone.
+              </p>
+            </div>
+
+            {/* Company Story */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
+              <div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-4">Our Story</h3>
+                <p className="text-slate-600 mb-4">
+                  Founded in London, Flight380 started with a simple mission: to make flight booking easier and more affordable. Our name comes from the iconic Airbus A380, symbolizing our commitment to connecting people across the globe.
+                </p>
+                <p className="text-slate-600 mb-4">
+                  Today, we partner with over 500 airlines worldwide, offering our customers access to millions of flight options at competitive prices. Our advanced search technology compares fares across multiple providers to ensure you always get the best deal.
+                </p>
+                <p className="text-slate-600">
+                  We believe everyone deserves to explore the world. That's why we're committed to transparency, with no hidden fees and clear pricing every step of the way.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <Card className="text-center p-6 bg-brand-50 border-brand-100">
+                  <div className="w-12 h-12 bg-brand-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Users className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="text-3xl font-bold text-brand-600 mb-2">1M+</div>
+                  <div className="text-slate-600">Happy Customers</div>
+                </Card>
+                <Card className="text-center p-6 bg-brand-50 border-brand-100">
+                  <div className="w-12 h-12 bg-brand-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Plane className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="text-3xl font-bold text-brand-600 mb-2">500+</div>
+                  <div className="text-slate-600">Partner Airlines</div>
+                </Card>
+                <Card className="text-center p-6 bg-brand-50 border-brand-100">
+                  <div className="w-12 h-12 bg-brand-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Globe className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="text-3xl font-bold text-brand-600 mb-2">190+</div>
+                  <div className="text-slate-600">Countries Served</div>
+                </Card>
+                <Card className="text-center p-6 bg-brand-50 border-brand-100">
+                  <div className="w-12 h-12 bg-brand-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Award className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="text-3xl font-bold text-brand-600 mb-2">10+</div>
+                  <div className="text-slate-600">Years Experience</div>
+                </Card>
+              </div>
+            </div>
+
+            {/* Our Values */}
+            <div className="mb-16">
+              <h3 className="text-2xl font-bold text-slate-900 mb-8 text-center">Our Values</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-brand-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Heart className="h-8 w-8 text-brand-600" />
+                  </div>
+                  <h4 className="text-xl font-semibold text-slate-900 mb-2">Customer First</h4>
+                  <p className="text-slate-600">
+                    Your satisfaction is our priority. We're here to help you find the perfect flight at the best price.
+                  </p>
+                </div>
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-brand-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Shield className="h-8 w-8 text-brand-600" />
+                  </div>
+                  <h4 className="text-xl font-semibold text-slate-900 mb-2">Trust & Transparency</h4>
+                  <p className="text-slate-600">
+                    No hidden fees, no surprises. What you see is what you pay. We believe in honest, upfront pricing.
+                  </p>
+                </div>
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-brand-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Zap className="h-8 w-8 text-brand-600" />
+                  </div>
+                  <h4 className="text-xl font-semibold text-slate-900 mb-2">Innovation</h4>
+                  <p className="text-slate-600">
+                    We continuously improve our platform to provide you with the fastest, most efficient booking experience.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Section */}
+      <section id="contact" className="py-20 bg-slate-50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            {/* Section Header */}
+            <div className="text-center mb-16">
+              <Badge className="bg-brand-100 text-brand-700 hover:bg-brand-200 px-4 py-1.5 text-sm font-medium mb-4">
+                Contact Us
+              </Badge>
+              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Get in Touch</h2>
+              <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+                Have questions about your booking or need assistance? Our friendly team is here to help you 24/7.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+              {/* Contact Information */}
+              <div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-6">Contact Information</h3>
+                
+                <div className="space-y-6">
+                  <Card className="p-6 hover:shadow-lg transition-shadow">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 bg-brand-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <MapPin className="h-6 w-6 text-brand-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-slate-900 mb-1">Head Office</h4>
+                        <p className="text-slate-600">
+                          Flight380 Ltd<br />
+                          123 Aviation House<br />
+                          London, EC1A 1BB<br />
+                          United Kingdom
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+
+                  <Card className="p-6 hover:shadow-lg transition-shadow">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 bg-brand-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Phone className="h-6 w-6 text-brand-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-slate-900 mb-1">Phone</h4>
+                        <p className="text-slate-600">
+                          UK: +44 (0) 20 7123 4567<br />
+                          International: +44 20 7123 4567<br />
+                          <span className="text-sm text-slate-500">Available 24/7</span>
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+
+                  <Card className="p-6 hover:shadow-lg transition-shadow">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 bg-brand-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Mail className="h-6 w-6 text-brand-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-slate-900 mb-1">Email</h4>
+                        <p className="text-slate-600">
+                          General: info@flight380.co.uk<br />
+                          Bookings: bookings@flight380.co.uk<br />
+                          Support: support@flight380.co.uk
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+
+                  <Card className="p-6 hover:shadow-lg transition-shadow">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 bg-brand-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Clock className="h-6 w-6 text-brand-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-slate-900 mb-1">Customer Service Hours</h4>
+                        <p className="text-slate-600">
+                          Phone Support: 24 hours, 7 days a week<br />
+                          Email Response: Within 24 hours<br />
+                          Live Chat: 8:00 AM - 10:00 PM (GMT)
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                </div>
+              </div>
+
+              {/* Contact Form */}
+              <div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-6">Send Us a Message</h3>
+                <Card className="p-6">
+                  <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); toast.success('Message sent! We\'ll get back to you shortly.'); }}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">First Name *</label>
+                        <input 
+                          type="text" 
+                          required
+                          className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all"
+                          placeholder="John"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Last Name *</label>
+                        <input 
+                          type="text" 
+                          required
+                          className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all"
+                          placeholder="Smith"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Email Address *</label>
+                      <input 
+                        type="email" 
+                        required
+                        className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all"
+                        placeholder="john@example.com"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
+                      <input 
+                        type="tel" 
+                        className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all"
+                        placeholder="+44 7XXX XXXXXX"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Subject *</label>
+                      <select 
+                        required
+                        className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all"
+                      >
+                        <option value="">Select a subject</option>
+                        <option value="booking">Booking Enquiry</option>
+                        <option value="support">Customer Support</option>
+                        <option value="refund">Refund Request</option>
+                        <option value="feedback">Feedback</option>
+                        <option value="partnership">Partnership Enquiry</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Booking Reference (if applicable)</label>
+                      <input 
+                        type="text" 
+                        className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all"
+                        placeholder="e.g., FL380ABC"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Message *</label>
+                      <textarea 
+                        required
+                        rows={4}
+                        className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all resize-none"
+                        placeholder="How can we help you?"
+                      ></textarea>
+                    </div>
+                    <Button type="submit" className="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3">
+                      Send Message
+                    </Button>
+                  </form>
+                </Card>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <Footer />
     </div>
   );
