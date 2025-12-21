@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './App.css';
+import axios from 'axios';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { FlightSearch } from './components/FlightSearch';
@@ -19,7 +20,7 @@ import {
   CheckCircle2,
   Plane
 } from 'lucide-react';
-import { popularDestinations, testimonials, features, mockFlightSearchResults } from './mock';
+import { popularDestinations, testimonials, features } from './mock';
 import { toast } from 'sonner';
 import { Toaster } from './components/ui/sonner';
 
