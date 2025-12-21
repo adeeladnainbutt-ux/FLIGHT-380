@@ -299,6 +299,7 @@ class AmadeusService:
     def format_flight_results(self, amadeus_data: Dict) -> List[Dict]:
         """
         Format Amadeus flight data for frontend consumption
+        Includes layover time calculation for connections
         
         Args:
             amadeus_data: Raw response data from Amadeus API
@@ -331,6 +332,10 @@ class AmadeusService:
                         carrier_code = first_segment.get('carrierCode', 'N/A')
                         airline_name = dictionaries.get('carriers', {}).get(carrier_code, carrier_code)
                         
+                        # Calculate layover time for outbound
+                        outbound_layovers = self._calculate_layovers(segments)
+                        total_layover_minutes = sum(l['duration_minutes'] for l in outbound_layovers)
+                        
                         formatted_flight = {
                             'id': flight.get('id'),
                             'from': first_segment.get('departure', {}).get('iataCode', ''),
@@ -345,6 +350,10 @@ class AmadeusService:
                             'currency': price.get('currency', 'USD'),
                             'number_of_bookable_seats': flight.get('numberOfBookableSeats', 0),
                             'is_direct': len(segments) == 1,
+                            'layovers': outbound_layovers,
+                            'total_layover_minutes': total_layover_minutes,
+                            'layover_display': self._format_layover_time(total_layover_minutes),
+                            'segments': self._format_segments(segments, dictionaries),
                             'raw_data': flight  # Keep original data for booking
                         }
                         
@@ -353,9 +362,23 @@ class AmadeusService:
                             return_flight = itineraries[1]
                             return_segments = return_flight.get('segments', [])
                             if return_segments:
+                                return_layovers = self._calculate_layovers(return_segments)
+                                return_layover_minutes = sum(l['duration_minutes'] for l in return_layovers)
+                                
                                 formatted_flight['return_departure_time'] = return_segments[0].get('departure', {}).get('at', '')
                                 formatted_flight['return_arrival_time'] = return_segments[-1].get('arrival', {}).get('at', '')
                                 formatted_flight['return_duration'] = return_flight.get('duration', '')
+                                formatted_flight['return_stops'] = len(return_segments) - 1
+                                formatted_flight['return_layovers'] = return_layovers
+                                formatted_flight['return_total_layover_minutes'] = return_layover_minutes
+                                formatted_flight['return_layover_display'] = self._format_layover_time(return_layover_minutes)
+                                formatted_flight['return_segments'] = self._format_segments(return_segments, dictionaries)
+                                formatted_flight['return_is_direct'] = len(return_segments) == 1
+                                
+                                # Return flight carrier info
+                                return_carrier = return_segments[0].get('carrierCode', carrier_code)
+                                formatted_flight['return_airline'] = dictionaries.get('carriers', {}).get(return_carrier, return_carrier)
+                                formatted_flight['return_airline_code'] = return_carrier
                         
                         formatted_flights.append(formatted_flight)
             
@@ -365,3 +388,61 @@ class AmadeusService:
                 continue
         
         return formatted_flights
+    
+    def _calculate_layovers(self, segments: List[Dict]) -> List[Dict]:
+        """Calculate layover time between segments"""
+        layovers = []
+        
+        for i in range(len(segments) - 1):
+            current_segment = segments[i]
+            next_segment = segments[i + 1]
+            
+            arrival_time = current_segment.get('arrival', {}).get('at', '')
+            departure_time = next_segment.get('departure', {}).get('at', '')
+            
+            if arrival_time and departure_time:
+                try:
+                    arrival = datetime.fromisoformat(arrival_time.replace('Z', '+00:00'))
+                    departure = datetime.fromisoformat(departure_time.replace('Z', '+00:00'))
+                    layover_duration = departure - arrival
+                    layover_minutes = int(layover_duration.total_seconds() / 60)
+                    
+                    layovers.append({
+                        'airport': current_segment.get('arrival', {}).get('iataCode', ''),
+                        'duration_minutes': layover_minutes,
+                        'duration_display': self._format_layover_time(layover_minutes)
+                    })
+                except:
+                    pass
+        
+        return layovers
+    
+    def _format_layover_time(self, minutes: int) -> str:
+        """Format layover time in human readable format"""
+        if minutes <= 0:
+            return ''
+        hours = minutes // 60
+        mins = minutes % 60
+        if hours > 0 and mins > 0:
+            return f'{hours}h {mins}m'
+        elif hours > 0:
+            return f'{hours}h'
+        else:
+            return f'{mins}m'
+    
+    def _format_segments(self, segments: List[Dict], dictionaries: Dict) -> List[Dict]:
+        """Format segment details for display"""
+        formatted = []
+        for seg in segments:
+            carrier = seg.get('carrierCode', '')
+            formatted.append({
+                'from': seg.get('departure', {}).get('iataCode', ''),
+                'to': seg.get('arrival', {}).get('iataCode', ''),
+                'departure': seg.get('departure', {}).get('at', ''),
+                'arrival': seg.get('arrival', {}).get('at', ''),
+                'carrier': carrier,
+                'airline': dictionaries.get('carriers', {}).get(carrier, carrier),
+                'flight_number': f"{carrier}{seg.get('number', '')}",
+                'aircraft': seg.get('aircraft', {}).get('code', '')
+            })
+        return formatted
