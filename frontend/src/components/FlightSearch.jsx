@@ -35,14 +35,66 @@ export const FlightSearch = ({ onSearch }) => {
     { from: null, to: null, date: null }
   ]);
 
+  const airlines = [
+    { value: 'all', label: 'All Airlines' },
+    { value: 'british-airways', label: 'British Airways' },
+    { value: 'emirates', label: 'Emirates' },
+    { value: 'lufthansa', label: 'Lufthansa' },
+    { value: 'singapore-airlines', label: 'Singapore Airlines' },
+    { value: 'qatar-airways', label: 'Qatar Airways' },
+    { value: 'turkish-airlines', label: 'Turkish Airlines' }
+  ];
+
+  const addMultiCityLeg = () => {
+    if (multiCityLegs.length < 5) {
+      setMultiCityLegs([...multiCityLegs, { from: null, to: null, date: null }]);
+    }
+  };
+
+  const removeMultiCityLeg = (index) => {
+    if (multiCityLegs.length > 2) {
+      setMultiCityLegs(multiCityLegs.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateMultiCityLeg = (index, field, value) => {
+    const newLegs = [...multiCityLegs];
+    newLegs[index][field] = value;
+    setMultiCityLegs(newLegs);
+  };
+
+  const totalPassengers = adults + children + infants;
+
   const handleSearch = () => {
-    if (fromAirport && toAirport && departDate) {
+    if (tripType === 'multi-city') {
+      const validLegs = multiCityLegs.filter(leg => leg.from && leg.to && leg.date);
+      if (validLegs.length >= 2) {
+        onSearch({
+          tripType,
+          legs: validLegs,
+          adults,
+          children,
+          infants,
+          travelClass,
+          directFlights,
+          flexiDates,
+          airline: selectedAirline
+        });
+      }
+    } else if (fromAirport && toAirport && departDate) {
       onSearch({
+        tripType,
         from: fromAirport,
         to: toAirport,
         departDate,
         returnDate: tripType === 'round-trip' ? returnDate : null,
-        passengers
+        adults,
+        children,
+        infants,
+        travelClass,
+        directFlights,
+        flexiDates,
+        airline: selectedAirline
       });
     }
   };
