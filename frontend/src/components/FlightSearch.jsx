@@ -81,6 +81,10 @@ export const FlightSearch = ({ onSearch }) => {
     return unique;
   };
 
+  // Filtered airport lists
+  const filteredFromAirports = filterAirports(allAirportOptions, fromSearchTerm);
+  const filteredToAirports = filterAirports(allAirportOptions, toSearchTerm);
+
   const addMultiCityLeg = () => {
     if (multiCityLegs.length < 5) {
       setMultiCityLegs([...multiCityLegs, { from: null, to: null, date: null }]);
