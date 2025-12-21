@@ -300,9 +300,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Date of Birth calendar size increase"
-    - "Remove Nationality and Passport fields"
-    - "Flexible dates matrix fix"
+    - "Logo and Home Navigation"
+    - "About Section Navigation and Content"
+    - "Contact Section Navigation and Content"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
