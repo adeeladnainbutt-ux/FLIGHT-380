@@ -18,7 +18,16 @@ import {
   Gift,
   Star,
   ArrowRight,
-  CheckCircle2
+  CheckCircle2,
+  Users,
+  Globe,
+  Award,
+  Heart,
+  MapPin,
+  Phone,
+  Mail,
+  Clock,
+  Plane
 } from 'lucide-react';
 import { popularDestinations, testimonials, features } from './mock';
 import { toast } from 'sonner';
