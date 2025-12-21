@@ -24,7 +24,8 @@ class AmadeusService:
         infants: int = 0,
         travel_class: str = 'ECONOMY',
         non_stop: bool = False,
-        max_results: int = 50
+        max_results: int = 50,
+        currency: str = 'GBP'
     ) -> Dict:
         """
         Search for flight offers using Amadeus API
