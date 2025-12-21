@@ -7,11 +7,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from './ui/command';
 import { Calendar } from './ui/calendar';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Checkbox } from './ui/checkbox';
 import { CalendarIcon, MapPin, Users, Plane, Plus, Minus, X } from 'lucide-react';
 import { format } from 'date-fns';
-import { airports } from '../mock';
+import { airports, airportGroups, airlines } from '../mock';
 import { cn } from '../lib/utils';
 
 export const FlightSearch = ({ onSearch }) => {
@@ -21,30 +20,28 @@ export const FlightSearch = ({ onSearch }) => {
   const [departDate, setDepartDate] = useState(null);
   const [returnDate, setReturnDate] = useState(null);
   const [adults, setAdults] = useState(1);
+  const [youth, setYouth] = useState(0);
   const [children, setChildren] = useState(0);
   const [infants, setInfants] = useState(0);
   const [travelClass, setTravelClass] = useState('economy');
   const [directFlights, setDirectFlights] = useState(false);
   const [flexiDates, setFlexiDates] = useState(false);
-  const [selectedAirline, setSelectedAirline] = useState('all');
+  const [selectedAirline, setSelectedAirline] = useState(null);
   const [openFrom, setOpenFrom] = useState(false);
   const [openTo, setOpenTo] = useState(false);
   const [openPassengers, setOpenPassengers] = useState(false);
   const [openDepartDate, setOpenDepartDate] = useState(false);
   const [openReturnDate, setOpenReturnDate] = useState(false);
+  const [openAirline, setOpenAirline] = useState(false);
   const [multiCityLegs, setMultiCityLegs] = useState([
     { from: null, to: null, date: null },
     { from: null, to: null, date: null }
   ]);
 
-  const airlines = [
-    { value: 'all', label: 'All Airlines' },
-    { value: 'british-airways', label: 'British Airways' },
-    { value: 'emirates', label: 'Emirates' },
-    { value: 'lufthansa', label: 'Lufthansa' },
-    { value: 'singapore-airlines', label: 'Singapore Airlines' },
-    { value: 'qatar-airways', label: 'Qatar Airways' },
-    { value: 'turkish-airlines', label: 'Turkish Airlines' }
+  // Combine airport groups and individual airports for search
+  const allAirportOptions = [
+    ...airportGroups.map(group => ({ ...group, isGroup: true })),
+    ...airports
   ];
 
   const addMultiCityLeg = () => {
@@ -65,7 +62,7 @@ export const FlightSearch = ({ onSearch }) => {
     setMultiCityLegs(newLegs);
   };
 
-  const totalPassengers = adults + children + infants;
+  const totalPassengers = adults + youth + children + infants;
 
   const handleDepartDateSelect = (date) => {
     setDepartDate(date);
@@ -92,6 +89,7 @@ export const FlightSearch = ({ onSearch }) => {
           tripType,
           legs: validLegs,
           adults,
+          youth,
           children,
           infants,
           travelClass,
@@ -108,6 +106,7 @@ export const FlightSearch = ({ onSearch }) => {
         departDate,
         returnDate: tripType === 'round-trip' ? returnDate : null,
         adults,
+        youth,
         children,
         infants,
         travelClass,
@@ -145,30 +144,34 @@ export const FlightSearch = ({ onSearch }) => {
                       <div className="flex items-center gap-2">
                         <MapPin className="h-4 w-4 text-slate-500" />
                         {fromAirport ? (
-                          <span>{fromAirport.code} - {fromAirport.city}</span>
+                          <span>
+                            {fromAirport.isGroup ? fromAirport.name : `${fromAirport.code} - ${fromAirport.city}`}
+                          </span>
                         ) : (
                           <span className="text-slate-500">Select departure airport</span>
                         )}
                       </div>
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[300px] p-0">
+                  <PopoverContent className="w-[350px] p-0">
                     <Command>
-                      <CommandInput placeholder="Search airport..." />
+                      <CommandInput placeholder="Search airport or code..." />
                       <CommandEmpty>No airport found.</CommandEmpty>
                       <CommandGroup className="max-h-64 overflow-auto">
-                        {airports.map((airport) => (
+                        {allAirportOptions.map((option) => (
                           <CommandItem
-                            key={airport.code}
-                            value={`${airport.code} ${airport.name} ${airport.city}`}
+                            key={option.code}
+                            value={`${option.code} ${option.name} ${option.city}`}
                             onSelect={() => {
-                              setFromAirport(airport);
+                              setFromAirport(option);
                               setOpenFrom(false);
                             }}
                           >
                             <div className="flex flex-col">
-                              <span className="font-medium">{airport.code} - {airport.city}</span>
-                              <span className="text-xs text-slate-500">{airport.name}</span>
+                              <span className="font-medium">
+                                {option.isGroup ? option.name : `${option.code} - ${option.city}`}
+                              </span>
+                              <span className="text-xs text-slate-500">{option.name}</span>
                             </div>
                           </CommandItem>
                         ))}
@@ -192,30 +195,34 @@ export const FlightSearch = ({ onSearch }) => {
                       <div className="flex items-center gap-2">
                         <Plane className="h-4 w-4 text-slate-500" />
                         {toAirport ? (
-                          <span>{toAirport.code} - {toAirport.city}</span>
+                          <span>
+                            {toAirport.isGroup ? toAirport.name : `${toAirport.code} - ${toAirport.city}`}
+                          </span>
                         ) : (
                           <span className="text-slate-500">Select destination airport</span>
                         )}
                       </div>
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[300px] p-0">
+                  <PopoverContent className="w-[350px] p-0">
                     <Command>
-                      <CommandInput placeholder="Search airport..." />
+                      <CommandInput placeholder="Search airport or code..." />
                       <CommandEmpty>No airport found.</CommandEmpty>
                       <CommandGroup className="max-h-64 overflow-auto">
-                        {airports.map((airport) => (
+                        {allAirportOptions.map((option) => (
                           <CommandItem
-                            key={airport.code}
-                            value={`${airport.code} ${airport.name} ${airport.city}`}
+                            key={option.code}
+                            value={`${option.code} ${option.name} ${option.city}`}
                             onSelect={() => {
-                              setToAirport(airport);
+                              setToAirport(option);
                               setOpenTo(false);
                             }}
                           >
                             <div className="flex flex-col">
-                              <span className="font-medium">{airport.code} - {airport.city}</span>
-                              <span className="text-xs text-slate-500">{airport.name}</span>
+                              <span className="font-medium">
+                                {option.isGroup ? option.name : `${option.code} - ${option.city}`}
+                              </span>
+                              <span className="text-xs text-slate-500">{option.name}</span>
                             </div>
                           </CommandItem>
                         ))}
@@ -288,7 +295,7 @@ export const FlightSearch = ({ onSearch }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Passengers Selector */}
               <div className="space-y-2">
-                <Label className="text-sm font-medium">Passengers</Label>
+                <Label className="text-sm font-medium">Travellers</Label>
                 <Popover open={openPassengers} onOpenChange={setOpenPassengers}>
                   <PopoverTrigger asChild>
                     <Button
@@ -297,7 +304,7 @@ export const FlightSearch = ({ onSearch }) => {
                     >
                       <div className="flex items-center gap-2">
                         <Users className="h-4 w-4 text-slate-500" />
-                        <span>{totalPassengers} Passenger{totalPassengers > 1 ? 's' : ''}</span>
+                        <span>{totalPassengers} Traveller{totalPassengers > 1 ? 's' : ''}</span>
                       </div>
                     </Button>
                   </PopoverTrigger>
@@ -307,7 +314,7 @@ export const FlightSearch = ({ onSearch }) => {
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="font-medium">Adults</div>
-                          <div className="text-xs text-slate-500">12+ years</div>
+                          <div className="text-xs text-slate-500">18+ years</div>
                         </div>
                         <div className="flex items-center gap-3">
                           <Button
@@ -332,11 +339,40 @@ export const FlightSearch = ({ onSearch }) => {
                         </div>
                       </div>
 
+                      {/* Youth */}
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium">Youth</div>
+                          <div className="text-xs text-slate-500">12-18 years</div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => setYouth(Math.max(0, youth - 1))}
+                            disabled={youth <= 0}
+                          >
+                            <Minus className="h-4 w-4" />
+                          </Button>
+                          <span className="w-8 text-center font-medium">{youth}</span>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => setYouth(Math.min(9, youth + 1))}
+                            disabled={youth >= 9}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+
                       {/* Children */}
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="font-medium">Children</div>
-                          <div className="text-xs text-slate-500">2-11 years</div>
+                          <div className="text-xs text-slate-500">2-12 years</div>
                         </div>
                         <div className="flex items-center gap-3">
                           <Button
@@ -365,7 +401,7 @@ export const FlightSearch = ({ onSearch }) => {
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="font-medium">Infants</div>
-                          <div className="text-xs text-slate-500">Under 2 years</div>
+                          <div className="text-xs text-slate-500">0-2 years</div>
                         </div>
                         <div className="flex items-center gap-3">
                           <Button
@@ -404,35 +440,78 @@ export const FlightSearch = ({ onSearch }) => {
               {/* Travel Class */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium">Class</Label>
-                <Select value={travelClass} onValueChange={setTravelClass}>
-                  <SelectTrigger className="h-12">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="economy">Economy</SelectItem>
-                    <SelectItem value="premium-economy">Premium Economy</SelectItem>
-                    <SelectItem value="business">Business Class</SelectItem>
-                    <SelectItem value="first">First Class</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full h-12 justify-between">
+                      <span className="capitalize">{travelClass.replace('-', ' ')}</span>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[200px] p-2">
+                    <div className="space-y-1">
+                      {['economy', 'premium-economy', 'business', 'first'].map((classType) => (
+                        <Button
+                          key={classType}
+                          variant={travelClass === classType ? 'default' : 'ghost'}
+                          className="w-full justify-start"
+                          onClick={() => setTravelClass(classType)}
+                        >
+                          {classType === 'premium-economy' ? 'Premium Economy' : 
+                           classType === 'first' ? 'First Class' : 
+                           classType === 'business' ? 'Business Class' : 'Economy'}
+                        </Button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
 
             {/* Airline Selector */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Preferred Airline</Label>
-              <Select value={selectedAirline} onValueChange={setSelectedAirline}>
-                <SelectTrigger className="h-12">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {airlines.map((airline) => (
-                    <SelectItem key={airline.value} value={airline.value}>
-                      {airline.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label className="text-sm font-medium">Preferred Airline (Optional)</Label>
+              <Popover open={openAirline} onOpenChange={setOpenAirline}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full h-12 justify-between text-left font-normal"
+                  >
+                    <span className={selectedAirline ? '' : 'text-slate-500'}>
+                      {selectedAirline ? `${selectedAirline.code} - ${selectedAirline.name}` : 'All Airlines'}
+                    </span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[350px] p-0">
+                  <Command>
+                    <CommandInput placeholder="Search airline code or name..." />
+                    <CommandEmpty>No airline found.</CommandEmpty>
+                    <CommandGroup className="max-h-64 overflow-auto">
+                      <CommandItem
+                        onSelect={() => {
+                          setSelectedAirline(null);
+                          setOpenAirline(false);
+                        }}
+                      >
+                        <span className="font-medium">All Airlines</span>
+                      </CommandItem>
+                      {airlines.map((airline) => (
+                        <CommandItem
+                          key={airline.code}
+                          value={`${airline.code} ${airline.name}`}
+                          onSelect={() => {
+                            setSelectedAirline(airline);
+                            setOpenAirline(false);
+                          }}
+                        >
+                          <div className="flex flex-col">
+                            <span className="font-medium">{airline.code} - {airline.name}</span>
+                            <span className="text-xs text-slate-500">{airline.country}</span>
+                          </div>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
 
             {/* Options */}
@@ -461,7 +540,7 @@ export const FlightSearch = ({ onSearch }) => {
                   htmlFor="flexi-dates"
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                 >
-                  Flexi (+/- 3 days)
+                  Flexible dates (±3 days)
                 </label>
               </div>
             </div>
@@ -476,7 +555,7 @@ export const FlightSearch = ({ onSearch }) => {
           </TabsContent>
         )}
 
-        {/* Multi-City */}
+        {/* Multi-City - Similar structure with updated traveller categories */}
         {tripType === 'multi-city' && (
           <TabsContent value="multi-city" className="space-y-4">
             {multiCityLegs.map((leg, index) => (
@@ -494,26 +573,30 @@ export const FlightSearch = ({ onSearch }) => {
                           >
                             <MapPin className="mr-2 h-4 w-4 text-slate-500" />
                             {leg.from ? (
-                              <span className="text-sm">{leg.from.code}</span>
+                              <span className="text-sm">
+                                {leg.from.isGroup ? leg.from.name : leg.from.code}
+                              </span>
                             ) : (
                               <span className="text-slate-500 text-sm">Select</span>
                             )}
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-[300px] p-0">
+                        <PopoverContent className="w-[350px] p-0">
                           <Command>
                             <CommandInput placeholder="Search airport..." />
                             <CommandEmpty>No airport found.</CommandEmpty>
                             <CommandGroup className="max-h-64 overflow-auto">
-                              {airports.map((airport) => (
+                              {allAirportOptions.map((option) => (
                                 <CommandItem
-                                  key={airport.code}
-                                  value={`${airport.code} ${airport.name} ${airport.city}`}
-                                  onSelect={() => updateMultiCityLeg(index, 'from', airport)}
+                                  key={option.code}
+                                  value={`${option.code} ${option.name} ${option.city}`}
+                                  onSelect={() => updateMultiCityLeg(index, 'from', option)}
                                 >
                                   <div className="flex flex-col">
-                                    <span className="font-medium">{airport.code} - {airport.city}</span>
-                                    <span className="text-xs text-slate-500">{airport.name}</span>
+                                    <span className="font-medium">
+                                      {option.isGroup ? option.name : `${option.code} - ${option.city}`}
+                                    </span>
+                                    <span className="text-xs text-slate-500">{option.name}</span>
                                   </div>
                                 </CommandItem>
                               ))}
@@ -534,26 +617,30 @@ export const FlightSearch = ({ onSearch }) => {
                           >
                             <Plane className="mr-2 h-4 w-4 text-slate-500" />
                             {leg.to ? (
-                              <span className="text-sm">{leg.to.code}</span>
+                              <span className="text-sm">
+                                {leg.to.isGroup ? leg.to.name : leg.to.code}
+                              </span>
                             ) : (
                               <span className="text-slate-500 text-sm">Select</span>
                             )}
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-[300px] p-0">
+                        <PopoverContent className="w-[350px] p-0">
                           <Command>
                             <CommandInput placeholder="Search airport..." />
                             <CommandEmpty>No airport found.</CommandEmpty>
                             <CommandGroup className="max-h-64 overflow-auto">
-                              {airports.map((airport) => (
+                              {allAirportOptions.map((option) => (
                                 <CommandItem
-                                  key={airport.code}
-                                  value={`${airport.code} ${airport.name} ${airport.city}`}
-                                  onSelect={() => updateMultiCityLeg(index, 'to', airport)}
+                                  key={option.code}
+                                  value={`${option.code} ${option.name} ${option.city}`}
+                                  onSelect={() => updateMultiCityLeg(index, 'to', option)}
                                 >
                                   <div className="flex flex-col">
-                                    <span className="font-medium">{airport.code} - {airport.city}</span>
-                                    <span className="text-xs text-slate-500">{airport.name}</span>
+                                    <span className="font-medium">
+                                      {option.isGroup ? option.name : `${option.code} - ${option.city}`}
+                                    </span>
+                                    <span className="text-xs text-slate-500">{option.name}</span>
                                   </div>
                                 </CommandItem>
                               ))}
@@ -623,11 +710,11 @@ export const FlightSearch = ({ onSearch }) => {
               </Button>
             )}
 
-            {/* Passengers and Class for Multi-City */}
+            {/* Passengers, Class, Airline, and Options - Same as Round Trip */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Passengers Selector */}
+              {/* Passengers */}
               <div className="space-y-2">
-                <Label className="text-sm font-medium">Passengers</Label>
+                <Label className="text-sm font-medium">Travellers</Label>
                 <Popover open={openPassengers} onOpenChange={setOpenPassengers}>
                   <PopoverTrigger asChild>
                     <Button
@@ -636,7 +723,7 @@ export const FlightSearch = ({ onSearch }) => {
                     >
                       <div className="flex items-center gap-2">
                         <Users className="h-4 w-4 text-slate-500" />
-                        <span>{totalPassengers} Passenger{totalPassengers > 1 ? 's' : ''}</span>
+                        <span>{totalPassengers} Traveller{totalPassengers > 1 ? 's' : ''}</span>
                       </div>
                     </Button>
                   </PopoverTrigger>
@@ -646,7 +733,7 @@ export const FlightSearch = ({ onSearch }) => {
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="font-medium">Adults</div>
-                          <div className="text-xs text-slate-500">12+ years</div>
+                          <div className="text-xs text-slate-500">18+ years</div>
                         </div>
                         <div className="flex items-center gap-3">
                           <Button
@@ -671,11 +758,40 @@ export const FlightSearch = ({ onSearch }) => {
                         </div>
                       </div>
 
+                      {/* Youth */}
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium">Youth</div>
+                          <div className="text-xs text-slate-500">12-18 years</div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => setYouth(Math.max(0, youth - 1))}
+                            disabled={youth <= 0}
+                          >
+                            <Minus className="h-4 w-4" />
+                          </Button>
+                          <span className="w-8 text-center font-medium">{youth}</span>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => setYouth(Math.min(9, youth + 1))}
+                            disabled={youth >= 9}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+
                       {/* Children */}
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="font-medium">Children</div>
-                          <div className="text-xs text-slate-500">2-11 years</div>
+                          <div className="text-xs text-slate-500">2-12 years</div>
                         </div>
                         <div className="flex items-center gap-3">
                           <Button
@@ -704,7 +820,7 @@ export const FlightSearch = ({ onSearch }) => {
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="font-medium">Infants</div>
-                          <div className="text-xs text-slate-500">Under 2 years</div>
+                          <div className="text-xs text-slate-500">0-2 years</div>
                         </div>
                         <div className="flex items-center gap-3">
                           <Button
@@ -743,35 +859,78 @@ export const FlightSearch = ({ onSearch }) => {
               {/* Travel Class */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium">Class</Label>
-                <Select value={travelClass} onValueChange={setTravelClass}>
-                  <SelectTrigger className="h-12">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="economy">Economy</SelectItem>
-                    <SelectItem value="premium-economy">Premium Economy</SelectItem>
-                    <SelectItem value="business">Business Class</SelectItem>
-                    <SelectItem value="first">First Class</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full h-12 justify-between">
+                      <span className="capitalize">{travelClass.replace('-', ' ')}</span>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[200px] p-2">
+                    <div className="space-y-1">
+                      {['economy', 'premium-economy', 'business', 'first'].map((classType) => (
+                        <Button
+                          key={classType}
+                          variant={travelClass === classType ? 'default' : 'ghost'}
+                          className="w-full justify-start"
+                          onClick={() => setTravelClass(classType)}
+                        >
+                          {classType === 'premium-economy' ? 'Premium Economy' : 
+                           classType === 'first' ? 'First Class' : 
+                           classType === 'business' ? 'Business Class' : 'Economy'}
+                        </Button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
 
             {/* Airline Selector */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Preferred Airline</Label>
-              <Select value={selectedAirline} onValueChange={setSelectedAirline}>
-                <SelectTrigger className="h-12">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {airlines.map((airline) => (
-                    <SelectItem key={airline.value} value={airline.value}>
-                      {airline.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label className="text-sm font-medium">Preferred Airline (Optional)</Label>
+              <Popover open={openAirline} onOpenChange={setOpenAirline}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full h-12 justify-between text-left font-normal"
+                  >
+                    <span className={selectedAirline ? '' : 'text-slate-500'}>
+                      {selectedAirline ? `${selectedAirline.code} - ${selectedAirline.name}` : 'All Airlines'}
+                    </span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[350px] p-0">
+                  <Command>
+                    <CommandInput placeholder="Search airline code or name..." />
+                    <CommandEmpty>No airline found.</CommandEmpty>
+                    <CommandGroup className="max-h-64 overflow-auto">
+                      <CommandItem
+                        onSelect={() => {
+                          setSelectedAirline(null);
+                          setOpenAirline(false);
+                        }}
+                      >
+                        <span className="font-medium">All Airlines</span>
+                      </CommandItem>
+                      {airlines.map((airline) => (
+                        <CommandItem
+                          key={airline.code}
+                          value={`${airline.code} ${airline.name}`}
+                          onSelect={() => {
+                            setSelectedAirline(airline);
+                            setOpenAirline(false);
+                          }}
+                        >
+                          <div className="flex flex-col">
+                            <span className="font-medium">{airline.code} - {airline.name}</span>
+                            <span className="text-xs text-slate-500">{airline.country}</span>
+                          </div>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
 
             {/* Options */}
@@ -800,7 +959,7 @@ export const FlightSearch = ({ onSearch }) => {
                   htmlFor="flexi-dates-mc"
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                 >
-                  Flexi (+/- 3 days)
+                  Flexible dates (±3 days)
                 </label>
               </div>
             </div>
