@@ -194,7 +194,9 @@ function App() {
                       </div>
                       <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
                         <div className="text-right">
-                          <div className="text-3xl font-bold text-teal-600">{flight.currency} {Math.round(flight.price)}</div>
+                          <div className="text-3xl font-bold text-teal-600">
+                            £{Math.round(flight.price)}
+                          </div>
                           <div className="text-sm text-slate-500">Total price</div>
                           {flight.number_of_bookable_seats && flight.number_of_bookable_seats < 5 && (
                             <div className="text-xs text-orange-600 font-medium">
