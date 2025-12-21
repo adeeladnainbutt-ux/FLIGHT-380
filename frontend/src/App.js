@@ -98,68 +98,122 @@ function App() {
     Gift
   };
 
+  // Handle modify search - scroll back to search form
+  const handleModifySearch = () => {
+    document.getElementById('home')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <div className="App min-h-screen bg-slate-50">
       <Toaster position="top-right" richColors />
       <Header />
 
-      {/* Hero Section */}
-      <section id="home" className="relative pt-24 pb-16 md:pt-32 md:pb-24 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-50 via-brand-50 to-slate-50 -z-10"></div>
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12 space-y-4">
-            <Badge className="bg-brand-100 text-brand-700 hover:bg-brand-200 px-4 py-1.5 text-sm font-medium">
-              Book with Confidence
-            </Badge>
-            <h1 className="text-4xl md:text-6xl font-bold text-slate-900 leading-tight">
-              Find Your Perfect
-              <span className="block bg-gradient-to-r from-brand-600 to-brand-600 bg-clip-text text-transparent">
-                Flight Deal
-              </span>
-            </h1>
-            <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto">
-              Compare prices from hundreds of airlines and travel agents. Save up to 40% on your next trip.
-            </p>
-          </div>
-
-          {/* Flight Search Component */}
-          <FlightSearch onSearch={handleSearch} />
-
-          {/* Trust Indicators */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12 max-w-4xl mx-auto">
-            <div className="text-center p-4">
-              <div className="text-2xl md:text-3xl font-bold text-slate-900">1M+</div>
-              <div className="text-sm text-slate-600">Happy Travelers</div>
-            </div>
-            <div className="text-center p-4">
-              <div className="text-2xl md:text-3xl font-bold text-slate-900">500+</div>
-              <div className="text-sm text-slate-600">Airlines</div>
-            </div>
-            <div className="text-center p-4">
-              <div className="text-2xl md:text-3xl font-bold text-slate-900">180+</div>
-              <div className="text-sm text-slate-600">Countries</div>
-            </div>
-            <div className="text-center p-4">
-              <div className="text-2xl md:text-3xl font-bold text-slate-900">24/7</div>
-              <div className="text-sm text-slate-600">Support</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Search Results Section */}
-      {isLoading && (
-        <section className="py-16 bg-white">
-          <div className="container mx-auto px-4 text-center">
-            <div className="flex flex-col items-center gap-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600"></div>
-              <p className="text-lg text-slate-600">
-                {isFlexibleSearch ? 'Searching flights across multiple dates...' : 'Searching for flights...'}
+      {/* Hero Section - Hide when loading or showing results */}
+      {!isLoading && !showResults && (
+        <section id="home" className="relative pt-24 pb-16 md:pt-32 md:pb-24 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-brand-50 via-brand-50 to-slate-50 -z-10"></div>
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12 space-y-4">
+              <Badge className="bg-brand-100 text-brand-700 hover:bg-brand-200 px-4 py-1.5 text-sm font-medium">
+                Book with Confidence
+              </Badge>
+              <h1 className="text-4xl md:text-6xl font-bold text-slate-900 leading-tight">
+                Find Your Perfect
+                <span className="block bg-gradient-to-r from-brand-600 to-brand-600 bg-clip-text text-transparent">
+                  Flight Deal
+                </span>
+              </h1>
+              <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto">
+                Compare prices from hundreds of airlines and travel agents. Save up to 40% on your next trip.
               </p>
-              {isFlexibleSearch && (
-                <p className="text-sm text-slate-500">This may take 20-30 seconds as we check 7 date combinations</p>
-              )}
             </div>
+
+            {/* Flight Search Component */}
+            <FlightSearch onSearch={handleSearch} />
+
+            {/* Trust Indicators */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12 max-w-4xl mx-auto">
+              <div className="text-center p-4">
+                <div className="text-2xl md:text-3xl font-bold text-slate-900">1M+</div>
+                <div className="text-sm text-slate-600">Happy Travelers</div>
+              </div>
+              <div className="text-center p-4">
+                <div className="text-2xl md:text-3xl font-bold text-slate-900">500+</div>
+                <div className="text-sm text-slate-600">Airlines</div>
+              </div>
+              <div className="text-center p-4">
+                <div className="text-2xl md:text-3xl font-bold text-slate-900">180+</div>
+                <div className="text-sm text-slate-600">Countries</div>
+              </div>
+              <div className="text-center p-4">
+                <div className="text-2xl md:text-3xl font-bold text-slate-900">24/7</div>
+                <div className="text-sm text-slate-600">Support</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Hidden Search Form for Modify - shows when results are visible */}
+      {(showResults || isLoading) && (
+        <section id="home" className="hidden">
+          <FlightSearch onSearch={handleSearch} />
+        </section>
+      )}
+
+      {/* Loading State - Full Screen with Modify Button Only */}
+      {isLoading && (
+        <section className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-brand-50">
+          <div className="container mx-auto px-4">
+            <Card className="max-w-lg mx-auto p-8 text-center shadow-lg">
+              {/* Search Summary */}
+              <div className="mb-6 pb-6 border-b">
+                <div className="flex items-center justify-center gap-3 text-lg font-semibold text-slate-800">
+                  <span>{searchParams?.origin}</span>
+                  <span className="text-brand-600">✈</span>
+                  <span>{searchParams?.destination}</span>
+                </div>
+                <div className="text-sm text-slate-500 mt-2">
+                  {searchParams?.departure_date} {searchParams?.return_date && `- ${searchParams?.return_date}`}
+                </div>
+                {isFlexibleSearch && (
+                  <Badge className="mt-2 bg-brand-100 text-brand-700">±3 Days Flexible</Badge>
+                )}
+              </div>
+
+              {/* Loading Animation */}
+              <div className="flex flex-col items-center gap-4 mb-6">
+                <div className="relative">
+                  <div className="animate-spin rounded-full h-16 w-16 border-4 border-brand-200 border-t-brand-600"></div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-brand-600 text-xl">✈</span>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xl font-semibold text-slate-800">Flight is searching...</p>
+                  <p className="text-sm text-slate-500 mt-1">
+                    {isFlexibleSearch 
+                      ? 'Checking multiple date combinations for best prices' 
+                      : 'Finding the best flights for you'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Only Modify Button Visible During Loading */}
+              <Button 
+                onClick={() => {
+                  setIsLoading(false);
+                  setShowResults(false);
+                  setTimeout(() => {
+                    document.getElementById('home')?.scrollIntoView({ behavior: 'smooth' });
+                  }, 100);
+                }}
+                variant="outline"
+                className="border-brand-600 text-brand-600 hover:bg-brand-50"
+              >
+                Modify Search
+              </Button>
+            </Card>
           </div>
         </section>
       )}
@@ -170,18 +224,34 @@ function App() {
             <Card className="p-6 bg-red-50 border-red-200">
               <h3 className="text-lg font-semibold text-red-900 mb-2">Search Error</h3>
               <p className="text-brand-700">{searchError.message || 'Unable to search flights. Please try again.'}</p>
+              <Button 
+                onClick={() => {
+                  setShowResults(false);
+                  setSearchError(null);
+                }}
+                className="mt-4 bg-brand-600 hover:bg-brand-700"
+              >
+                Try Again
+              </Button>
             </Card>
           </div>
         </section>
       )}
       
       {showResults && searchResults.length > 0 && !isLoading && (
-        <section id="search-results" className="py-8 bg-slate-50">
+        <section id="search-results" className="py-8 bg-slate-50 min-h-screen">
           <FlightResults 
             flights={searchResults} 
             isFlexible={isFlexibleSearch}
             onSelectFlight={handleSelectFlight}
             searchParams={searchParams}
+            isLoading={isLoading}
+            onModifySearch={() => {
+              setShowResults(false);
+              setTimeout(() => {
+                document.getElementById('home')?.scrollIntoView({ behavior: 'smooth' });
+              }, 100);
+            }}
           />
         </section>
       )}
