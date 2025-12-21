@@ -200,7 +200,7 @@ export const BookingFlow = ({
   const validatePassengers = () => {
     for (let i = 0; i < passengers.length; i++) {
       const p = passengers[i];
-      if (!p.title || !p.first_name || !p.last_name || !p.date_of_birth || !p.gender || !p.nationality) {
+      if (!p.title || !p.first_name || !p.last_name || !p.date_of_birth || !p.gender) {
         setError(`Please fill in all required fields for Passenger ${i + 1}`);
         return false;
       }
