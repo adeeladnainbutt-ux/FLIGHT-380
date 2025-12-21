@@ -181,6 +181,30 @@ frontend:
         agent: "testing"
         comment: "TESTED: Complete 3-step booking flow is implemented and functional. Step 1 (Itinerary Review): Shows flight details, outbound/return flights, passenger price breakdown with adult pricing, total price display. Step 2 (Passenger Details): Contact information form (email, phone), passenger forms with all required fields (title, name, DOB, gender, nationality). Step 3 (Confirmation): PNR generation (6-character code), booking summary with route/dates/passengers/price, CONFIRMED status badge, email confirmations for both customer and agent with full booking details. Backend booking API confirmed working (logs show successful PNR creation: M6NGHB). All booking components are code-complete and properly integrated."
 
+  - task: "Print and Download PDF itinerary buttons"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/BookingFlow.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Print and Download PDF buttons added to the Review Itinerary page (Step 1 of booking flow). Print button opens new window with formatted HTML for browser print. Download PDF button uses jsPDF library to generate PDF. Libraries jspdf and html2canvas installed. Need to test: 1) Print button triggers browser print preview, 2) Download PDF generates and downloads PDF file, 3) Content is properly formatted with Flight380 branding."
+
+  - task: "Date of birth input sequence on passenger details page"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/BookingFlow.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Need to verify the date of birth input field appears in the correct logical sequence in the passenger details form. Currently follows: Title, First Name, Last Name, Date of Birth, Gender, Nationality - which is the standard order."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
