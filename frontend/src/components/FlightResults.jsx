@@ -7,6 +7,7 @@ import { Separator } from './ui/separator';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
+import { ScrollArea } from './ui/scroll-area';
 import { 
   Plane, 
   Clock, 
@@ -16,11 +17,20 @@ import {
   ChevronUp,
   Sun,
   Sunset,
-  Moon
+  Moon,
+  Edit3,
+  Loader2
 } from 'lucide-react';
 import { format } from 'date-fns';
 
-export const FlightResults = ({ flights, isFlexible, onSelectFlight, searchParams }) => {
+export const FlightResults = ({ 
+  flights, 
+  isFlexible, 
+  onSelectFlight, 
+  searchParams,
+  isLoading,
+  onModifySearch 
+}) => {
   // Filter states
   const [filters, setFilters] = useState({
     stops: null,
@@ -42,7 +52,7 @@ export const FlightResults = ({ flights, isFlexible, onSelectFlight, searchParam
     departureTime: true,
     arrivalTime: true,
     price: true,
-    connectionLength: false
+    connectionLength: true
   });
 
   const toggleSection = (section) => {
@@ -98,13 +108,13 @@ export const FlightResults = ({ flights, isFlexible, onSelectFlight, searchParam
     { value: 'evening', label: 'Evening', time: '18:00 - 23:59', icon: Moon }
   ];
 
-  // Connection length options
+  // Connection length options with duration ranges in minutes
   const connectionLengthOptions = [
-    { value: 'none', label: 'No Connections' },
-    { value: 'short', label: 'Short Connection', time: '0 - 2 hours' },
-    { value: 'relaxed', label: 'Relaxed Connection', time: '2 - 4 hours' },
-    { value: 'long', label: 'Long Connection', time: '4 - 8 hours' },
-    { value: 'veryLong', label: 'Very Long Connection', time: '8+ hours' }
+    { value: 'none', label: 'Direct Only', minMinutes: 0, maxMinutes: 0 },
+    { value: 'short', label: 'Short Connection', time: '0 - 2 hours', minMinutes: 1, maxMinutes: 120 },
+    { value: 'relaxed', label: 'Relaxed Connection', time: '2 - 4 hours', minMinutes: 121, maxMinutes: 240 },
+    { value: 'long', label: 'Long Connection', time: '4 - 8 hours', minMinutes: 241, maxMinutes: 480 },
+    { value: 'veryLong', label: 'Very Long Connection', time: '8+ hours', minMinutes: 481, maxMinutes: Infinity }
   ];
 
   // Baggage options
@@ -118,6 +128,29 @@ export const FlightResults = ({ flights, isFlexible, onSelectFlight, searchParam
   const getHour = (dateTime) => {
     if (!dateTime) return 12;
     return new Date(dateTime).getHours();
+  };
+
+  // Calculate connection/layover time in minutes
+  const getConnectionMinutes = (flight) => {
+    // If direct flight, return 0
+    if (flight.is_direct || flight.stops === 0) return 0;
+    
+    // Try to get connection time from flight data
+    if (flight.connection_duration) {
+      const match = flight.connection_duration.match(/PT(\d+)H(\d+)?M?/);
+      if (match) {
+        const hours = parseInt(match[1]) || 0;
+        const minutes = parseInt(match[2]) || 0;
+        return hours * 60 + minutes;
+      }
+    }
+    
+    // Estimate based on total duration minus flight segments
+    // Average connection for 1 stop is ~2 hours (120 min)
+    if (flight.stops === 1) return 120;
+    if (flight.stops >= 2) return 240; // ~4 hours for 2+ stops
+    
+    return 0;
   };
 
   // Filter flights
@@ -159,6 +192,24 @@ export const FlightResults = ({ flights, isFlexible, onSelectFlight, searchParam
         if (filters.arrivalTime === 'evening') return hour >= 18 || hour < 5;
         return true;
       });
+    }
+
+    // Apply connection length filter - FIXED
+    if (filters.connectionLength) {
+      const selectedOption = connectionLengthOptions.find(opt => opt.value === filters.connectionLength);
+      if (selectedOption) {
+        result = result.filter(flight => {
+          const connectionMins = getConnectionMinutes(flight);
+          
+          // Special case for direct flights
+          if (selectedOption.value === 'none') {
+            return flight.is_direct || flight.stops === 0;
+          }
+          
+          // Filter by connection duration range
+          return connectionMins >= selectedOption.minMinutes && connectionMins <= selectedOption.maxMinutes;
+        });
+      }
     }
 
     // Apply price filter
@@ -236,13 +287,13 @@ export const FlightResults = ({ flights, isFlexible, onSelectFlight, searchParam
   };
 
   // If flexible dates, show matrix view
-  if (isFlexible && flights.length > 0) {
-    return <FlexibleDatesMatrix flights={flights} searchParams={searchParams} onSelectFlight={onSelectFlight} />;
+  if (isFlexible && flights.length > 0 && !isLoading) {
+    return <FlexibleDatesMatrix flights={flights} searchParams={searchParams} onSelectFlight={onSelectFlight} onModifySearch={onModifySearch} isLoading={isLoading} />;
   }
 
   // Filter Section Component
-  const FilterSection = ({ title, name, children, defaultOpen = true }) => (
-    <div className="mb-4">
+  const FilterSection = ({ title, name, children }) => (
+    <div className="mb-3">
       <button 
         onClick={() => toggleSection(name)}
         className="w-full flex items-center justify-between py-2 text-left font-semibold text-slate-800 hover:text-brand-600"
@@ -256,185 +307,220 @@ export const FlightResults = ({ flights, isFlexible, onSelectFlight, searchParam
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex gap-6">
-        {/* Left Sidebar - Filters */}
-        <div className="w-72 flex-shrink-0">
-          <Card className="p-4 sticky top-4">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Filter className="h-5 w-5 text-brand-600" />
-                <h3 className="font-bold text-lg text-slate-900">{filteredFlights.length} Flights Found</h3>
-              </div>
-              {(filters.stops || filters.airlines.length > 0 || filters.departureTime || filters.arrivalTime || filters.minPrice || filters.maxPrice) && (
-                <Button variant="ghost" size="sm" onClick={clearAllFilters} className="text-brand-600 hover:text-brand-700">
-                  Clear All
-                </Button>
-              )}
+      {/* Search Summary Bar with Modify Button */}
+      <div className="mb-6 bg-white rounded-lg shadow-sm border p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <Plane className="h-5 w-5 text-brand-600" />
+              <span className="font-semibold">{searchParams?.origin}</span>
+              <span className="text-slate-400">→</span>
+              <span className="font-semibold">{searchParams?.destination}</span>
             </div>
-            <Separator className="mb-4" />
+            <div className="text-sm text-slate-600">
+              {searchParams?.departure_date && format(new Date(searchParams.departure_date), 'dd MMM yyyy')}
+              {searchParams?.return_date && ` - ${format(new Date(searchParams.return_date), 'dd MMM yyyy')}`}
+            </div>
+            {isFlexible && (
+              <Badge className="bg-brand-100 text-brand-700">±3 Days Flexible</Badge>
+            )}
+          </div>
+          <Button 
+            onClick={onModifySearch}
+            variant="outline"
+            className="border-brand-600 text-brand-600 hover:bg-brand-50"
+          >
+            <Edit3 className="h-4 w-4 mr-2" />
+            Modify Search
+          </Button>
+        </div>
+      </div>
 
-            {/* Stops Filter */}
-            <FilterSection title="Stops" name="stops">
-              <RadioGroup 
-                value={filters.stops || ''} 
-                onValueChange={(value) => setFilters(prev => ({ ...prev, stops: value || null }))}
-              >
-                {stopOptions.map(option => (
-                  <div key={option.value} className="flex items-center justify-between py-1.5">
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value={option.value} id={`stop-${option.value}`} />
-                      <Label htmlFor={`stop-${option.value}`} className="text-sm cursor-pointer">
-                        {option.label}
-                      </Label>
-                    </div>
-                    <div className="text-right">
-                      {option.minPrice && (
-                        <span className="text-sm font-medium text-brand-600">£{Math.round(option.minPrice)}</span>
-                      )}
-                      <span className="text-xs text-slate-400 ml-1">({option.count})</span>
-                    </div>
+      <div className="flex gap-6">
+        {/* Left Sidebar - Filters with Scroll */}
+        <div className="w-72 flex-shrink-0">
+          <Card className="sticky top-4 overflow-hidden">
+            <div className="p-4 border-b bg-slate-50">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Filter className="h-5 w-5 text-brand-600" />
+                  <h3 className="font-bold text-lg text-slate-900">{filteredFlights.length} Flights</h3>
+                </div>
+                {(filters.stops || filters.airlines.length > 0 || filters.departureTime || filters.arrivalTime || filters.connectionLength || filters.minPrice || filters.maxPrice) && (
+                  <Button variant="ghost" size="sm" onClick={clearAllFilters} className="text-brand-600 hover:text-brand-700 text-xs">
+                    Clear All
+                  </Button>
+                )}
+              </div>
+            </div>
+            
+            {/* Scrollable Filter Content */}
+            <ScrollArea className="h-[calc(100vh-200px)] max-h-[600px]">
+              <div className="p-4">
+                {/* Stops Filter */}
+                <FilterSection title="Stops" name="stops">
+                  <RadioGroup 
+                    value={filters.stops || ''} 
+                    onValueChange={(value) => setFilters(prev => ({ ...prev, stops: value || null }))}
+                  >
+                    {stopOptions.map(option => (
+                      <div key={option.value} className="flex items-center justify-between py-1.5">
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value={option.value} id={`stop-${option.value}`} />
+                          <Label htmlFor={`stop-${option.value}`} className="text-sm cursor-pointer">
+                            {option.label}
+                          </Label>
+                        </div>
+                        <div className="text-right">
+                          {option.minPrice && (
+                            <span className="text-sm font-medium text-brand-600">£{Math.round(option.minPrice)}</span>
+                          )}
+                          <span className="text-xs text-slate-400 ml-1">({option.count})</span>
+                        </div>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                </FilterSection>
+
+                <Separator className="my-3" />
+
+                {/* Baggage Filter */}
+                <FilterSection title="Baggage" name="baggage">
+                  <RadioGroup 
+                    value={filters.baggage || ''} 
+                    onValueChange={(value) => setFilters(prev => ({ ...prev, baggage: value || null }))}
+                  >
+                    {baggageOptions.map(option => (
+                      <div key={option.value} className="flex items-center space-x-2 py-1.5">
+                        <RadioGroupItem value={option.value} id={`baggage-${option.value}`} />
+                        <Label htmlFor={`baggage-${option.value}`} className="text-sm cursor-pointer">
+                          {option.label}
+                        </Label>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                </FilterSection>
+
+                <Separator className="my-3" />
+
+                {/* Airline Filter */}
+                <FilterSection title="Airline" name="airlines">
+                  <div className="space-y-2 max-h-40 overflow-y-auto pr-2">
+                    {uniqueAirlines.map(airline => (
+                      <div key={airline.name} className="flex items-center justify-between py-1">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`airline-${airline.name}`}
+                            checked={filters.airlines.includes(airline.name)}
+                            onCheckedChange={() => toggleAirlineFilter(airline.name)}
+                          />
+                          <Label htmlFor={`airline-${airline.name}`} className="text-sm cursor-pointer truncate max-w-[120px]">
+                            {airline.name}
+                          </Label>
+                        </div>
+                        <span className="text-sm font-medium text-brand-600">£{Math.round(airline.minPrice)}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </RadioGroup>
-            </FilterSection>
+                </FilterSection>
 
-            <Separator className="my-3" />
+                <Separator className="my-3" />
 
-            {/* Baggage Filter */}
-            <FilterSection title="Baggage" name="baggage">
-              <RadioGroup 
-                value={filters.baggage || ''} 
-                onValueChange={(value) => setFilters(prev => ({ ...prev, baggage: value || null }))}
-              >
-                {baggageOptions.map(option => (
-                  <div key={option.value} className="flex items-center space-x-2 py-1.5">
-                    <RadioGroupItem value={option.value} id={`baggage-${option.value}`} />
-                    <Label htmlFor={`baggage-${option.value}`} className="text-sm cursor-pointer">
-                      {option.label}
-                    </Label>
-                  </div>
-                ))}
-              </RadioGroup>
-            </FilterSection>
+                {/* Departure Time Filter */}
+                <FilterSection title="Departure Time" name="departureTime">
+                  <RadioGroup 
+                    value={filters.departureTime || ''} 
+                    onValueChange={(value) => setFilters(prev => ({ ...prev, departureTime: value || null }))}
+                  >
+                    {timeOptions.map(option => {
+                      const Icon = option.icon;
+                      return (
+                        <div key={option.value} className="flex items-center space-x-2 py-1.5">
+                          <RadioGroupItem value={option.value} id={`dep-${option.value}`} />
+                          <Icon className="h-4 w-4 text-slate-500" />
+                          <Label htmlFor={`dep-${option.value}`} className="text-sm cursor-pointer">
+                            <span className="font-medium">{option.label}</span>
+                            <span className="text-slate-500 text-xs ml-1">({option.time})</span>
+                          </Label>
+                        </div>
+                      );
+                    })}
+                  </RadioGroup>
+                </FilterSection>
 
-            <Separator className="my-3" />
+                <Separator className="my-3" />
 
-            {/* Airline Filter */}
-            <FilterSection title="Airline" name="airlines">
-              <div className="space-y-2 max-h-56 overflow-y-auto pr-2">
-                {uniqueAirlines.map(airline => (
-                  <div key={airline.name} className="flex items-center justify-between py-1">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`airline-${airline.name}`}
-                        checked={filters.airlines.includes(airline.name)}
-                        onCheckedChange={() => toggleAirlineFilter(airline.name)}
+                {/* Arrival Time Filter */}
+                <FilterSection title="Arrival Time" name="arrivalTime">
+                  <RadioGroup 
+                    value={filters.arrivalTime || ''} 
+                    onValueChange={(value) => setFilters(prev => ({ ...prev, arrivalTime: value || null }))}
+                  >
+                    {timeOptions.map(option => {
+                      const Icon = option.icon;
+                      return (
+                        <div key={option.value} className="flex items-center space-x-2 py-1.5">
+                          <RadioGroupItem value={option.value} id={`arr-${option.value}`} />
+                          <Icon className="h-4 w-4 text-slate-500" />
+                          <Label htmlFor={`arr-${option.value}`} className="text-sm cursor-pointer">
+                            <span className="font-medium">{option.label}</span>
+                            <span className="text-slate-500 text-xs ml-1">({option.time})</span>
+                          </Label>
+                        </div>
+                      );
+                    })}
+                  </RadioGroup>
+                </FilterSection>
+
+                <Separator className="my-3" />
+
+                {/* Connection Length Filter - FIXED */}
+                <FilterSection title="Connection Length" name="connectionLength">
+                  <RadioGroup 
+                    value={filters.connectionLength || ''} 
+                    onValueChange={(value) => setFilters(prev => ({ ...prev, connectionLength: value || null }))}
+                  >
+                    {connectionLengthOptions.map(option => (
+                      <div key={option.value} className="flex items-center space-x-2 py-1.5">
+                        <RadioGroupItem value={option.value} id={`conn-${option.value}`} />
+                        <Label htmlFor={`conn-${option.value}`} className="text-sm cursor-pointer">
+                          <span className="font-medium">{option.label}</span>
+                          {option.time && <span className="text-slate-500 text-xs ml-1">({option.time})</span>}
+                        </Label>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                </FilterSection>
+
+                <Separator className="my-3" />
+
+                {/* Price Filter */}
+                <FilterSection title="Total Price (£)" name="price">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <Label className="text-xs text-slate-500">From</Label>
+                      <Input
+                        type="number"
+                        placeholder="Min"
+                        value={filters.minPrice}
+                        onChange={(e) => setFilters(prev => ({ ...prev, minPrice: e.target.value }))}
+                        className="h-8 text-sm"
                       />
-                      <Label htmlFor={`airline-${airline.name}`} className="text-sm cursor-pointer">
-                        {airline.name}
-                      </Label>
                     </div>
-                    <span className="text-sm font-medium text-brand-600">£{Math.round(airline.minPrice)}</span>
+                    <div className="flex-1">
+                      <Label className="text-xs text-slate-500">To</Label>
+                      <Input
+                        type="number"
+                        placeholder="Max"
+                        value={filters.maxPrice}
+                        onChange={(e) => setFilters(prev => ({ ...prev, maxPrice: e.target.value }))}
+                        className="h-8 text-sm"
+                      />
+                    </div>
                   </div>
-                ))}
+                </FilterSection>
               </div>
-            </FilterSection>
-
-            <Separator className="my-3" />
-
-            {/* Departure Time Filter */}
-            <FilterSection title="Departure Time" name="departureTime">
-              <RadioGroup 
-                value={filters.departureTime || ''} 
-                onValueChange={(value) => setFilters(prev => ({ ...prev, departureTime: value || null }))}
-              >
-                {timeOptions.map(option => {
-                  const Icon = option.icon;
-                  return (
-                    <div key={option.value} className="flex items-center space-x-2 py-1.5">
-                      <RadioGroupItem value={option.value} id={`dep-${option.value}`} />
-                      <Icon className="h-4 w-4 text-slate-500" />
-                      <Label htmlFor={`dep-${option.value}`} className="text-sm cursor-pointer">
-                        <span className="font-medium">{option.label}</span>
-                        <span className="text-slate-500 ml-1">({option.time})</span>
-                      </Label>
-                    </div>
-                  );
-                })}
-              </RadioGroup>
-            </FilterSection>
-
-            <Separator className="my-3" />
-
-            {/* Arrival Time Filter */}
-            <FilterSection title="Arrival Time" name="arrivalTime">
-              <RadioGroup 
-                value={filters.arrivalTime || ''} 
-                onValueChange={(value) => setFilters(prev => ({ ...prev, arrivalTime: value || null }))}
-              >
-                {timeOptions.map(option => {
-                  const Icon = option.icon;
-                  return (
-                    <div key={option.value} className="flex items-center space-x-2 py-1.5">
-                      <RadioGroupItem value={option.value} id={`arr-${option.value}`} />
-                      <Icon className="h-4 w-4 text-slate-500" />
-                      <Label htmlFor={`arr-${option.value}`} className="text-sm cursor-pointer">
-                        <span className="font-medium">{option.label}</span>
-                        <span className="text-slate-500 ml-1">({option.time})</span>
-                      </Label>
-                    </div>
-                  );
-                })}
-              </RadioGroup>
-            </FilterSection>
-
-            <Separator className="my-3" />
-
-            {/* Price Filter */}
-            <FilterSection title="Total Price (£)" name="price">
-              <div className="flex items-center gap-2">
-                <div className="flex-1">
-                  <Label className="text-xs text-slate-500">From</Label>
-                  <Input
-                    type="number"
-                    placeholder="Min"
-                    value={filters.minPrice}
-                    onChange={(e) => setFilters(prev => ({ ...prev, minPrice: e.target.value }))}
-                    className="h-8 text-sm"
-                  />
-                </div>
-                <div className="flex-1">
-                  <Label className="text-xs text-slate-500">To</Label>
-                  <Input
-                    type="number"
-                    placeholder="Max"
-                    value={filters.maxPrice}
-                    onChange={(e) => setFilters(prev => ({ ...prev, maxPrice: e.target.value }))}
-                    className="h-8 text-sm"
-                  />
-                </div>
-              </div>
-            </FilterSection>
-
-            <Separator className="my-3" />
-
-            {/* Connection Length Filter */}
-            <FilterSection title="Connection Length" name="connectionLength" defaultOpen={false}>
-              <RadioGroup 
-                value={filters.connectionLength || ''} 
-                onValueChange={(value) => setFilters(prev => ({ ...prev, connectionLength: value || null }))}
-              >
-                {connectionLengthOptions.map(option => (
-                  <div key={option.value} className="flex items-center space-x-2 py-1.5">
-                    <RadioGroupItem value={option.value} id={`conn-${option.value}`} />
-                    <Label htmlFor={`conn-${option.value}`} className="text-sm cursor-pointer">
-                      <span className="font-medium">{option.label}</span>
-                      {option.time && <span className="text-slate-500 ml-1">({option.time})</span>}
-                    </Label>
-                  </div>
-                ))}
-              </RadioGroup>
-            </FilterSection>
+            </ScrollArea>
           </Card>
         </div>
 
@@ -568,7 +654,7 @@ export const FlightResults = ({ flights, isFlexible, onSelectFlight, searchParam
 };
 
 // Flexible Dates Matrix Component
-const FlexibleDatesMatrix = ({ flights, searchParams, onSelectFlight }) => {
+const FlexibleDatesMatrix = ({ flights, searchParams, onSelectFlight, onModifySearch, isLoading }) => {
   // Group flights by departure and return dates
   const priceMatrix = useMemo(() => {
     const matrix = {};
@@ -622,13 +708,40 @@ const FlexibleDatesMatrix = ({ flights, searchParams, onSelectFlight }) => {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Search Summary Bar with Modify Button */}
+      <div className="mb-6 bg-white rounded-lg shadow-sm border p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <Plane className="h-5 w-5 text-brand-600" />
+              <span className="font-semibold">{searchParams?.origin}</span>
+              <span className="text-slate-400">→</span>
+              <span className="font-semibold">{searchParams?.destination}</span>
+            </div>
+            <div className="text-sm text-slate-600">
+              {searchParams?.departure_date && format(new Date(searchParams.departure_date), 'dd MMM yyyy')}
+              {searchParams?.return_date && ` - ${format(new Date(searchParams.return_date), 'dd MMM yyyy')}`}
+            </div>
+            <Badge className="bg-brand-100 text-brand-700">±3 Days Flexible</Badge>
+          </div>
+          <Button 
+            onClick={onModifySearch}
+            variant="outline"
+            className="border-brand-600 text-brand-600 hover:bg-brand-50"
+          >
+            <Edit3 className="h-4 w-4 mr-2" />
+            Modify Search
+          </Button>
+        </div>
+      </div>
+
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">Flexible Dates</h2>
+          <h2 className="text-2xl font-bold text-slate-900">Flexible Dates Price Grid</h2>
           <p className="text-slate-600">Select your preferred dates to see available flights</p>
         </div>
         <Badge className="bg-brand-100 text-brand-700 px-4 py-2">
-          Found {flights.length} flights (including ±3 days)!
+          Found {flights.length} flights (±3 days)!
         </Badge>
       </div>
 
