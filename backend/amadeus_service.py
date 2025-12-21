@@ -13,6 +13,82 @@ class AmadeusService:
             hostname=os.getenv('AMADEUS_HOSTNAME', 'test')  # 'test' for sandbox, 'production' for live
         )
     
+    async def search_flights_flexible(
+        self,
+        origin: str,
+        destination: str,
+        departure_date: str,
+        return_date: Optional[str] = None,
+        adults: int = 1,
+        children: int = 0,
+        infants: int = 0,
+        travel_class: str = 'ECONOMY',
+        non_stop: bool = False,
+        currency: str = 'GBP'
+    ) -> Dict:
+        """
+        Search for flights with flexible dates (±3 days)
+        Makes multiple API calls and combines results
+        """
+        try:
+            all_flights = []
+            base_date = datetime.strptime(departure_date, '%Y-%m-%d')
+            
+            # Search for dates from -3 to +3 days
+            for day_offset in range(-3, 4):
+                search_date = base_date + timedelta(days=day_offset)
+                search_date_str = search_date.strftime('%Y-%m-%d')
+                
+                # Calculate return date if round trip
+                return_date_str = None
+                if return_date:
+                    return_base = datetime.strptime(return_date, '%Y-%m-%d')
+                    return_search = return_base + timedelta(days=day_offset)
+                    return_date_str = return_search.strftime('%Y-%m-%d')
+                
+                # Make API call for this date combination
+                result = await self.search_flights(
+                    origin=origin,
+                    destination=destination,
+                    departure_date=search_date_str,
+                    return_date=return_date_str,
+                    adults=adults,
+                    children=children,
+                    infants=infants,
+                    travel_class=travel_class,
+                    non_stop=non_stop,
+                    max_results=20,  # Fewer results per date to avoid overwhelming
+                    currency=currency
+                )
+                
+                if result.get('success') and result.get('data'):
+                    # Add date offset info to each flight
+                    for flight in result['data']:
+                        flight['date_offset'] = day_offset
+                        flight['search_date'] = search_date_str
+                    all_flights.extend(result['data'])
+            
+            # Sort all flights by price
+            all_flights.sort(key=lambda x: float(x.get('price', {}).get('total', 999999)))
+            
+            # Limit to top 50 results
+            all_flights = all_flights[:50]
+            
+            return {
+                'success': True,
+                'data': all_flights,
+                'meta': {'count': len(all_flights), 'flexible_search': True}
+            }
+            
+        except Exception as e:
+            return {
+                'success': False,
+                'error': {
+                    'code': 500,
+                    'message': f'Flexible search error: {str(e)}'
+                }
+            }
+    
     async def search_flights(
         self,
         origin: str,
