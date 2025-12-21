@@ -283,6 +283,7 @@ export const FlightSearch = ({ onSearch }) => {
                         selected={returnDate}
                         onSelect={handleReturnDateSelect}
                         disabled={(date) => date < (departDate || new Date())}
+                        defaultMonth={departDate || new Date()}
                         initialFocus
                       />
                     </PopoverContent>
