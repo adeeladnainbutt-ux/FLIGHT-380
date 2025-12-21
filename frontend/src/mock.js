@@ -994,5 +994,3 @@ export const airportGroups = [
     airports: ['KHI', 'LHE', 'ISB']
   }
 ];
-
-export const features = [
