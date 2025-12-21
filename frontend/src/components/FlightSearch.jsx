@@ -44,6 +44,41 @@ export const FlightSearch = ({ onSearch }) => {
     ...airports
   ];
 
+  // Custom filter function for airport search
+  const filterAirports = (options, searchTerm) => {
+    if (!searchTerm) return options;
+    
+    const term = searchTerm.toLowerCase().trim();
+    
+    // First priority: Exact code match
+    const exactCodeMatch = options.filter(opt => 
+      opt.code && opt.code.toLowerCase() === term
+    );
+    
+    if (exactCodeMatch.length > 0) {
+      return exactCodeMatch;
+    }
+    
+    // Second priority: Code starts with search term
+    const codeStartsWith = options.filter(opt => 
+      opt.code && opt.code.toLowerCase().startsWith(term)
+    );
+    
+    // Third priority: City or name contains search term
+    const generalMatch = options.filter(opt => 
+      (opt.city && opt.city.toLowerCase().includes(term)) ||
+      (opt.name && opt.name.toLowerCase().includes(term))
+    );
+    
+    // Combine results, removing duplicates
+    const combined = [...codeStartsWith, ...generalMatch];
+    const unique = combined.filter((item, index, self) =>
+      index === self.findIndex((t) => t.code === item.code)
+    );
+    
+    return unique;
+  };
+
   const addMultiCityLeg = () => {
     if (multiCityLegs.length < 5) {
       setMultiCityLegs([...multiCityLegs, { from: null, to: null, date: null }]);
