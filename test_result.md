@@ -213,7 +213,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Complete booking flow (3-step process)"
+    - "Print and Download PDF itinerary buttons"
+    - "Date of birth input sequence on passenger details page"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
