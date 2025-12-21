@@ -133,8 +133,20 @@ function App() {
       <Toaster position="top-right" richColors />
       <Header />
 
-      {/* Hero Section - Hide when loading or showing results */}
-      {!isLoading && !showResults && (
+      {/* Booking Flow */}
+      {showBooking && selectedFlight && (
+        <section className="pt-24 pb-16 bg-slate-50 min-h-screen">
+          <BookingFlow 
+            flight={selectedFlight}
+            searchParams={savedSearchData}
+            onBack={handleBackToResults}
+            onComplete={handleBookingComplete}
+          />
+        </section>
+      )}
+
+      {/* Hero Section - Hide when loading, showing results, or booking */}
+      {!isLoading && !showResults && !showBooking && (
         <section id="home" className="relative pt-24 pb-16 md:pt-32 md:pb-24 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-brand-50 via-brand-50 to-slate-50 -z-10"></div>
           <div className="container mx-auto px-4">
