@@ -1,5 +1,6 @@
 from amadeus import Client, ResponseError
 import os
+import asyncio
 from typing import Optional, Dict, List
 from datetime import datetime, timedelta
 
