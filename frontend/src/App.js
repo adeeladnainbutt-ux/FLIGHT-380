@@ -24,6 +24,9 @@ import { popularDestinations, testimonials, features } from './mock';
 import { toast } from 'sonner';
 import { Toaster } from './components/ui/sonner';
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
+
 function App() {
   const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
