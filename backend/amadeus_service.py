@@ -30,12 +30,12 @@ class AmadeusService:
     ) -> Dict:
         """
         Search for flights with flexible dates (±3 days)
-        Uses concurrent API calls to search multiple date combinations in parallel.
+        Uses thread pool for parallel API calls to significantly improve performance.
         """
         try:
             base_dep_date = datetime.strptime(departure_date, '%Y-%m-%d')
             
-            # Build search combinations - vary departure with fixed return, plus diagonals
+            # Build search combinations
             search_combinations = []
             
             # Vary departure dates with base return date (7 combinations)
@@ -48,10 +48,10 @@ class AmadeusService:
                     'ret_offset': 0
                 })
             
-            # Add diagonal combinations for variety (same offset for both dates)
+            # Add diagonal combinations for variety
             if return_date:
                 base_ret_date = datetime.strptime(return_date, '%Y-%m-%d')
-                for day_offset in [-3, -2, 2, 3]:  # Skip overlaps
+                for day_offset in [-3, -2, 2, 3]:
                     dep_date = base_dep_date + timedelta(days=day_offset)
                     ret_date = base_ret_date + timedelta(days=day_offset)
                     if ret_date > dep_date:
@@ -68,9 +68,9 @@ class AmadeusService:
                 if not combo['ret'] or combo['dep'] < combo['ret']
             ]
             
-            # Create async tasks for parallel execution
-            async def search_combo(combo):
-                result = await self.search_flights(
+            # Use thread pool for parallel API calls (Amadeus SDK is synchronous)
+            def search_sync(combo):
+                result = self._search_flights_sync(
                     origin=origin,
                     destination=destination,
                     departure_date=combo['dep'],
@@ -93,9 +93,11 @@ class AmadeusService:
                     return result['data']
                 return []
             
-            # Execute all searches concurrently
-            tasks = [search_combo(combo) for combo in valid_combinations]
-            results = await asyncio.gather(*tasks, return_exceptions=True)
+            # Execute all searches in parallel using thread pool
+            loop = asyncio.get_event_loop()
+            with ThreadPoolExecutor(max_workers=5) as executor:
+                tasks = [loop.run_in_executor(executor, search_sync, combo) for combo in valid_combinations]
+                results = await asyncio.gather(*tasks, return_exceptions=True)
             
             # Collect all flights from successful searches
             all_flights = []
@@ -121,6 +123,66 @@ class AmadeusService:
                 'error': {
                     'code': 500,
                     'message': f'Flexible search error: {str(e)}'
+                }
+            }
+    
+    def _search_flights_sync(
+        self,
+        origin: str,
+        destination: str,
+        departure_date: str,
+        return_date: Optional[str] = None,
+        adults: int = 1,
+        children: int = 0,
+        infants: int = 0,
+        travel_class: str = 'ECONOMY',
+        non_stop: bool = False,
+        max_results: int = 50,
+        currency: str = 'GBP'
+    ) -> Dict:
+        """Synchronous version of search_flights for use in thread pool"""
+        try:
+            search_params = {
+                'originLocationCode': origin.upper(),
+                'destinationLocationCode': destination.upper(),
+                'departureDate': departure_date,
+                'adults': adults,
+                'travelClass': travel_class,
+                'nonStop': 'true' if non_stop else 'false',
+                'currencyCode': currency,
+                'max': max_results
+            }
+            
+            if return_date:
+                search_params['returnDate'] = return_date
+            if children > 0:
+                search_params['children'] = children
+            if infants > 0:
+                search_params['infants'] = infants
+            
+            response = self.client.shopping.flight_offers_search.get(**search_params)
+            
+            return {
+                'success': True,
+                'data': response.data,
+                'meta': response.result.get('meta', {}),
+                'dictionaries': response.result.get('dictionaries', {})
+            }
+            
+        except ResponseError as error:
+            return {
+                'success': False,
+                'error': {
+                    'code': error.response.status_code,
+                    'message': str(error)
+                }
+            }
+        except Exception as e:
+            return {
+                'success': False,
+                'error': {
+                    'code': 500,
+                    'message': f'Unexpected error: {str(e)}'
                 }
             }
     
