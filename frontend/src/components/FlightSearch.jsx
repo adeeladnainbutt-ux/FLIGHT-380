@@ -499,7 +499,7 @@ export const FlightSearch = ({ onSearch }) => {
 
                       <Button
                         onClick={() => setOpenPassengers(false)}
-                        className="w-full bg-red-600 hover:bg-red-700"
+                        className="w-full bg-brand-600 hover:bg-brand-700"
                       >
                         Done
                       </Button>
@@ -618,7 +618,7 @@ export const FlightSearch = ({ onSearch }) => {
 
             <Button 
               onClick={handleSearch} 
-              className="w-full h-12 text-base font-semibold bg-gradient-to-r from-red-600 to-red-600 hover:from-red-700 hover:to-red-700 transition-all duration-300"
+              className="w-full h-12 text-base font-semibold bg-gradient-to-r from-brand-600 to-brand-600 hover:from-brand-700 hover:to-brand-700 transition-all duration-300"
               disabled={!fromAirport || !toAirport || !departDate || (tripType === 'round-trip' && !returnDate)}
             >
               Search Flights
@@ -788,7 +788,7 @@ export const FlightSearch = ({ onSearch }) => {
               <Button
                 variant="outline"
                 onClick={addMultiCityLeg}
-                className="w-full h-12 border-dashed border-2 hover:bg-red-50 hover:border-red-600 hover:text-red-700"
+                className="w-full h-12 border-dashed border-2 hover:bg-brand-50 hover:border-brand-600 hover:text-brand-700"
               >
                 <Plus className="mr-2 h-4 w-4" />
                 Add Another Flight
@@ -932,7 +932,7 @@ export const FlightSearch = ({ onSearch }) => {
 
                       <Button
                         onClick={() => setOpenPassengers(false)}
-                        className="w-full bg-red-600 hover:bg-red-700"
+                        className="w-full bg-brand-600 hover:bg-brand-700"
                       >
                         Done
                       </Button>
@@ -1051,7 +1051,7 @@ export const FlightSearch = ({ onSearch }) => {
 
             <Button 
               onClick={handleSearch} 
-              className="w-full h-12 text-base font-semibold bg-gradient-to-r from-red-600 to-red-600 hover:from-red-700 hover:to-red-700 transition-all duration-300"
+              className="w-full h-12 text-base font-semibold bg-gradient-to-r from-brand-600 to-brand-600 hover:from-brand-700 hover:to-brand-700 transition-all duration-300"
               disabled={multiCityLegs.filter(leg => leg.from && leg.to && leg.date).length < 2}
             >
               Search Multi-City Flights

@@ -105,15 +105,15 @@ function App() {
 
       {/* Hero Section */}
       <section id="home" className="relative pt-24 pb-16 md:pt-32 md:pb-24 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-red-50 via-red-50 to-slate-50 -z-10"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-50 via-brand-50 to-slate-50 -z-10"></div>
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 space-y-4">
-            <Badge className="bg-red-100 text-red-700 hover:bg-red-200 px-4 py-1.5 text-sm font-medium">
+            <Badge className="bg-brand-100 text-brand-700 hover:bg-brand-200 px-4 py-1.5 text-sm font-medium">
               Book with Confidence
             </Badge>
             <h1 className="text-4xl md:text-6xl font-bold text-slate-900 leading-tight">
               Find Your Perfect
-              <span className="block bg-gradient-to-r from-red-600 to-red-600 bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-brand-600 to-brand-600 bg-clip-text text-transparent">
                 Flight Deal
               </span>
             </h1>
@@ -152,7 +152,7 @@ function App() {
         <section className="py-16 bg-white">
           <div className="container mx-auto px-4 text-center">
             <div className="flex flex-col items-center gap-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600"></div>
               <p className="text-lg text-slate-600">
                 {isFlexibleSearch ? 'Searching flights across multiple dates...' : 'Searching for flights...'}
               </p>
@@ -169,7 +169,7 @@ function App() {
           <div className="container mx-auto px-4">
             <Card className="p-6 bg-red-50 border-red-200">
               <h3 className="text-lg font-semibold text-red-900 mb-2">Search Error</h3>
-              <p className="text-red-700">{searchError.message || 'Unable to search flights. Please try again.'}</p>
+              <p className="text-brand-700">{searchError.message || 'Unable to search flights. Please try again.'}</p>
             </Card>
           </div>
         </section>
@@ -199,10 +199,10 @@ function App() {
             {features.map((feature) => {
               const IconComponent = iconMap[feature.icon];
               return (
-                <Card key={feature.id} className="group hover:shadow-xl transition-all duration-300 border-slate-200 hover:border-red-300">
+                <Card key={feature.id} className="group hover:shadow-xl transition-all duration-300 border-slate-200 hover:border-brand-300">
                   <CardHeader>
-                    <div className="w-12 h-12 bg-gradient-to-br from-red-100 to-red-100 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                      <IconComponent className="h-6 w-6 text-red-600" />
+                    <div className="w-12 h-12 bg-gradient-to-br from-brand-100 to-brand-100 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                      <IconComponent className="h-6 w-6 text-brand-600" />
                     </div>
                     <CardTitle className="text-xl">{feature.title}</CardTitle>
                   </CardHeader>
@@ -235,7 +235,7 @@ function App() {
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                  <Badge className="absolute top-4 right-4 bg-red-600 hover:bg-red-700 text-white font-semibold">
+                  <Badge className="absolute top-4 right-4 bg-brand-600 hover:bg-brand-700 text-white font-semibold">
                     From £{destination.price}
                   </Badge>
                 </div>
@@ -245,7 +245,7 @@ function App() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-slate-600 mb-4">{destination.description}</p>
-                  <Button variant="ghost" className="group/btn w-full justify-between hover:bg-red-50 hover:text-red-700">
+                  <Button variant="ghost" className="group/btn w-full justify-between hover:bg-brand-50 hover:text-brand-700">
                     View Flights
                     <ArrowRight className="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
                   </Button>
@@ -287,15 +287,15 @@ function App() {
       </section>
 
       {/* CTA Section */}
-      <section id="deals" className="py-20 bg-gradient-to-br from-red-600 to-red-600 text-white">
+      <section id="deals" className="py-20 bg-gradient-to-br from-brand-600 to-brand-600 text-white">
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-3xl mx-auto space-y-6">
             <h2 className="text-3xl md:text-5xl font-bold">Ready to Start Your Journey?</h2>
-            <p className="text-lg md:text-xl text-red-50">
+            <p className="text-lg md:text-xl text-brand-50">
               Join over 1 million happy travelers and discover your next adventure with exclusive deals and offers.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-              <Button size="lg" className="bg-white text-red-600 hover:bg-slate-100 font-semibold text-lg px-8">
+              <Button size="lg" className="bg-white text-brand-600 hover:bg-slate-100 font-semibold text-lg px-8">
                 Search Flights Now
               </Button>
               <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white/10 font-semibold text-lg px-8">
