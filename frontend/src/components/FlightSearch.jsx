@@ -643,15 +643,22 @@ export const FlightSearch = ({ onSearch }) => {
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-[350px] p-0">
-                          <Command>
-                            <CommandInput placeholder="Search airport..." />
+                          <Command shouldFilter={false}>
+                            <CommandInput 
+                              placeholder="Search airport..." 
+                              value={multiCitySearchTerms[`${index}-from`] || ''}
+                              onValueChange={(value) => updateMultiCitySearchTerm(index, 'from', value)}
+                            />
                             <CommandEmpty>No airport found.</CommandEmpty>
                             <CommandGroup className="max-h-64 overflow-auto">
-                              {allAirportOptions.map((option) => (
+                              {getFilteredMultiCityAirports(index, 'from').map((option) => (
                                 <CommandItem
-                                  key={option.code}
-                                  value={`${option.code} ${option.name} ${option.city}`}
-                                  onSelect={() => updateMultiCityLeg(index, 'from', option)}
+                                  key={option.isGroup ? `group-${option.code}` : `airport-${option.code}`}
+                                  value={option.code}
+                                  onSelect={() => {
+                                    updateMultiCityLeg(index, 'from', option);
+                                    updateMultiCitySearchTerm(index, 'from', '');
+                                  }}
                                 >
                                   <div className="flex flex-col">
                                     <span className="font-medium">
@@ -687,15 +694,22 @@ export const FlightSearch = ({ onSearch }) => {
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-[350px] p-0">
-                          <Command>
-                            <CommandInput placeholder="Search airport..." />
+                          <Command shouldFilter={false}>
+                            <CommandInput 
+                              placeholder="Search airport..." 
+                              value={multiCitySearchTerms[`${index}-to`] || ''}
+                              onValueChange={(value) => updateMultiCitySearchTerm(index, 'to', value)}
+                            />
                             <CommandEmpty>No airport found.</CommandEmpty>
                             <CommandGroup className="max-h-64 overflow-auto">
-                              {allAirportOptions.map((option) => (
+                              {getFilteredMultiCityAirports(index, 'to').map((option) => (
                                 <CommandItem
-                                  key={option.code}
-                                  value={`${option.code} ${option.name} ${option.city}`}
-                                  onSelect={() => updateMultiCityLeg(index, 'to', option)}
+                                  key={option.isGroup ? `group-${option.code}` : `airport-${option.code}`}
+                                  value={option.code}
+                                  onSelect={() => {
+                                    updateMultiCityLeg(index, 'to', option);
+                                    updateMultiCitySearchTerm(index, 'to', '');
+                                  }}
                                 >
                                   <div className="flex flex-col">
                                     <span className="font-medium">
