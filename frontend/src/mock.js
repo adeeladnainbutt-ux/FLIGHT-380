@@ -7,6 +7,7 @@ export const mockFlightSearchResults = [
     returnDate: '2025-09-22',
     price: 450,
     airline: 'British Airways',
+    airlineCode: 'BA',
     duration: '7h 30m',
     stops: 'Direct'
   },
@@ -18,6 +19,7 @@ export const mockFlightSearchResults = [
     returnDate: '2025-09-22',
     price: 380,
     airline: 'Emirates',
+    airlineCode: 'EK',
     duration: '6h 45m',
     stops: 'Direct'
   },
@@ -29,8 +31,33 @@ export const mockFlightSearchResults = [
     returnDate: '2025-09-22',
     price: 620,
     airline: 'Singapore Airlines',
+    airlineCode: 'SQ',
     duration: '13h 20m',
     stops: 'Direct'
+  },
+  {
+    id: '4',
+    from: 'London (LGW)',
+    to: 'New York (JFK)',
+    departureDate: '2025-09-15',
+    returnDate: '2025-09-22',
+    price: 420,
+    airline: 'Virgin Atlantic',
+    airlineCode: 'VS',
+    duration: '8h 10m',
+    stops: 'Direct'
+  },
+  {
+    id: '5',
+    from: 'London (STN)',
+    to: 'Dubai (DXB)',
+    departureDate: '2025-09-15',
+    returnDate: '2025-09-22',
+    price: 350,
+    airline: 'Ryanair',
+    airlineCode: 'FR',
+    duration: '7h 15m',
+    stops: '1 Stop'
   }
 ];
 
