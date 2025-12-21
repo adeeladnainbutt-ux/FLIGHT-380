@@ -51,6 +51,7 @@ function App() {
         infants: searchData.infants,
         travel_class: searchData.travel_class,
         direct_flights: searchData.direct_flights,
+        flexible_dates: searchData.flexiDates || false,
         airline: searchData.airline?.code || null
       });
       
