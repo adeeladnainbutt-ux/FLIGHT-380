@@ -85,9 +85,6 @@ export const BookingFlow = ({
         last_name: '',
         date_of_birth: '',
         gender: '',
-        nationality: '',
-        passport_number: '',
-        passport_expiry: '',
         email: '',
         phone: ''
       });
@@ -100,10 +97,7 @@ export const BookingFlow = ({
         first_name: '',
         last_name: '',
         date_of_birth: '',
-        gender: '',
-        nationality: '',
-        passport_number: '',
-        passport_expiry: ''
+        gender: ''
       });
     }
     // Then Children
@@ -114,8 +108,7 @@ export const BookingFlow = ({
         first_name: '',
         last_name: '',
         date_of_birth: '',
-        gender: '',
-        nationality: ''
+        gender: ''
       });
     }
     // Finally Infants
@@ -126,8 +119,7 @@ export const BookingFlow = ({
         first_name: '',
         last_name: '',
         date_of_birth: '',
-        gender: '',
-        nationality: ''
+        gender: ''
       });
     }
     
