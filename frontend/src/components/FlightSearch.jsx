@@ -195,16 +195,21 @@ export const FlightSearch = ({ onSearch }) => {
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-[350px] p-0">
-                    <Command>
-                      <CommandInput placeholder="Search airport or code..." />
+                    <Command shouldFilter={false}>
+                      <CommandInput 
+                        placeholder="Search airport or code..." 
+                        value={fromSearchTerm}
+                        onValueChange={setFromSearchTerm}
+                      />
                       <CommandEmpty>No airport found.</CommandEmpty>
                       <CommandGroup className="max-h-64 overflow-auto">
-                        {allAirportOptions.map((option) => (
+                        {filteredFromAirports.map((option) => (
                           <CommandItem
                             key={option.code}
-                            value={`${option.code} ${option.name} ${option.city}`}
+                            value={option.code}
                             onSelect={() => {
                               setFromAirport(option);
+                              setFromSearchTerm('');
                               setOpenFrom(false);
                             }}
                           >
@@ -246,16 +251,21 @@ export const FlightSearch = ({ onSearch }) => {
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-[350px] p-0">
-                    <Command>
-                      <CommandInput placeholder="Search airport or code..." />
+                    <Command shouldFilter={false}>
+                      <CommandInput 
+                        placeholder="Search airport or code..." 
+                        value={toSearchTerm}
+                        onValueChange={setToSearchTerm}
+                      />
                       <CommandEmpty>No airport found.</CommandEmpty>
                       <CommandGroup className="max-h-64 overflow-auto">
-                        {allAirportOptions.map((option) => (
+                        {filteredToAirports.map((option) => (
                           <CommandItem
                             key={option.code}
-                            value={`${option.code} ${option.name} ${option.city}`}
+                            value={option.code}
                             onSelect={() => {
                               setToAirport(option);
+                              setToSearchTerm('');
                               setOpenTo(false);
                             }}
                           >
