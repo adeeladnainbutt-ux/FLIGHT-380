@@ -319,12 +319,17 @@ export const FlightResults = ({
 
   const clearAllFilters = () => {
     setFilters({
-      stops: null,
+      fareType: null,
+      stopsOutbound: null,
+      stopsReturn: null,
       baggage: null,
       airlines: [],
-      departureTime: null,
-      arrivalTime: null,
-      layoverTime: null,
+      outboundDepartureTime: null,
+      outboundArrivalTime: null,
+      returnDepartureTime: null,
+      returnArrivalTime: null,
+      connectionLengthOutbound: null,
+      connectionLengthReturn: null,
       minPrice: '',
       maxPrice: ''
     });
