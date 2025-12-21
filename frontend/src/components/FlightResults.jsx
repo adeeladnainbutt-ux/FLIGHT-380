@@ -35,12 +35,17 @@ export const FlightResults = ({
 }) => {
   // Filter states
   const [filters, setFilters] = useState({
-    stops: null,
+    fareType: null,
+    stopsOutbound: null,
+    stopsReturn: null,
     baggage: null,
     airlines: [],
-    departureTime: null,
-    arrivalTime: null,
-    layoverTime: null,
+    outboundDepartureTime: null,
+    outboundArrivalTime: null,
+    returnDepartureTime: null,
+    returnArrivalTime: null,
+    connectionLengthOutbound: null,
+    connectionLengthReturn: null,
     minPrice: '',
     maxPrice: ''
   });
@@ -51,13 +56,18 @@ export const FlightResults = ({
   
   // Collapsible sections
   const [expandedSections, setExpandedSections] = useState({
-    stops: true,
+    fareType: false,
+    stopsOutbound: true,
+    stopsReturn: true,
     baggage: true,
     airlines: true,
-    departureTime: true,
-    arrivalTime: true,
-    price: true,
-    layoverTime: true
+    outboundDepartureTime: true,
+    outboundArrivalTime: true,
+    returnDepartureTime: true,
+    returnArrivalTime: true,
+    connectionLengthOutbound: true,
+    connectionLengthReturn: true,
+    price: true
   });
 
   const toggleSection = (section) => {
