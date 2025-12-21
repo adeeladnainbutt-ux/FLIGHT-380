@@ -58,7 +58,8 @@ function App() {
       if (response.data.success) {
         setSearchResults(response.data.flights);
         setShowResults(true);
-        toast.success(`Found ${response.data.flights.length} flights for you!`);
+        const flexiMessage = searchData.flexiDates ? ' (including ±3 days)' : '';
+        toast.success(`Found ${response.data.flights.length} flights for you${flexiMessage}!`);
         
         // Scroll to results
         setTimeout(() => {
