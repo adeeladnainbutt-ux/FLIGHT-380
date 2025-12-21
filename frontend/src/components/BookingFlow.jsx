@@ -1311,7 +1311,8 @@ export const BookingFlow = ({
                     type="date"
                     value={passenger.date_of_birth}
                     onChange={(e) => updatePassenger(index, 'date_of_birth', e.target.value)}
-                    className="mt-1"
+                    className="mt-1 text-lg [&::-webkit-calendar-picker-indicator]:w-6 [&::-webkit-calendar-picker-indicator]:h-6 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                    style={{ fontSize: '16px', padding: '12px' }}
                     max={passenger.type === 'INFANT' ? new Date().toISOString().split('T')[0] : undefined}
                   />
                 </div>
@@ -1330,38 +1331,6 @@ export const BookingFlow = ({
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label>Nationality *</Label>
-                  <Input
-                    value={passenger.nationality}
-                    onChange={(e) => updatePassenger(index, 'nationality', e.target.value)}
-                    placeholder="e.g., British"
-                    className="mt-1"
-                  />
-                </div>
-                {(passenger.type === 'ADULT' || passenger.type === 'YOUTH') && (
-                  <>
-                    <div>
-                      <Label>Passport Number</Label>
-                      <Input
-                        value={passenger.passport_number}
-                        onChange={(e) => updatePassenger(index, 'passport_number', e.target.value)}
-                        placeholder="Passport number"
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label>Passport Expiry</Label>
-                      <Input
-                        type="date"
-                        value={passenger.passport_expiry}
-                        onChange={(e) => updatePassenger(index, 'passport_expiry', e.target.value)}
-                        className="mt-1"
-                        min={new Date().toISOString().split('T')[0]}
-                      />
-                    </div>
-                  </>
-                )}
               </div>
             </CardContent>
           </Card>
