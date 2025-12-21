@@ -93,7 +93,25 @@ function App() {
   const handleSelectFlight = (flight) => {
     toast.success(`Selected flight: ${flight.airline} - £${Math.round(flight.price)}`);
     console.log('Selected flight:', flight);
-    // Here you would navigate to booking page or show booking modal
+    setSelectedFlight(flight);
+    setShowBooking(true);
+    setShowResults(false);
+    window.scrollTo(0, 0);
+  };
+
+  const handleBackToResults = () => {
+    setShowBooking(false);
+    setSelectedFlight(null);
+    setShowResults(true);
+  };
+
+  const handleBookingComplete = () => {
+    setShowBooking(false);
+    setSelectedFlight(null);
+    setShowResults(false);
+    setSearchResults([]);
+    setSavedSearchData(null);
+    setSearchParams(null);
   };
 
   const iconMap = {
