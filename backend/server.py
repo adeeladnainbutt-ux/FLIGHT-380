@@ -87,6 +87,96 @@ async def get_status_checks():
     
     return status_checks
 
+# Flight Search Endpoints
+@api_router.post("/flights/search")
+async def search_flights(request: FlightSearchRequest):
+    """Search for flights using Amadeus API"""
+    try:
+        # Map travel class to Amadeus format
+        travel_class_map = {
+            'economy': 'ECONOMY',
+            'premium-economy': 'PREMIUM_ECONOMY',
+            'business': 'BUSINESS',
+            'first': 'FIRST'
+        }
+        
+        amadeus_class = travel_class_map.get(request.travel_class.lower(), 'ECONOMY')
+        
+        # Calculate total passengers
+        total_adults = request.adults + request.youth  # Youth counted as adults in Amadeus
+        
+        # Search flights
+        result = await amadeus_service.search_flights(
+            origin=request.origin,
+            destination=request.destination,
+            departure_date=request.departure_date,
+            return_date=request.return_date,
+            adults=total_adults,
+            children=request.children,
+            infants=request.infants,
+            travel_class=amadeus_class,
+            non_stop=request.direct_flights
+        )
+        
+        if result.get('success'):
+            # Format the results for frontend
+            formatted_flights = amadeus_service.format_flight_results(result)
+            
+            # Save search to database for analytics
+            search_record = {
+                'origin': request.origin,
+                'destination': request.destination,
+                'departure_date': request.departure_date,
+                'return_date': request.return_date,
+                'passengers': total_adults + request.children + request.infants,
+                'results_count': len(formatted_flights),
+                'timestamp': datetime.utcnow()
+            }
+            await db.flight_searches.insert_one(search_record)
+            
+            return {
+                'success': True,
+                'flights': formatted_flights,
+                'count': len(formatted_flights),
+                'meta': result.get('meta', {})
+            }
+        else:
+            return {
+                'success': False,
+                'error': result.get('error', {})
+            }
+    
+    except Exception as e:
+        logger.error(f"Flight search error: {str(e)}")
+        return {
+            'success': False,
+            'error': {
+                'message': str(e)
+            }
+        }
+
+@api_router.get("/airports/search")
+async def search_airports(keyword: str):
+    """Search for airports by keyword"""
+    try:
+        if len(keyword) < 2:
+            return {
+                'success': False,
+                'error': 'Keyword must be at least 2 characters'
+            }
+        
+        result = await amadeus_service.search_airports(keyword=keyword)
+        return result
+    
+    except Exception as e:
+        logger.error(f"Airport search error: {str(e)}")
+        return {
+            'success': False,
+            'error': {
+                'message': str(e)
+            }
+        }
+
 # Include the router in the main app
 app.include_router(api_router)
 
