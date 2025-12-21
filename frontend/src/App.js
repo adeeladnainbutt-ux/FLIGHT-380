@@ -33,12 +33,14 @@ function App() {
   const [searchError, setSearchError] = useState(null);
   const [searchParams, setSearchParams] = useState(null);
   const [isFlexibleSearch, setIsFlexibleSearch] = useState(false);
+  const [savedSearchData, setSavedSearchData] = useState(null); // Store full search data for Modify
 
   const handleSearch = async (searchData) => {
     console.log('Search data:', searchData);
     setIsLoading(true);
     setSearchError(null);
     setSearchParams(searchData);
+    setSavedSearchData(searchData); // Save full search data for modify
     setIsFlexibleSearch(searchData.flexiDates || false);
     
     try {
