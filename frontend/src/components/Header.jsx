@@ -17,10 +17,10 @@ export const Header = () => {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
         <a href="#home" className="flex items-center gap-2 group">
-          <div className="bg-gradient-to-br from-teal-600 to-cyan-600 p-2 rounded-lg group-hover:shadow-lg transition-all duration-300">
+          <div className="bg-gradient-to-br from-red-600 to-red-600 p-2 rounded-lg group-hover:shadow-lg transition-all duration-300">
             <Plane className="h-5 w-5 text-white" />
           </div>
-          <span className="text-xl font-bold bg-gradient-to-r from-teal-700 to-cyan-700 bg-clip-text text-transparent">
+          <span className="text-xl font-bold bg-gradient-to-r from-red-700 to-red-700 bg-clip-text text-transparent">
             Flight380
           </span>
         </a>
@@ -31,7 +31,7 @@ export const Header = () => {
             <a
               key={link.name}
               href={link.href}
-              className="text-slate-700 hover:text-teal-600 font-medium transition-colors duration-200"
+              className="text-slate-700 hover:text-red-600 font-medium transition-colors duration-200"
             >
               {link.name}
             </a>
@@ -43,7 +43,7 @@ export const Header = () => {
           <Button variant="ghost" className="font-medium">
             Sign In
           </Button>
-          <Button className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 font-semibold">
+          <Button className="bg-gradient-to-r from-red-600 to-red-600 hover:from-red-700 hover:to-red-700 font-semibold">
             Sign Up
           </Button>
         </div>
@@ -61,7 +61,7 @@ export const Header = () => {
                 <a
                   key={link.name}
                   href={link.href}
-                  className="text-lg font-medium text-slate-700 hover:text-teal-600 transition-colors py-2"
+                  className="text-lg font-medium text-slate-700 hover:text-red-600 transition-colors py-2"
                 >
                   {link.name}
                 </a>
@@ -70,7 +70,7 @@ export const Header = () => {
                 <Button variant="outline" className="w-full font-medium">
                   Sign In
                 </Button>
-                <Button className="w-full bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 font-semibold">
+                <Button className="w-full bg-gradient-to-r from-red-600 to-red-600 hover:from-red-700 hover:to-red-700 font-semibold">
                   Sign Up
                 </Button>
               </div>

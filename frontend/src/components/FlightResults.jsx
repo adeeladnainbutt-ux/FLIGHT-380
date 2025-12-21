@@ -260,13 +260,13 @@ export const FlightResults = ({ flights, isFlexible, onSelectFlight, searchParam
                     {/* Price & Action */}
                     <div className="flex flex-col items-end justify-between flex-shrink-0">
                       <div className="text-right mb-4">
-                        <div className="text-3xl font-bold text-teal-600">£{Math.round(flight.price)}</div>
+                        <div className="text-3xl font-bold text-red-600">£{Math.round(flight.price)}</div>
                         <div className="text-xs text-slate-500">in total</div>
                         <div className="text-xs text-slate-500">inc. airport taxes and fees</div>
                       </div>
                       <Button
                         onClick={() => onSelectFlight(flight)}
-                        className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 font-semibold px-8"
+                        className="bg-gradient-to-r from-red-600 to-red-600 hover:from-red-700 hover:to-red-700 font-semibold px-8"
                       >
                         Continue →
                       </Button>
@@ -375,7 +375,7 @@ const FlexibleDatesMatrix = ({ flights, searchParams, onSelectFlight }) => {
                     return (
                       <td
                         key={`${depDate}_${retDate}`}
-                        className={`border p-2 text-center cursor-pointer hover:bg-teal-50 transition-colors ${
+                        className={`border p-2 text-center cursor-pointer hover:bg-red-50 transition-colors ${
                           isLowest ? 'bg-green-50' : ''
                         }`}
                         onClick={() => flight && onSelectFlight(flight)}
