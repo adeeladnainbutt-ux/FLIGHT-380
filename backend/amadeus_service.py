@@ -29,17 +29,12 @@ class AmadeusService:
     ) -> Dict:
         """
         Search for flights with flexible dates (±3 days)
-        Searches departure dates varied with base return, plus key diagonal combinations.
-        Optimized for speed while providing meaningful date flexibility.
+        Uses concurrent API calls to search multiple date combinations in parallel.
         """
         try:
-            all_flights = []
             base_dep_date = datetime.strptime(departure_date, '%Y-%m-%d')
             
-            # Strategy: Search key date combinations to cover the matrix
-            # 7 calls for varying departure + 7 calls for diagonal (same offset) = 14 max
-            # But diagonal already provides variety, so just do varying departure + 3 diagonal extras
-            
+            # Build search combinations - vary departure with fixed return, plus diagonals
             search_combinations = []
             
             # Vary departure dates with base return date (7 combinations)
@@ -52,13 +47,13 @@ class AmadeusService:
                     'ret_offset': 0
                 })
             
-            # Add diagonal combinations (same offset for both dates) for remaining variety
+            # Add diagonal combinations for variety (same offset for both dates)
             if return_date:
                 base_ret_date = datetime.strptime(return_date, '%Y-%m-%d')
-                for day_offset in [-3, -2, 2, 3]:  # Skip -1, 0, 1 as they overlap significantly
+                for day_offset in [-3, -2, 2, 3]:  # Skip overlaps
                     dep_date = base_dep_date + timedelta(days=day_offset)
                     ret_date = base_ret_date + timedelta(days=day_offset)
-                    if ret_date > dep_date:  # Valid combination
+                    if ret_date > dep_date:
                         search_combinations.append({
                             'dep': dep_date.strftime('%Y-%m-%d'),
                             'ret': ret_date.strftime('%Y-%m-%d'),
@@ -66,12 +61,14 @@ class AmadeusService:
                             'ret_offset': day_offset
                         })
             
-            # Execute all searches with small max_results for speed
-            for combo in search_combinations:
-                # Skip if return date is before or equal to departure date
-                if combo['ret'] and combo['dep'] >= combo['ret']:
-                    continue
-                
+            # Filter valid combinations
+            valid_combinations = [
+                combo for combo in search_combinations
+                if not combo['ret'] or combo['dep'] < combo['ret']
+            ]
+            
+            # Create async tasks for parallel execution
+            async def search_combo(combo):
                 result = await self.search_flights(
                     origin=origin,
                     destination=destination,
@@ -82,7 +79,7 @@ class AmadeusService:
                     infants=infants,
                     travel_class=travel_class,
                     non_stop=non_stop,
-                    max_results=5,  # Keep low for speed
+                    max_results=5,
                     currency=currency
                 )
                 
@@ -92,7 +89,18 @@ class AmadeusService:
                         flight['ret_date_offset'] = combo['ret_offset']
                         flight['search_dep_date'] = combo['dep']
                         flight['search_ret_date'] = combo['ret']
-                    all_flights.extend(result['data'])
+                    return result['data']
+                return []
+            
+            # Execute all searches concurrently
+            tasks = [search_combo(combo) for combo in valid_combinations]
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+            
+            # Collect all flights from successful searches
+            all_flights = []
+            for result in results:
+                if isinstance(result, list):
+                    all_flights.extend(result)
             
             # Sort by price
             all_flights.sort(key=lambda x: float(x.get('price', {}).get('total', 999999)))
