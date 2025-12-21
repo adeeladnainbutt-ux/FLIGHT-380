@@ -48,37 +48,30 @@ export const FlightSearch = ({ onSearch }) => {
 
   // Custom filter function for airport search
   const filterAirports = (options, searchTerm) => {
-    if (!searchTerm) return options;
+    if (!searchTerm || searchTerm.trim() === '') return options;
     
     const term = searchTerm.toLowerCase().trim();
     
-    // First priority: Exact code match
-    const exactCodeMatch = options.filter(opt => 
+    // First check for exact code match
+    const exactMatch = options.filter(opt => 
       opt.code && opt.code.toLowerCase() === term
     );
     
-    if (exactCodeMatch.length > 0) {
-      return exactCodeMatch;
+    // If we have an exact code match, return only that
+    if (exactMatch.length > 0) {
+      return exactMatch;
     }
     
-    // Second priority: Code starts with search term
-    const codeStartsWith = options.filter(opt => 
-      opt.code && opt.code.toLowerCase().startsWith(term)
-    );
-    
-    // Third priority: City or name contains search term
-    const generalMatch = options.filter(opt => 
-      (opt.city && opt.city.toLowerCase().includes(term)) ||
-      (opt.name && opt.name.toLowerCase().includes(term))
-    );
-    
-    // Combine results, removing duplicates
-    const combined = [...codeStartsWith, ...generalMatch];
-    const unique = combined.filter((item, index, self) =>
-      index === self.findIndex((t) => t.code === item.code)
-    );
-    
-    return unique;
+    // Otherwise, filter by code starting with term, or city/name containing term
+    return options.filter(opt => {
+      const code = opt.code ? opt.code.toLowerCase() : '';
+      const city = opt.city ? opt.city.toLowerCase() : '';
+      const name = opt.name ? opt.name.toLowerCase() : '';
+      
+      return code.startsWith(term) || 
+             city.includes(term) || 
+             name.includes(term);
+    });
   };
 
   // Filtered airport lists
