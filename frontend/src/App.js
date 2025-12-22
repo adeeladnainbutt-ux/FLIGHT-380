@@ -45,6 +45,17 @@ function App() {
   const [showLogin, setShowLogin] = useState(false);
   const [isProcessingAuth, setIsProcessingAuth] = useState(false);
   
+  // App state - moved before conditional returns
+  const [searchResults, setSearchResults] = useState([]);
+  const [showResults, setShowResults] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [searchError, setSearchError] = useState(null);
+  const [searchParams, setSearchParams] = useState(null);
+  const [isFlexibleSearch, setIsFlexibleSearch] = useState(false);
+  const [savedSearchData, setSavedSearchData] = useState(null);
+  const [showBooking, setShowBooking] = useState(false);
+  const [selectedFlight, setSelectedFlight] = useState(null);
+  
   // Check for session_id in URL fragment (Google OAuth callback)
   useEffect(() => {
     if (window.location.hash?.includes('session_id=')) {
@@ -90,16 +101,6 @@ function App() {
   if (isProcessingAuth) {
     return <AuthCallback onAuthSuccess={handleAuthSuccess} onAuthError={handleAuthError} />;
   }
-
-  const [searchResults, setSearchResults] = useState([]);
-  const [showResults, setShowResults] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [searchError, setSearchError] = useState(null);
-  const [searchParams, setSearchParams] = useState(null);
-  const [isFlexibleSearch, setIsFlexibleSearch] = useState(false);
-  const [savedSearchData, setSavedSearchData] = useState(null);
-  const [showBooking, setShowBooking] = useState(false);
-  const [selectedFlight, setSelectedFlight] = useState(null);
 
   const handleSearch = async (searchData) => {
     console.log('Search data:', searchData);
