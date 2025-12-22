@@ -55,6 +55,7 @@ export const FlightResults = ({
   const [selectedOutbound, setSelectedOutbound] = useState(null);
   const [selectedReturn, setSelectedReturn] = useState(null);
   const [viewMode, setViewMode] = useState('combined'); // 'combined' or 'separate'
+  const [selectedMultiCityFlights, setSelectedMultiCityFlights] = useState({});
   
   // Collapsible sections
   const [expandedSections, setExpandedSections] = useState({
