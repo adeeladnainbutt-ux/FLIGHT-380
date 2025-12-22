@@ -1134,7 +1134,7 @@ export const FlightResults = ({
                           {/* Departure */}
                           <div className="text-center sm:text-left">
                             <div className="text-lg sm:text-2xl font-bold text-slate-900">{formatTime(flight.departure_time)}</div>
-                            <div className="text-xs sm:text-sm text-slate-600">{flight.from}</div>
+                            <div className="text-xs sm:text-sm font-semibold text-slate-700">{flight.from}</div>
                           </div>
 
                           {/* Duration & Stops */}
@@ -1150,11 +1150,11 @@ export const FlightResults = ({
                               <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-brand-500"></div>
                             </div>
                             <div className="text-xs text-brand-600 font-medium mt-1">
-                              {flight.is_direct || flight.stops === 0 ? 'Direct' : `${flight.stops} stop`}
+                              {flight.is_direct || flight.stops === 0 ? 'Direct' : `${flight.stops} connection`}
                             </div>
-                            {/* Layover Information */}
+                            {/* Layover/Connection Information */}
                             {flight.layovers && flight.layovers.length > 0 && (
-                              <div className="text-xs text-orange-600 mt-0.5">
+                              <div className="text-xs text-orange-600 font-medium mt-0.5">
                                 {flight.layovers.map((layover, idx) => (
                                   <span key={idx}>
                                     {layover.airport} ({layover.duration_display})
