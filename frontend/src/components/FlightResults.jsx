@@ -601,9 +601,9 @@ export const FlightResults = ({
       <Separator className="my-3" />
 
       {/* Airline Filter */}
-      <FilterSection title="Airline" name="airlines">
+      <FilterSection title={`Airline (${uniqueAirlines.length})`} name="airlines">
         <div className="space-y-2">
-          {uniqueAirlines.slice(0, 10).map(airline => (
+          {uniqueAirlines.map(airline => (
             <div key={airline.code} className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Checkbox
