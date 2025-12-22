@@ -102,14 +102,22 @@ export const Footer = () => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-slate-400 text-center md:text-left">
-            © 2025 Flight380. All rights reserved. ATOL Protected.
-          </p>
-          <div className="flex gap-6">
-            <a href="#terms" className="text-sm text-slate-400 hover:text-brand-400 transition-colors">Terms</a>
-            <a href="#privacy" className="text-sm text-slate-400 hover:text-brand-400 transition-colors">Privacy</a>
-            <a href="#cookies" className="text-sm text-slate-400 hover:text-brand-400 transition-colors">Cookies</a>
+        <div className="border-t border-slate-800 pt-8">
+          {/* Trust Badges */}
+          <div className="flex flex-wrap justify-center items-center gap-6 mb-6">
+            <img src="/iata-logo.png" alt="IATA Accredited Agent" className="h-16 w-auto rounded bg-white p-2" />
+            <img src="/atol-logo.png" alt="ATOL Protected" className="h-16 w-auto rounded bg-white p-2" />
+          </div>
+          
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-slate-400 text-center md:text-left">
+              © 2025 Flight380. All rights reserved. ATOL Protected.
+            </p>
+            <div className="flex gap-6">
+              <a href="#terms" className="text-sm text-slate-400 hover:text-brand-400 transition-colors">Terms</a>
+              <a href="#privacy" className="text-sm text-slate-400 hover:text-brand-400 transition-colors">Privacy</a>
+              <a href="#cookies" className="text-sm text-slate-400 hover:text-brand-400 transition-colors">Cookies</a>
+            </div>
           </div>
         </div>
       </div>
