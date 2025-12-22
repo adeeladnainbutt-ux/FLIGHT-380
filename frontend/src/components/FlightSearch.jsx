@@ -713,7 +713,10 @@ export const FlightSearch = ({ onSearch, initialData }) => {
         {tripType === 'multi-city' && (
           <TabsContent value="multi-city" className="space-y-4">
             {multiCityLegs.map((leg, index) => (
-              <Card key={index} className="p-4 bg-slate-50 border-slate-200">
+              <Card key={`multi-city-leg-${index}`} className="p-4 bg-slate-50 border-slate-200">
+                <div className="flex items-center gap-2 mb-3">
+                  <Badge variant="secondary" className="bg-brand-100 text-brand-700">Journey {index + 1}</Badge>
+                </div>
                 <div className="flex items-start gap-4">
                   <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
                     {/* From */}
@@ -727,35 +730,38 @@ export const FlightSearch = ({ onSearch, initialData }) => {
                           <Button
                             variant="outline"
                             className="w-full h-12 justify-start text-left font-normal"
+                            onClick={() => setMultiCityPopoverOpen(index, 'from', true)}
                           >
                             <MapPin className="mr-2 h-4 w-4 text-slate-500" />
                             {leg.from ? (
-                              <span className="text-sm">
-                                {leg.from.isGroup ? leg.from.name : leg.from.code}
+                              <span className="text-sm font-medium">
+                                {leg.from.isGroup ? leg.from.name : `${leg.from.code} - ${leg.from.city}`}
                               </span>
                             ) : (
-                              <span className="text-slate-500 text-sm">Select</span>
+                              <span className="text-slate-500 text-sm">Select departure</span>
                             )}
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-[350px] p-0">
+                        <PopoverContent className="w-[350px] p-0" align="start" sideOffset={4}>
                           <Command shouldFilter={false}>
                             <CommandInput 
-                              placeholder="Search airport..." 
+                              placeholder="Search airport or city..." 
                               value={multiCitySearchTerms[`${index}-from`] || ''}
                               onValueChange={(value) => updateMultiCitySearchTerm(index, 'from', value)}
                             />
-                            <CommandEmpty>No airport found.</CommandEmpty>
+                            <CommandEmpty>No airport found. Try another search.</CommandEmpty>
                             <CommandGroup className="max-h-64 overflow-auto">
                               {getFilteredMultiCityAirports(index, 'from').map((option) => (
                                 <CommandItem
-                                  key={option.isGroup ? `group-${option.code}` : `airport-${option.code}`}
+                                  key={option.isGroup ? `group-${index}-${option.code}` : `airport-${index}-${option.code}`}
                                   value={option.code}
                                   onSelect={() => {
+                                    console.log('Selected airport:', option);
                                     updateMultiCityLeg(index, 'from', option);
                                     updateMultiCitySearchTerm(index, 'from', '');
                                     setMultiCityPopoverOpen(index, 'from', false);
                                   }}
+                                  className="cursor-pointer"
                                 >
                                   <div className="flex flex-col">
                                     <span className="font-medium">
