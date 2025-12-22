@@ -219,6 +219,7 @@ function App() {
     setSearchResults([]);
     setSavedSearchData(null);
     setSearchParams(null);
+    sessionStorage.removeItem('flightSearchState');
   };
 
   // Navigate to Home - resets all state and scrolls to home
@@ -228,6 +229,10 @@ function App() {
     setShowResults(false);
     setIsLoading(false);
     setSearchError(null);
+    setSearchResults([]);
+    setSavedSearchData(null);
+    setSearchParams(null);
+    sessionStorage.removeItem('flightSearchState');
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setTimeout(() => {
       document.getElementById('home')?.scrollIntoView({ behavior: 'smooth' });
