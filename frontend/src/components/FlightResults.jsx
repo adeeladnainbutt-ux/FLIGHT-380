@@ -1194,7 +1194,7 @@ export const FlightResults = ({
                             <div className="flex items-center justify-between sm:justify-start sm:gap-8">
                               <div className="text-center sm:text-left">
                                 <div className="text-lg sm:text-2xl font-bold text-slate-900">{formatTime(flight.return_departure_time)}</div>
-                                <div className="text-xs sm:text-sm text-slate-600">{flight.to}</div>
+                                <div className="text-xs sm:text-sm font-semibold text-slate-700">{flight.to}</div>
                               </div>
 
                               <div className="flex flex-col items-center px-2 sm:px-4">
@@ -1209,11 +1209,11 @@ export const FlightResults = ({
                                   <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-brand-500"></div>
                                 </div>
                                 <div className="text-xs text-brand-600 font-medium mt-1">
-                                  {flight.return_is_direct || flight.return_stops === 0 ? 'Direct' : `${flight.return_stops} stop`}
+                                  {flight.return_is_direct || flight.return_stops === 0 ? 'Direct' : `${flight.return_stops} connection`}
                                 </div>
-                                {/* Return Layover Information */}
+                                {/* Return Layover/Connection Information */}
                                 {flight.return_layovers && flight.return_layovers.length > 0 && (
-                                  <div className="text-xs text-orange-600 mt-0.5">
+                                  <div className="text-xs text-orange-600 font-medium mt-0.5">
                                     {flight.return_layovers.map((layover, idx) => (
                                       <span key={idx}>
                                         {layover.airport} ({layover.duration_display})
@@ -1226,7 +1226,7 @@ export const FlightResults = ({
 
                               <div className="text-center sm:text-left">
                                 <div className="text-lg sm:text-2xl font-bold text-slate-900">{formatTime(flight.return_arrival_time)}</div>
-                                <div className="text-xs sm:text-sm text-slate-600">{flight.from}</div>
+                                <div className="text-xs sm:text-sm font-semibold text-slate-700">{flight.from}</div>
                               </div>
                             </div>
                           </div>
