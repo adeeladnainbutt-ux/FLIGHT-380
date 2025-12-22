@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import axios from 'axios';
 import { Header } from './components/Header';
@@ -6,6 +6,9 @@ import { Footer } from './components/Footer';
 import { FlightSearch } from './components/FlightSearch';
 import { FlightResults } from './components/FlightResults';
 import { BookingFlow } from './components/BookingFlow';
+import { WhatsAppButton } from './components/WhatsAppButton';
+import { AuthCallback } from './components/AuthCallback';
+import { LoginPage } from './components/LoginPage';
 import { Button } from './components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card';
 import { Badge } from './components/ui/badge';
@@ -37,6 +40,57 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 function App() {
+  // Auth state
+  const [user, setUser] = useState(null);
+  const [showLogin, setShowLogin] = useState(false);
+  const [isProcessingAuth, setIsProcessingAuth] = useState(false);
+  
+  // Check for session_id in URL fragment (Google OAuth callback)
+  useEffect(() => {
+    if (window.location.hash?.includes('session_id=')) {
+      setIsProcessingAuth(true);
+    } else {
+      // Check existing session
+      checkAuthSession();
+    }
+  }, []);
+
+  const checkAuthSession = async () => {
+    try {
+      const response = await axios.get(`${API}/auth/me`, { withCredentials: true });
+      setUser(response.data);
+    } catch (err) {
+      // Not authenticated - that's fine
+      setUser(null);
+    }
+  };
+
+  const handleAuthSuccess = (userData) => {
+    setUser(userData);
+    setIsProcessingAuth(false);
+    toast.success(`Welcome, ${userData.name || userData.email}!`);
+  };
+
+  const handleAuthError = (error) => {
+    setIsProcessingAuth(false);
+    toast.error('Sign in failed. Please try again.');
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await axios.post(`${API}/auth/logout`, {}, { withCredentials: true });
+      setUser(null);
+      toast.success('Signed out successfully');
+    } catch (err) {
+      setUser(null);
+    }
+  };
+
+  // If processing OAuth callback, show AuthCallback
+  if (isProcessingAuth) {
+    return <AuthCallback onAuthSuccess={handleAuthSuccess} onAuthError={handleAuthError} />;
+  }
+
   const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
