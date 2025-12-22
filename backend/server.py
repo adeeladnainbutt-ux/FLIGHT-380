@@ -206,58 +206,82 @@ async def search_flights(request: FlightSearchRequest):
         # Calculate total passengers
         total_adults = request.adults + request.youth  # Youth counted as adults in Amadeus
         
-        # Search flights - use flexible search if requested
-        if request.flexible_dates:
-            result = await amadeus_service.search_flights_flexible(
-                origin=request.origin,
-                destination=request.destination,
-                departure_date=request.departure_date,
-                return_date=request.return_date,
-                adults=total_adults,
-                children=request.children,
-                infants=request.infants,
-                travel_class=amadeus_class,
-                non_stop=request.direct_flights
-            )
-        else:
-            result = await amadeus_service.search_flights(
-                origin=request.origin,
-                destination=request.destination,
-                departure_date=request.departure_date,
-                return_date=request.return_date,
-                adults=total_adults,
-                children=request.children,
-                infants=request.infants,
-                travel_class=amadeus_class,
-                non_stop=request.direct_flights
-            )
+        # Handle airport groups - search all airports in the group
+        origin_airports = request.origin_airports if request.origin_airports else [request.origin]
+        destination_airports = request.destination_airports if request.destination_airports else [request.destination]
         
-        if result.get('success'):
-            # Format the results for frontend
-            formatted_flights = amadeus_service.format_flight_results(result)
+        all_flights = []
+        seen_flights = set()  # To avoid duplicates
+        
+        # Search for all origin-destination combinations
+        for origin in origin_airports:
+            for destination in destination_airports:
+                try:
+                    if request.flexible_dates:
+                        result = await amadeus_service.search_flights_flexible(
+                            origin=origin,
+                            destination=destination,
+                            departure_date=request.departure_date,
+                            return_date=request.return_date,
+                            adults=total_adults,
+                            children=request.children,
+                            infants=request.infants,
+                            travel_class=amadeus_class,
+                            non_stop=request.direct_flights
+                        )
+                    else:
+                        result = await amadeus_service.search_flights(
+                            origin=origin,
+                            destination=destination,
+                            departure_date=request.departure_date,
+                            return_date=request.return_date,
+                            adults=total_adults,
+                            children=request.children,
+                            infants=request.infants,
+                            travel_class=amadeus_class,
+                            non_stop=request.direct_flights
+                        )
+                    
+                    if result.get('success'):
+                        formatted_flights = amadeus_service.format_flight_results(result)
+                        for flight in formatted_flights:
+                            # Create a unique key to avoid duplicates
+                            flight_key = f"{flight.get('departure_time')}_{flight.get('arrival_time')}_{flight.get('from')}_{flight.get('to')}_{flight.get('price')}"
+                            if flight_key not in seen_flights:
+                                seen_flights.add(flight_key)
+                                all_flights.append(flight)
+                except Exception as search_error:
+                    logger.warning(f"Search failed for {origin}-{destination}: {str(search_error)}")
+                    continue
+        
+        if all_flights:
+            # Sort all flights by price
+            all_flights.sort(key=lambda x: x.get('price', float('inf')))
             
             # Save search to database for analytics
             search_record = {
                 'origin': request.origin,
                 'destination': request.destination,
+                'origin_airports': origin_airports,
+                'destination_airports': destination_airports,
                 'departure_date': request.departure_date,
                 'return_date': request.return_date,
                 'passengers': total_adults + request.children + request.infants,
-                'results_count': len(formatted_flights),
+                'results_count': len(all_flights),
                 'timestamp': datetime.utcnow()
             }
             await db.flight_searches.insert_one(search_record)
             
             return {
                 'success': True,
-                'flights': formatted_flights,
-                'count': len(formatted_flights),
-                'meta': result.get('meta', {})
+                'flights': all_flights,
+                'count': len(all_flights),
+                'meta': {'searched_origins': origin_airports, 'searched_destinations': destination_airports}
             }
         else:
             return {
                 'success': False,
-                'error': result.get('error', {})
+                'error': {'message': 'No flights found for the selected airports'}
             }
     
     except Exception as e:
