@@ -151,15 +151,14 @@ export const FlightSearch = ({ onSearch, initialData }) => {
     }));
   };
 
-  const addMultiCityLeg = () => {
-    if (multiCityLegs.length < 5) {
-      setMultiCityLegs([...multiCityLegs, { from: null, to: null, date: null }]);
-    }
-  };
-
   const removeMultiCityLeg = (index) => {
     if (multiCityLegs.length > 2) {
-      setMultiCityLegs(multiCityLegs.filter((_, i) => i !== index));
+      const newLegs = multiCityLegs.filter((_, i) => i !== index);
+      // Re-chain: update the "from" of the leg after the removed one
+      if (index > 0 && index < newLegs.length) {
+        newLegs[index] = { ...newLegs[index], from: newLegs[index - 1]?.to || null };
+      }
+      setMultiCityLegs(newLegs);
     }
   };
 
