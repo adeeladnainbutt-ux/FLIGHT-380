@@ -243,20 +243,20 @@ function App() {
 
       {/* Hero Section - Hide when loading, showing results, or booking */}
       {!isLoading && !showResults && !showBooking && (
-        <section id="home" className="relative pt-24 pb-16 md:pt-32 md:pb-24 overflow-hidden">
+        <section id="home" className="relative pt-28 pb-16 md:pt-36 md:pb-24 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-brand-50 via-brand-50 to-slate-50 -z-10"></div>
           <div className="container mx-auto px-4">
-            <div className="text-center mb-12 space-y-4">
+            <div className="text-center mb-8 md:mb-12 space-y-4">
               <Badge className="bg-brand-100 text-brand-700 hover:bg-brand-200 px-4 py-1.5 text-sm font-medium">
                 Book with Confidence
               </Badge>
-              <h1 className="text-4xl md:text-6xl font-bold text-slate-900 leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight">
                 Find Your Perfect
                 <span className="block bg-gradient-to-r from-brand-600 to-brand-600 bg-clip-text text-transparent">
                   Flight Deal
                 </span>
               </h1>
-              <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto">
+              <p className="text-base md:text-lg lg:text-xl text-slate-600 max-w-2xl mx-auto px-4">
                 Compare prices from hundreds of airlines and travel agents. Save up to 40% on your next trip.
               </p>
             </div>
@@ -265,22 +265,22 @@ function App() {
             <FlightSearch onSearch={handleSearch} initialData={savedSearchData} />
 
             {/* Trust Indicators */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12 max-w-4xl mx-auto">
-              <div className="text-center p-4">
-                <div className="text-2xl md:text-3xl font-bold text-slate-900">1M+</div>
-                <div className="text-sm text-slate-600">Happy Travelers</div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 md:mt-12 max-w-4xl mx-auto">
+              <div className="text-center p-3 md:p-4">
+                <div className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">1M+</div>
+                <div className="text-xs sm:text-sm text-slate-600">Happy Travelers</div>
               </div>
-              <div className="text-center p-4">
-                <div className="text-2xl md:text-3xl font-bold text-slate-900">500+</div>
-                <div className="text-sm text-slate-600">Airlines</div>
+              <div className="text-center p-3 md:p-4">
+                <div className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">500+</div>
+                <div className="text-xs sm:text-sm text-slate-600">Airlines</div>
               </div>
-              <div className="text-center p-4">
-                <div className="text-2xl md:text-3xl font-bold text-slate-900">180+</div>
-                <div className="text-sm text-slate-600">Countries</div>
+              <div className="text-center p-3 md:p-4">
+                <div className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">180+</div>
+                <div className="text-xs sm:text-sm text-slate-600">Countries</div>
               </div>
-              <div className="text-center p-4">
-                <div className="text-2xl md:text-3xl font-bold text-slate-900">24/7</div>
-                <div className="text-sm text-slate-600">Support</div>
+              <div className="text-center p-3 md:p-4">
+                <div className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">24/7</div>
+                <div className="text-xs sm:text-sm text-slate-600">Support</div>
               </div>
             </div>
           </div>
