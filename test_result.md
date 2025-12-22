@@ -379,6 +379,66 @@ test_plan:
         agent: "testing"
         comment: "TESTED: Calendar usability improvements successfully implemented and verified. ✅ LARGER DAY BUTTONS: Line 43 confirms 'h-10 w-10' classes for day buttons (40x40px vs previous 32x32px), making them more tap-friendly. ✅ INCREASED FONT SIZES: Line 22 shows 'text-base' for caption_label (larger heading), line 43 shows 'text-sm' for day cells (improved readability). ✅ NAVIGATION BUTTONS: Line 26 confirms 'h-9 w-9' classes for nav_button (36x36px vs previous 28x28px), making navigation easier. ✅ BRAND RED COLOR: Line 48 confirms selected day uses 'bg-brand-600' (#E73121) with proper hover and focus states. ✅ IMPROVED ACCESSIBILITY: Larger touch targets meet accessibility guidelines for mobile interaction. The calendar component is now significantly more usable with better sizing and brand consistency."
 
+  - task: "Company Branding & Contact Info"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/Header.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "TESTED: Company branding and contact info successfully implemented. ✅ FLIGHT380 LOGO: Logo file (/logo-f380.png) properly displayed in header with correct alt text and responsive sizing (h-10 sm:h-12). ✅ PHONE NUMBER: 01908 220000 displayed in red header bar (bg-brand-600) with proper tel: link and '24/7 Available' text. Phone number also visible in mobile menu. ✅ ADDRESS: Contact section displays complete address (277 Dunstable Road, Luton, Bedfordshire, LU4 8BS) in properly formatted contact cards with MapPin icon. All branding elements use consistent Flight380 styling and red color scheme (#E73121)."
+
+  - task: "WhatsApp Chat Button"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/WhatsAppButton.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "TESTED: WhatsApp chat button fully implemented and working correctly. ✅ FLOATING BUTTON: Green WhatsApp button positioned in bottom-right corner (fixed bottom-6 right-6) with proper hover effects and scaling animation. ✅ AVAILABILITY BADGE: Shows 'Customer Support' and '08:00 AM - 11:59 PM (GMT)' in white badge above button. ✅ WHATSAPP NUMBER: Correctly configured with +44 7404 386262, opens wa.me link in new tab with proper URL encoding. ✅ MOBILE VISIBILITY: Button remains visible and accessible on mobile viewport (375x667). ✅ STYLING: Uses proper green colors (bg-green-500 hover:bg-green-600) and WhatsApp SVG icon. Button functionality confirmed by testing click action."
+
+  - task: "Authentication (Sign In / Sign Up)"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/LoginPage.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "TESTED: Authentication system fully implemented and working correctly. ✅ HEADER BUTTONS: Sign In and Sign Up buttons visible in header with proper styling and responsive design. ✅ LOGIN MODAL: Modal opens correctly with Flight380 branding and logo, proper overlay and card styling. ✅ GOOGLE LOGIN: 'Continue with Google' button implemented with proper OAuth flow to auth.emergentagent.com. ✅ EMAIL/PASSWORD FORM: Complete login form with email and password inputs, proper validation and error handling. ✅ REGISTER FORM: Registration form includes name, email, password, and confirm password fields with validation. ✅ FORGOT PASSWORD: Forgot password option available with email reset functionality. ✅ BACKEND ENDPOINTS: Auth endpoints properly configured (/api/auth/login, /api/auth/register, /api/auth/session) with withCredentials for session management. ✅ MOBILE SUPPORT: Authentication works correctly on mobile with proper form layouts and touch-friendly buttons."
+
+  - task: "Airline Logos"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/utils/airlineLogos.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "TESTED: Airline logos system fully implemented and ready for use. ✅ AIRLINE LOGO COMPONENT: AirlineLogo component properly implemented in utils/airlineLogos.js with comprehensive airline database. ✅ CDN INTEGRATION: Uses kiwi.com CDN URLs for airline logos (https://images.kiwi.com/airlines/64/[CODE].png) with 64px size. ✅ MAJOR AIRLINES COVERED: Includes logos for BA (British Airways), AF (Air France), EK (Emirates), LH (Lufthansa), and 80+ other major airlines worldwide. ✅ FALLBACK HANDLING: Component includes proper error handling and fallback to airline code display if logo fails to load. ✅ STYLING: Logos displayed in white rounded containers with border and proper sizing (w-10 h-10 default). ✅ HELPER FUNCTIONS: getAirlineLogo() function provides easy access to logo URLs with fallback support. Component is ready for integration with flight results display."
+
+  - task: "Mobile Responsiveness (New Features)"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/Header.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "TESTED: Mobile responsiveness for new features successfully verified. ✅ MOBILE VIEWPORT (375x667): All new features properly responsive - phone number visible in mobile header, hamburger menu functional with navigation links, WhatsApp button remains visible and accessible. ✅ TABLET VIEWPORT (768x1024): Proper scaling and layout adaptation for all new features. ✅ DESKTOP VIEWPORT (1920x1080): Full desktop layout with all features properly positioned and styled. ✅ PHONE NUMBER: Visible in both mobile header bar and mobile menu with proper tel: links. ✅ HAMBURGER MENU: Opens correctly with all navigation links (Home, Destinations, Deals, About, Contact) and authentication buttons. ✅ WHATSAPP BUTTON: Maintains fixed positioning and accessibility across all viewport sizes. ✅ AUTHENTICATION: Sign In/Sign Up buttons work correctly in mobile menu with proper modal display. All new features maintain usability and accessibility across different screen sizes."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
