@@ -446,39 +446,224 @@ export const FlightResults = ({
     </Card>
   );
 
-  return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Search Summary Bar with Modify Button */}
-      <div className="mb-6 bg-white rounded-lg shadow-sm border p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <Plane className="h-5 w-5 text-brand-600" />
-              <span className="font-semibold">{searchParams?.origin}</span>
-              <span className="text-slate-400">→</span>
-              <span className="font-semibold">{searchParams?.destination}</span>
+  // Calculate active filter count for mobile button
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filters.fareType) count++;
+    if (filters.stopsOutbound) count++;
+    if (filters.stopsReturn) count++;
+    if (filters.baggage) count++;
+    if (filters.airlines.length > 0) count += filters.airlines.length;
+    if (filters.outboundDepartureTime) count++;
+    if (filters.outboundArrivalTime) count++;
+    if (filters.returnDepartureTime) count++;
+    if (filters.returnArrivalTime) count++;
+    if (filters.connectionLengthOutbound) count++;
+    if (filters.connectionLengthReturn) count++;
+    if (filters.minPrice) count++;
+    if (filters.maxPrice) count++;
+    return count;
+  }, [filters]);
+
+  // Render filter content (used in both desktop sidebar and mobile sheet)
+  const renderFilterContent = () => (
+    <>
+      {/* Fare Type Filter */}
+      <FilterSection title="Fare Type" name="fareType">
+        <RadioGroup 
+          value={filters.fareType || ''} 
+          onValueChange={(value) => setFilters(prev => ({ ...prev, fareType: value || null }))}
+        >
+          {fareTypeOptions.map(option => (
+            <div key={option.value} className="flex items-center space-x-2 py-1.5">
+              <RadioGroupItem value={option.value} id={`m-fare-${option.value}`} />
+              <Label htmlFor={`m-fare-${option.value}`} className="text-sm cursor-pointer">
+                {option.label}
+              </Label>
             </div>
-            <div className="text-sm text-slate-600">
+          ))}
+        </RadioGroup>
+      </FilterSection>
+
+      <Separator className="my-3" />
+
+      {/* Stops from Origin Filter */}
+      <FilterSection title={`Stops from ${searchParams?.origin || 'Origin'}`} name="stopsOutbound">
+        <RadioGroup 
+          value={filters.stopsOutbound || ''} 
+          onValueChange={(value) => setFilters(prev => ({ ...prev, stopsOutbound: value || null }))}
+        >
+          {stopOptions.map(option => (
+            <div key={option.value} className="flex items-center justify-between py-1.5">
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value={option.value} id={`m-stopOut-${option.value}`} />
+                <Label htmlFor={`m-stopOut-${option.value}`} className="text-sm cursor-pointer">
+                  {option.label}
+                </Label>
+              </div>
+              <div className="text-right">
+                {option.minPrice && (
+                  <span className="text-sm font-medium text-brand-600">£{Math.round(option.minPrice)}</span>
+                )}
+                <span className="text-xs text-slate-400 ml-1">({option.count})</span>
+              </div>
+            </div>
+          ))}
+        </RadioGroup>
+      </FilterSection>
+
+      {isRoundTrip && (
+        <>
+          <Separator className="my-3" />
+          <FilterSection title={`Stops from ${searchParams?.destination || 'Destination'}`} name="stopsReturn">
+            <RadioGroup 
+              value={filters.stopsReturn || ''} 
+              onValueChange={(value) => setFilters(prev => ({ ...prev, stopsReturn: value || null }))}
+            >
+              {stopOptions.map(option => (
+                <div key={option.value} className="flex items-center justify-between py-1.5">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value={option.value} id={`m-stopRet-${option.value}`} />
+                    <Label htmlFor={`m-stopRet-${option.value}`} className="text-sm cursor-pointer">
+                      {option.label}
+                    </Label>
+                  </div>
+                  <div className="text-right">
+                    {option.minPrice && (
+                      <span className="text-sm font-medium text-brand-600">£{Math.round(option.minPrice)}</span>
+                    )}
+                    <span className="text-xs text-slate-400 ml-1">({option.count})</span>
+                  </div>
+                </div>
+              ))}
+            </RadioGroup>
+          </FilterSection>
+        </>
+      )}
+
+      <Separator className="my-3" />
+
+      {/* Baggage Filter */}
+      <FilterSection title="Baggage" name="baggage">
+        <RadioGroup 
+          value={filters.baggage || ''} 
+          onValueChange={(value) => setFilters(prev => ({ ...prev, baggage: value || null }))}
+        >
+          {baggageOptions.map(option => (
+            <div key={option.value} className="flex items-center space-x-2 py-1.5">
+              <RadioGroupItem value={option.value} id={`m-bag-${option.value}`} />
+              <Label htmlFor={`m-bag-${option.value}`} className="text-sm cursor-pointer">
+                {option.label}
+              </Label>
+            </div>
+          ))}
+        </RadioGroup>
+      </FilterSection>
+
+      <Separator className="my-3" />
+
+      {/* Airline Filter */}
+      <FilterSection title="Airline" name="airlines">
+        <div className="space-y-2">
+          {uniqueAirlines.slice(0, 10).map(airline => (
+            <div key={airline.code} className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id={`m-airline-${airline.code}`}
+                  checked={filters.airlines.includes(airline.code)}
+                  onCheckedChange={(checked) => {
+                    setFilters(prev => ({
+                      ...prev,
+                      airlines: checked 
+                        ? [...prev.airlines, airline.code]
+                        : prev.airlines.filter(a => a !== airline.code)
+                    }));
+                  }}
+                />
+                <Label htmlFor={`m-airline-${airline.code}`} className="text-sm cursor-pointer flex items-center gap-2">
+                  <AirlineLogo airlineCode={airline.code} size="sm" />
+                  {airline.name}
+                </Label>
+              </div>
+              <span className="text-sm font-medium text-brand-600">£{Math.round(airline.minPrice)}</span>
+            </div>
+          ))}
+        </div>
+      </FilterSection>
+
+      <Separator className="my-3" />
+
+      {/* Price Range Filter */}
+      <FilterSection title="Total Price" name="price">
+        <div className="flex gap-2 items-center">
+          <div className="flex-1">
+            <Label className="text-xs text-slate-500">Min (£)</Label>
+            <Input
+              type="number"
+              placeholder="0"
+              value={filters.minPrice}
+              onChange={(e) => setFilters(prev => ({ ...prev, minPrice: e.target.value }))}
+              className="h-9"
+            />
+          </div>
+          <div className="flex-1">
+            <Label className="text-xs text-slate-500">Max (£)</Label>
+            <Input
+              type="number"
+              placeholder="Any"
+              value={filters.maxPrice}
+              onChange={(e) => setFilters(prev => ({ ...prev, maxPrice: e.target.value }))}
+              className="h-9"
+            />
+          </div>
+        </div>
+      </FilterSection>
+    </>
+  );
+
+  return (
+    <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+      {/* Search Summary Bar with Modify Button - MOBILE RESPONSIVE */}
+      <div className="mb-4 sm:mb-6 bg-white rounded-lg shadow-sm border p-3 sm:p-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          {/* Route and Date Info */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
+            <div className="flex items-center gap-2">
+              <Plane className="h-4 w-4 sm:h-5 sm:w-5 text-brand-600" />
+              <span className="font-semibold text-sm sm:text-base">{searchParams?.origin}</span>
+              <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 text-slate-400" />
+              <span className="font-semibold text-sm sm:text-base">{searchParams?.destination}</span>
+            </div>
+            <div className="text-xs sm:text-sm text-slate-600">
               {searchParams?.departure_date && format(new Date(searchParams.departure_date), 'dd MMM yyyy')}
               {searchParams?.return_date && ` - ${format(new Date(searchParams.return_date), 'dd MMM yyyy')}`}
             </div>
-            {isFlexible && (
-              <Badge className="bg-brand-100 text-brand-700">±3 Days Flexible</Badge>
-            )}
-            {isRoundTrip && (
-              <Badge className="bg-blue-100 text-blue-700">Round Trip</Badge>
-            )}
+            <div className="flex gap-2 flex-wrap">
+              {isFlexible && (
+                <Badge className="bg-brand-100 text-brand-700 text-xs">±3 Days</Badge>
+              )}
+              {isRoundTrip && (
+                <Badge className="bg-blue-100 text-blue-700 text-xs">Round Trip</Badge>
+              )}
+            </div>
           </div>
+          {/* Modify Button */}
           <Button 
             onClick={onModifySearch}
             variant="outline"
-            className="border-brand-600 text-brand-600 hover:bg-brand-50"
+            size="sm"
+            className="border-brand-600 text-brand-600 hover:bg-brand-50 w-full sm:w-auto"
           >
             <Edit3 className="h-4 w-4 mr-2" />
             Modify Search
           </Button>
         </div>
       </div>
+
+      {/* Mobile Filter Button - Shows at bottom on mobile */}
+      <MobileFilterButton filterCount={activeFilterCount} onClearAll={clearAllFilters}>
+        {renderFilterContent()}
+      </MobileFilterButton>
 
       <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
         {/* Left Sidebar - Filters with VISIBLE Scrollbar - Hidden on mobile */}
