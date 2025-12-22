@@ -197,16 +197,29 @@ export const FlightSearch = ({ onSearch, initialData }) => {
     if (tripType === 'multi-city') {
       const validLegs = multiCityLegs.filter(leg => leg.from && leg.to && leg.date);
       if (validLegs.length >= 2) {
+        // Format legs for API
+        const formattedLegs = validLegs.map(leg => ({
+          origin: leg.from.isGroup ? leg.from.code : leg.from.code,
+          origin_airports: leg.from.isGroup ? leg.from.airports : [leg.from.code],
+          destination: leg.to.isGroup ? leg.to.code : leg.to.code,
+          destination_airports: leg.to.isGroup ? leg.to.airports : [leg.to.code],
+          departure_date: format(leg.date, 'yyyy-MM-dd'),
+          from: leg.from,
+          to: leg.to
+        }));
+        
         onSearch({
           tripType,
-          legs: validLegs,
+          legs: formattedLegs,
           adults,
           youth,
           children,
           infants,
           travelClass,
+          travel_class: travelClass,
           directFlights,
-          flexiDates,
+          direct_flights: directFlights,
+          flexiDates: false, // Multi-city doesn't support flexi dates
           airline: selectedAirline
         });
       }
