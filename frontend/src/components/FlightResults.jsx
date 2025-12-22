@@ -661,53 +661,34 @@ export const FlightResults = ({
 
   return (
     <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
-      {/* Search Summary Bar with Modify Button - FIXED AT TOP */}
-      <div className="sticky top-16 z-30 mb-4 sm:mb-6 bg-white rounded-lg shadow-md border p-3 sm:p-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          {/* Route and Date Info */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
-            {isMultiCity ? (
-              <div className="flex items-center gap-2 flex-wrap">
-                <Plane className="h-4 w-4 sm:h-5 sm:w-5 text-brand-600" />
-                <Badge className="bg-purple-100 text-purple-700 text-xs">Multi-City</Badge>
-                <span className="text-sm text-slate-600">
-                  {searchParams?.legs?.length || 0} Journeys
-                </span>
-              </div>
-            ) : (
-              <>
-                <div className="flex items-center gap-2">
-                  <Plane className="h-4 w-4 sm:h-5 sm:w-5 text-brand-600" />
-                  <span className="font-semibold text-sm sm:text-base">{searchParams?.origin}</span>
-                  <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 text-slate-400" />
-                  <span className="font-semibold text-sm sm:text-base">{searchParams?.destination}</span>
-                </div>
-                <div className="text-xs sm:text-sm text-slate-600">
-                  {searchParams?.departure_date && format(new Date(searchParams.departure_date), 'dd MMM yyyy')}
-                  {searchParams?.return_date && ` - ${format(new Date(searchParams.return_date), 'dd MMM yyyy')}`}
-                </div>
-              </>
-            )}
-            <div className="flex gap-2 flex-wrap">
-              {isFlexible && (
-                <Badge className="bg-brand-100 text-brand-700 text-xs">±3 Days</Badge>
-              )}
-              {isRoundTrip && (
-                <Badge className="bg-blue-100 text-blue-700 text-xs">Round Trip</Badge>
-              )}
-            </div>
-          </div>
-          {/* Modify Button - Always Visible */}
-          <Button 
-            onClick={onModifySearch}
-            variant="default"
-            size="sm"
-            className="bg-brand-600 hover:bg-brand-700 text-white w-full sm:w-auto flex-shrink-0"
-          >
-            <Edit3 className="h-4 w-4 mr-2" />
-            Modify Search
-          </Button>
+      {/* MODIFY SEARCH BAR - PROMINENT POSITION */}
+      <div className="bg-brand-600 text-white rounded-lg shadow-lg p-4 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-4 flex-wrap">
+          <Plane className="h-6 w-6" />
+          {isMultiCity ? (
+            <span className="font-semibold">Multi-City • {searchParams?.legs?.length || 0} Journeys</span>
+          ) : (
+            <>
+              <span className="font-semibold text-lg">{searchParams?.origin || 'Origin'}</span>
+              <ArrowRight className="h-5 w-5" />
+              <span className="font-semibold text-lg">{searchParams?.destination || 'Destination'}</span>
+              <span className="text-brand-100 text-sm">
+                {searchParams?.departure_date && format(new Date(searchParams.departure_date), 'dd MMM yyyy')}
+                {searchParams?.return_date && ` - ${format(new Date(searchParams.return_date), 'dd MMM yyyy')}`}
+              </span>
+            </>
+          )}
+          {isRoundTrip && <Badge className="bg-white text-brand-600">Round Trip</Badge>}
         </div>
+        <Button 
+          onClick={onModifySearch}
+          variant="secondary"
+          size="lg"
+          className="bg-white text-brand-600 hover:bg-brand-50 font-semibold w-full sm:w-auto"
+        >
+          <Edit3 className="h-5 w-5 mr-2" />
+          Modify Search
+        </Button>
       </div>
 
       {/* Mobile Filter Button - Shows at bottom on mobile */}
