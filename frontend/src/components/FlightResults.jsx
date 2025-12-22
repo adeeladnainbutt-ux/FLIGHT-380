@@ -1217,7 +1217,7 @@ export const FlightResults = ({
                                 <div className="text-lg font-bold text-brand-600">£{Math.round(flight.price)}</div>
                                 <div className="text-xs text-slate-500">per person</div>
                               </div>
-                              {selectedFlight?.id === flight.id && (
+                              {isThisFlightSelected && (
                                 <Badge className="bg-green-500 text-white">
                                   <Check className="w-3 h-3 mr-1" /> Selected
                                 </Badge>
@@ -1226,7 +1226,8 @@ export const FlightResults = ({
                           </div>
                         </CardContent>
                       </Card>
-                    ))}
+                      );
+                    })}
                     
                     {legFlights.length > 5 && (
                       <Button variant="outline" className="w-full text-sm">
