@@ -916,41 +916,6 @@ export const FlightResults = ({
         {renderFilterContent()}
       </MobileFilterButton>
 
-      {/* Mobile Filters - Collapsible section shown on mobile */}
-      <div className="lg:hidden mb-4">
-        <Card className="overflow-hidden">
-          <div className="p-3 border-b bg-slate-50">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-brand-600" />
-                <span className="font-semibold text-sm text-slate-900">{filteredFlights.length} Flights</span>
-              </div>
-              {(filters.stopsOutbound || filters.stopsReturn || filters.airlines.length > 0 || filters.minPrice || filters.maxPrice) && (
-                <Button variant="ghost" size="sm" onClick={clearAllFilters} className="text-brand-600 hover:text-brand-700 text-xs h-7 px-2">
-                  Clear
-                </Button>
-              )}
-            </div>
-          </div>
-          {/* Scrollable filter content - increased height and visible scrollbar */}
-          <div 
-            className="p-3 overflow-y-auto" 
-            style={{ 
-              maxHeight: 'calc(100vh - 280px)',
-              minHeight: '300px',
-              scrollbarWidth: 'thin',
-              scrollbarColor: '#E73121 #f1f5f9'
-            }}
-          >
-            {renderFilterContent()}
-            {/* Scroll indicator */}
-            <div className="text-center text-xs text-slate-400 pt-3 pb-1">
-              ↑ Scroll for more filters ↑
-            </div>
-          </div>
-        </Card>
-      </div>
-
       <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
         {/* Left Sidebar - Filters with VISIBLE Scrollbar - Hidden on mobile */}
         <div className="hidden lg:block w-72 flex-shrink-0">
