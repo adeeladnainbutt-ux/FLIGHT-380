@@ -433,6 +433,29 @@ export const FlightResults = ({
                     ? 'Direct' 
                     : `${type === 'return' ? flight.return_stops : flight.stops} stop`}
                 </div>
+                {/* Layover Information for FlightCard */}
+                {type === 'return' 
+                  ? (flight.return_layovers && flight.return_layovers.length > 0 && (
+                      <div className="text-xs text-orange-600 mt-0.5 text-center">
+                        {flight.return_layovers.map((layover, idx) => (
+                          <span key={idx}>
+                            {layover.airport} ({layover.duration_display})
+                            {idx < flight.return_layovers.length - 1 && ', '}
+                          </span>
+                        ))}
+                      </div>
+                    ))
+                  : (flight.layovers && flight.layovers.length > 0 && (
+                      <div className="text-xs text-orange-600 mt-0.5 text-center">
+                        {flight.layovers.map((layover, idx) => (
+                          <span key={idx}>
+                            {layover.airport} ({layover.duration_display})
+                            {idx < flight.layovers.length - 1 && ', '}
+                          </span>
+                        ))}
+                      </div>
+                    ))
+                }
               </div>
 
               {/* Arrival */}
