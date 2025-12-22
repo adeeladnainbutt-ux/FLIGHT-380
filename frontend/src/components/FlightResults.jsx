@@ -383,9 +383,7 @@ export const FlightResults = ({
         <div className="flex items-center gap-4">
           {/* Airline Logo */}
           <div className="flex-shrink-0">
-            <div className="w-12 h-12 bg-gradient-to-br from-brand-100 to-brand-200 rounded-lg flex items-center justify-center">
-              <span className="text-xs font-bold text-brand-700">{flight.airline_code}</span>
-            </div>
+            <AirlineLogo code={flight.airline_code} className="w-12 h-12" />
           </div>
 
           {/* Flight Details */}
