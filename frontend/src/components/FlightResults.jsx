@@ -1322,9 +1322,7 @@ const FlexibleDatesMatrix = ({ flights, searchParams, onSelectFlight, onModifySe
                   <div className="flex items-center justify-between">
                     {/* Airline Info */}
                     <div className="flex items-center gap-4 min-w-[150px]">
-                      <div className="w-12 h-12 bg-brand-100 rounded-lg flex items-center justify-center">
-                        <span className="font-bold text-brand-700">{flight.airline_code}</span>
-                      </div>
+                      <AirlineLogo code={flight.airline_code} className="w-12 h-12" />
                       <div>
                         <div className="font-semibold text-slate-900">{flight.airline}</div>
                         <div className="text-sm text-slate-500">{flight.airline_code}</div>
