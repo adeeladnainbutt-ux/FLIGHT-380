@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { AirlineLogo } from '../utils/airlineLogos';
+import { MobileFilterButton } from './MobileFilterButton';
 
 export const FlightResults = ({ 
   flights, 
