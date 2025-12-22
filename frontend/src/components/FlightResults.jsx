@@ -748,35 +748,35 @@ export const FlightResults = ({
       <Separator className="my-3" />
 
       {/* Departure Airport Filter */}
-      {uniqueDepartureAirports.length > 1 && (
-        <>
-          <FilterSection title={`Departure Airport (${uniqueDepartureAirports.length})`} name="departureAirport">
-            <div className="space-y-2">
-              {uniqueDepartureAirports.map(airport => (
-                <div key={airport} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`m-depAirport-${airport}`}
-                    checked={filters.departureAirport.includes(airport)}
-                    onCheckedChange={(checked) => {
-                      setFilters(prev => ({
-                        ...prev,
-                        departureAirport: checked 
-                          ? [...prev.departureAirport, airport]
-                          : prev.departureAirport.filter(a => a !== airport)
-                      }));
-                    }}
-                  />
-                  <Label htmlFor={`m-depAirport-${airport}`} className="text-sm cursor-pointer">
-                    {airport}
-                  </Label>
-                </div>
-              ))}
-            </div>
-          </FilterSection>
+      <FilterSection title={`Departure Airport${uniqueDepartureAirports.length > 0 ? ` (${uniqueDepartureAirports.length})` : ''}`} name="departureAirport">
+        {uniqueDepartureAirports.length > 0 ? (
+          <div className="space-y-2">
+            {uniqueDepartureAirports.map(airport => (
+              <div key={airport} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`m-depAirport-${airport}`}
+                  checked={filters.departureAirport.includes(airport)}
+                  onCheckedChange={(checked) => {
+                    setFilters(prev => ({
+                      ...prev,
+                      departureAirport: checked 
+                        ? [...prev.departureAirport, airport]
+                        : prev.departureAirport.filter(a => a !== airport)
+                    }));
+                  }}
+                />
+                <Label htmlFor={`m-depAirport-${airport}`} className="text-sm cursor-pointer">
+                  {airport}
+                </Label>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-slate-500">Single departure airport</p>
+        )}
+      </FilterSection>
 
-          <Separator className="my-3" />
-        </>
-      )}
+      <Separator className="my-3" />
 
       {/* Connection Length Filter - Outbound */}
       <FilterSection title={`Connection Length ${searchParams?.origin || ''} - ${searchParams?.destination || ''}`} name="connectionLengthOutbound">
