@@ -79,6 +79,23 @@ export const FlightResults = ({
 
   // Check if this is a round-trip search
   const isRoundTrip = searchParams?.return_date && flights.some(f => f.return_departure_time);
+  
+  // Check if this is a multi-city search
+  const isMultiCity = searchParams?.tripType === 'multi-city' && flights.some(f => f.leg_index !== undefined);
+  
+  // Group flights by leg for multi-city
+  const flightsByLeg = useMemo(() => {
+    if (!isMultiCity) return null;
+    const grouped = {};
+    flights.forEach(flight => {
+      const legIndex = flight.leg_index ?? 0;
+      if (!grouped[legIndex]) {
+        grouped[legIndex] = [];
+      }
+      grouped[legIndex].push(flight);
+    });
+    return grouped;
+  }, [flights, isMultiCity]);
 
   // Extract unique values for filters
   const uniqueAirlines = useMemo(() => {
