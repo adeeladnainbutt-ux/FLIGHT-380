@@ -380,67 +380,64 @@ export const FlightResults = ({
       }`}
       onClick={() => onSelect && onSelect(flight)}
     >
-      <CardContent className="p-4">
-        <div className="flex items-center gap-4">
-          {/* Airline Logo */}
-          <div className="flex-shrink-0">
-            <AirlineLogo code={flight.airline_code} className="w-12 h-12" />
+      <CardContent className="p-3 sm:p-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+          {/* Airline Logo + Name - Mobile */}
+          <div className="flex items-center gap-2 sm:flex-shrink-0">
+            <AirlineLogo code={flight.airline_code} className="w-8 h-8 sm:w-12 sm:h-12" />
+            <span className="text-xs text-slate-600 sm:hidden">{flight.airline}</span>
           </div>
 
           {/* Flight Details */}
           <div className="flex-1">
-            <div className="flex items-center gap-6">
+            <div className="flex items-center justify-between sm:gap-6">
               {/* Departure */}
               <div className="text-center">
-                <div className="text-xl font-bold text-slate-900">{formatTime(type === 'return' ? flight.return_departure_time : flight.departure_time)}</div>
+                <div className="text-base sm:text-xl font-bold text-slate-900">{formatTime(type === 'return' ? flight.return_departure_time : flight.departure_time)}</div>
                 <div className="text-xs text-slate-500">{type === 'return' ? flight.to : flight.from}</div>
               </div>
 
               {/* Duration & Stops */}
-              <div className="flex flex-col items-center flex-1">
+              <div className="flex flex-col items-center flex-1 px-1 sm:px-0">
                 <div className="text-xs text-slate-500">{formatDuration(type === 'return' ? flight.return_duration : flight.duration)}</div>
-                <div className="flex items-center w-full">
-                  <div className="w-2 h-2 rounded-full bg-brand-500"></div>
+                <div className="flex items-center w-full max-w-[80px] sm:max-w-none">
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-brand-500"></div>
                   <div className="flex-1 h-px bg-slate-300 relative mx-1">
                     {((type === 'return' ? flight.return_stops : flight.stops) > 0) && (
-                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-orange-400"></div>
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-orange-400"></div>
                     )}
                   </div>
-                  <div className="w-2 h-2 rounded-full bg-brand-500"></div>
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-brand-500"></div>
                 </div>
                 <div className="text-xs text-brand-600 font-medium">
                   {(type === 'return' ? (flight.return_is_direct || flight.return_stops === 0) : (flight.is_direct || flight.stops === 0)) 
                     ? 'Direct' 
                     : `${type === 'return' ? flight.return_stops : flight.stops} stop`}
                 </div>
-                {/* Layover Time Display */}
-                {((type === 'return' ? flight.return_layover_display : flight.layover_display)) && (
-                  <div className="text-xs text-orange-600 mt-0.5">
-                    Layover: {type === 'return' ? flight.return_layover_display : flight.layover_display}
-                  </div>
-                )}
               </div>
 
               {/* Arrival */}
               <div className="text-center">
-                <div className="text-xl font-bold text-slate-900">{formatTime(type === 'return' ? flight.return_arrival_time : flight.arrival_time)}</div>
+                <div className="text-base sm:text-xl font-bold text-slate-900">{formatTime(type === 'return' ? flight.return_arrival_time : flight.arrival_time)}</div>
                 <div className="text-xs text-slate-500">{type === 'return' ? flight.from : flight.to}</div>
               </div>
             </div>
           </div>
 
-          {/* Price */}
-          <div className="text-right">
-            <div className="text-xl font-bold text-brand-600">£{Math.round(flight.price / (isRoundTrip ? 2 : 1))}</div>
-            <div className="text-xs text-slate-500">{type === 'outbound' ? 'outbound' : 'return'}</div>
-          </div>
-
-          {/* Selection indicator */}
-          {isSelected && (
-            <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
-              <Check className="h-5 w-5 text-white" />
+          {/* Price & Selection */}
+          <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0">
+            <div className="text-left sm:text-right">
+              <div className="text-lg sm:text-xl font-bold text-brand-600">£{Math.round(flight.price / (isRoundTrip ? 2 : 1))}</div>
+              <div className="text-xs text-slate-500">{type === 'outbound' ? 'outbound' : 'return'}</div>
             </div>
-          )}
+
+            {/* Selection indicator */}
+            {isSelected && (
+              <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                <Check className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+              </div>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>
