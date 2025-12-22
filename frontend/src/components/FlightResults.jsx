@@ -1247,6 +1247,68 @@ export const FlightResults = ({
                   </FilterSection>
                 </>
               )}
+
+              <Separator className="my-3" />
+
+              {/* Departure Airport Filter */}
+              <FilterSection title={`Departure Airport${uniqueDepartureAirports.length > 0 ? ` (${uniqueDepartureAirports.length})` : ''}`} name="departureAirport">
+                {uniqueDepartureAirports.length > 0 ? (
+                  <div className="space-y-2">
+                    {uniqueDepartureAirports.map(airport => (
+                      <div key={airport} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`depAirport-${airport}`}
+                          checked={filters.departureAirport.includes(airport)}
+                          onCheckedChange={(checked) => {
+                            setFilters(prev => ({
+                              ...prev,
+                              departureAirport: checked 
+                                ? [...prev.departureAirport, airport]
+                                : prev.departureAirport.filter(a => a !== airport)
+                            }));
+                          }}
+                        />
+                        <Label htmlFor={`depAirport-${airport}`} className="text-sm cursor-pointer">
+                          {airport}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-500">Single departure airport</p>
+                )}
+              </FilterSection>
+
+              <Separator className="my-3" />
+
+              {/* Connecting In Filter */}
+              <FilterSection title={`Connecting In${uniqueConnectingAirports.length > 0 ? ` (${uniqueConnectingAirports.length})` : ''}`} name="connectingIn">
+                {uniqueConnectingAirports.length > 0 ? (
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {uniqueConnectingAirports.map(airport => (
+                      <div key={airport} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`connIn-${airport}`}
+                          checked={filters.connectingIn.includes(airport)}
+                          onCheckedChange={(checked) => {
+                            setFilters(prev => ({
+                              ...prev,
+                              connectingIn: checked 
+                                ? [...prev.connectingIn, airport]
+                                : prev.connectingIn.filter(a => a !== airport)
+                            }));
+                          }}
+                        />
+                        <Label htmlFor={`connIn-${airport}`} className="text-sm cursor-pointer">
+                          {airport}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-500">Direct flights only</p>
+                )}
+              </FilterSection>
             </div>
           </Card>
         </div>
