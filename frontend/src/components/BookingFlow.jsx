@@ -177,24 +177,59 @@ export const BookingFlow = ({
     setError(null);
     
     try {
-      const response = await axios.post(`${API_URL}/api/create-booking`, {
-        flight_details: flight,
-        passenger_details: passengers,
-        contact_info: {
+      // Format passengers for backend API
+      const formattedPassengers = passengers.map(p => ({
+        type: p.type || 'ADULT',
+        title: p.title,
+        first_name: p.first_name,
+        last_name: p.last_name,
+        date_of_birth: p.date_of_birth,
+        gender: p.gender,
+        nationality: p.nationality || 'UK',
+        passport_number: p.passport_number || null,
+        passport_expiry: p.passport_expiry || null,
+        email: contactEmail,
+        phone: contactPhone
+      }));
+
+      const response = await axios.post(`${API_URL}/api/bookings/create`, {
+        flight_id: flight.id || `flight_${Date.now()}`,
+        flight_data: {
+          from: flight.from,
+          to: flight.to,
+          departure_time: flight.departure_time,
+          arrival_time: flight.arrival_time,
+          duration: flight.duration,
+          airline: flight.airline,
+          airline_code: flight.airline_code,
+          is_direct: flight.is_direct,
+          stops: flight.stops,
+          price: flight.price,
+          return_departure_time: flight.return_departure_time,
+          return_arrival_time: flight.return_arrival_time,
+          return_duration: flight.return_duration,
+          return_is_direct: flight.return_is_direct,
+          return_stops: flight.return_stops
+        },
+        passengers: formattedPassengers,
+        contact: {
           email: contactEmail,
           phone: contactPhone,
-          address: contactAddress,
-          city: contactCity,
-          country: contactCountry,
-          postal_code: contactPostalCode
+          address: contactAddress || null,
+          city: contactCity || null,
+          country: contactCountry || null,
+          postal_code: contactPostalCode || null
         },
-        total_price: priceBreakdown.grandTotal
+        passenger_counts: passengerCounts,
+        total_price: priceBreakdown.grandTotal,
+        currency: 'GBP'
       });
       
       setBookingResult(response.data);
       setStep(3);
     } catch (err) {
-      setError('Failed to create booking. Please try again.');
+      console.error('Booking error:', err);
+      setError(err.response?.data?.message || 'Failed to create booking. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
