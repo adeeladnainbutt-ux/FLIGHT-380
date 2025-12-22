@@ -839,10 +839,24 @@ async def forgot_password(data: ForgotPassword):
 # Include the router in the main app
 app.include_router(api_router)
 
+# CORS configuration - handle credentials properly
+cors_origins_env = os.environ.get('CORS_ORIGINS', '*')
+if cors_origins_env == '*':
+    # When using wildcard with credentials, we need to dynamically set the origin
+    # Use specific origins for production
+    cors_origins = [
+        "http://localhost:3000",
+        "https://skybook-portal-2.preview.emergentagent.com",
+        "https://flight380.co.uk",
+        "https://www.flight380.co.uk"
+    ]
+else:
+    cors_origins = cors_origins_env.split(',')
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_origins=cors_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
