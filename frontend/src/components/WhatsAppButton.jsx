@@ -12,17 +12,12 @@ export const WhatsAppButton = () => {
 
   return (
     <div className="fixed bottom-6 right-6 z-50">
-      {/* Availability badge */}
-      <div className="absolute -top-12 right-0 bg-white rounded-lg shadow-lg px-3 py-2 text-xs whitespace-nowrap">
-        <div className="text-slate-600 font-medium">Customer Support</div>
-        <div className="text-green-600 font-semibold">08:00 AM - 11:59 PM (GMT)</div>
-      </div>
-      
-      {/* WhatsApp button */}
+      {/* WhatsApp button only - removed popup to avoid blocking filter button */}
       <button
         onClick={handleClick}
         className="flex items-center justify-center w-14 h-14 bg-green-500 hover:bg-green-600 rounded-full shadow-lg transition-all duration-300 hover:scale-110 group"
         aria-label="Chat on WhatsApp"
+        title="Customer Support: 08:00 AM - 11:59 PM (GMT)"
       >
         <svg 
           viewBox="0 0 24 24" 
