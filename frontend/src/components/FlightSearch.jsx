@@ -221,18 +221,18 @@ export const FlightSearch = ({ onSearch, initialData }) => {
   };
 
   return (
-    <Card className="w-full max-w-5xl mx-auto p-6 bg-white/95 backdrop-blur-sm shadow-2xl border-0">
+    <Card className="w-full max-w-5xl mx-auto p-4 sm:p-6 bg-white/95 backdrop-blur-sm shadow-2xl border-0">
       <Tabs value={tripType} onValueChange={setTripType} className="w-full">
-        <TabsList className="grid w-full max-w-md grid-cols-3 mb-6">
-          <TabsTrigger value="round-trip">Round Trip</TabsTrigger>
-          <TabsTrigger value="one-way">One Way</TabsTrigger>
-          <TabsTrigger value="multi-city">Multi-City</TabsTrigger>
+        <TabsList className="grid w-full max-w-md grid-cols-3 mb-4 sm:mb-6">
+          <TabsTrigger value="round-trip" className="text-xs sm:text-sm">Round Trip</TabsTrigger>
+          <TabsTrigger value="one-way" className="text-xs sm:text-sm">One Way</TabsTrigger>
+          <TabsTrigger value="multi-city" className="text-xs sm:text-sm">Multi-City</TabsTrigger>
         </TabsList>
         
         {/* Round Trip and One Way */}
         {(tripType === 'round-trip' || tripType === 'one-way') && (
           <TabsContent value={tripType} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               {/* From Airport */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium">From</Label>
@@ -244,10 +244,10 @@ export const FlightSearch = ({ onSearch, initialData }) => {
                       aria-expanded={openFrom}
                       className="w-full justify-between h-12 text-left font-normal"
                     >
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-slate-500" />
+                      <div className="flex items-center gap-2 truncate">
+                        <MapPin className="h-4 w-4 text-slate-500 flex-shrink-0" />
                         {fromAirport ? (
-                          <span>
+                          <span className="truncate">
                             {fromAirport.isGroup ? fromAirport.name : `${fromAirport.code} - ${fromAirport.city}`}
                           </span>
                         ) : (
@@ -256,7 +256,7 @@ export const FlightSearch = ({ onSearch, initialData }) => {
                       </div>
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[350px] p-0">
+                  <PopoverContent className="w-[300px] sm:w-[350px] p-0">
                     <Command shouldFilter={false}>
                       <CommandInput 
                         placeholder="Search airport or code..." 
