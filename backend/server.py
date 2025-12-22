@@ -528,6 +528,314 @@ async def get_booking_emails(booking_id: str):
         }
 
 
+# ============================================
+# AUTHENTICATION ENDPOINTS
+# ============================================
+
+import hashlib
+import secrets
+from fastapi import Response, Request, Cookie
+
+# Auth Models
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class UserRegister(BaseModel):
+    email: EmailStr
+    password: str
+    name: str
+
+class ForgotPassword(BaseModel):
+    email: EmailStr
+
+class SessionRequest(BaseModel):
+    session_token: str
+    user_data: Dict[str, Any]
+
+class UserResponse(BaseModel):
+    user_id: str
+    email: str
+    name: str
+    picture: Optional[str] = None
+
+def hash_password(password: str) -> str:
+    """Hash password with salt"""
+    salt = "flight380_salt_"
+    return hashlib.sha256((salt + password).encode()).hexdigest()
+
+def generate_session_token() -> str:
+    """Generate a secure session token"""
+    return secrets.token_urlsafe(32)
+
+@api_router.post("/auth/session")
+async def store_session(request: SessionRequest, response: Response):
+    """Store session from Google OAuth"""
+    try:
+        user_data = request.user_data
+        
+        # Check if user exists
+        existing_user = await db.users.find_one({"email": user_data["email"]}, {"_id": 0})
+        
+        if existing_user:
+            # Update existing user
+            user_id = existing_user["user_id"]
+            await db.users.update_one(
+                {"user_id": user_id},
+                {"$set": {
+                    "name": user_data.get("name", existing_user.get("name")),
+                    "picture": user_data.get("picture"),
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+        else:
+            # Create new user
+            user_id = f"user_{uuid.uuid4().hex[:12]}"
+            await db.users.insert_one({
+                "user_id": user_id,
+                "email": user_data["email"],
+                "name": user_data.get("name", ""),
+                "picture": user_data.get("picture"),
+                "auth_type": "google",
+                "created_at": datetime.now(timezone.utc).isoformat()
+            })
+        
+        # Store session
+        expires_at = datetime.now(timezone.utc).replace(day=datetime.now(timezone.utc).day + 7)
+        await db.user_sessions.insert_one({
+            "user_id": user_id,
+            "session_token": request.session_token,
+            "expires_at": expires_at.isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        
+        # Set cookie
+        response.set_cookie(
+            key="session_token",
+            value=request.session_token,
+            httponly=True,
+            secure=True,
+            samesite="none",
+            path="/",
+            max_age=7 * 24 * 60 * 60  # 7 days
+        )
+        
+        return {"success": True, "user_id": user_id}
+        
+    except Exception as e:
+        logger.error(f"Session storage error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/auth/register")
+async def register_user(user: UserRegister, response: Response):
+    """Register a new user with email/password"""
+    try:
+        # Check if user exists
+        existing = await db.users.find_one({"email": user.email}, {"_id": 0})
+        if existing:
+            raise HTTPException(status_code=400, detail="Email already registered")
+        
+        # Create user
+        user_id = f"user_{uuid.uuid4().hex[:12]}"
+        password_hash = hash_password(user.password)
+        
+        await db.users.insert_one({
+            "user_id": user_id,
+            "email": user.email,
+            "name": user.name,
+            "password_hash": password_hash,
+            "auth_type": "email",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        
+        # Create session
+        session_token = generate_session_token()
+        expires_at = datetime.now(timezone.utc).replace(day=datetime.now(timezone.utc).day + 7)
+        
+        await db.user_sessions.insert_one({
+            "user_id": user_id,
+            "session_token": session_token,
+            "expires_at": expires_at.isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        
+        # Set cookie
+        response.set_cookie(
+            key="session_token",
+            value=session_token,
+            httponly=True,
+            secure=True,
+            samesite="none",
+            path="/",
+            max_age=7 * 24 * 60 * 60
+        )
+        
+        return {
+            "success": True,
+            "user": {
+                "user_id": user_id,
+                "email": user.email,
+                "name": user.name
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Registration error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/auth/login")
+async def login_user(user: UserLogin, response: Response):
+    """Login with email/password"""
+    try:
+        # Find user
+        db_user = await db.users.find_one({"email": user.email}, {"_id": 0})
+        if not db_user:
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+        
+        # Check password
+        if db_user.get("auth_type") == "google":
+            raise HTTPException(status_code=400, detail="This account uses Google sign-in")
+        
+        password_hash = hash_password(user.password)
+        if db_user.get("password_hash") != password_hash:
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+        
+        # Create session
+        session_token = generate_session_token()
+        expires_at = datetime.now(timezone.utc).replace(day=datetime.now(timezone.utc).day + 7)
+        
+        await db.user_sessions.insert_one({
+            "user_id": db_user["user_id"],
+            "session_token": session_token,
+            "expires_at": expires_at.isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        
+        # Set cookie
+        response.set_cookie(
+            key="session_token",
+            value=session_token,
+            httponly=True,
+            secure=True,
+            samesite="none",
+            path="/",
+            max_age=7 * 24 * 60 * 60
+        )
+        
+        return {
+            "success": True,
+            "user": {
+                "user_id": db_user["user_id"],
+                "email": db_user["email"],
+                "name": db_user.get("name", ""),
+                "picture": db_user.get("picture")
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Login error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/auth/me")
+async def get_current_user(request: Request, session_token: Optional[str] = Cookie(None)):
+    """Get current user from session"""
+    try:
+        # Try cookie first, then Authorization header
+        token = session_token
+        if not token:
+            auth_header = request.headers.get("Authorization")
+            if auth_header and auth_header.startswith("Bearer "):
+                token = auth_header[7:]
+        
+        if not token:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+        
+        # Find session
+        session = await db.user_sessions.find_one({"session_token": token}, {"_id": 0})
+        if not session:
+            raise HTTPException(status_code=401, detail="Invalid session")
+        
+        # Check expiry
+        expires_at = session["expires_at"]
+        if isinstance(expires_at, str):
+            expires_at = datetime.fromisoformat(expires_at.replace("Z", "+00:00"))
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
+        if expires_at < datetime.now(timezone.utc):
+            raise HTTPException(status_code=401, detail="Session expired")
+        
+        # Get user
+        user = await db.users.find_one({"user_id": session["user_id"]}, {"_id": 0, "password_hash": 0})
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+        
+        return user
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Auth check error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/auth/logout")
+async def logout_user(request: Request, response: Response, session_token: Optional[str] = Cookie(None)):
+    """Logout user"""
+    try:
+        token = session_token
+        if not token:
+            auth_header = request.headers.get("Authorization")
+            if auth_header and auth_header.startswith("Bearer "):
+                token = auth_header[7:]
+        
+        if token:
+            await db.user_sessions.delete_one({"session_token": token})
+        
+        response.delete_cookie(key="session_token", path="/")
+        
+        return {"success": True}
+        
+    except Exception as e:
+        logger.error(f"Logout error: {e}")
+        return {"success": True}  # Always return success for logout
+
+@api_router.post("/auth/forgot-password")
+async def forgot_password(data: ForgotPassword):
+    """Send password reset email (mocked)"""
+    try:
+        user = await db.users.find_one({"email": data.email}, {"_id": 0})
+        
+        # Always return success to prevent email enumeration
+        if user:
+            # Generate reset token
+            reset_token = secrets.token_urlsafe(32)
+            expires_at = datetime.now(timezone.utc).replace(hour=datetime.now(timezone.utc).hour + 1)
+            
+            await db.password_resets.insert_one({
+                "user_id": user["user_id"],
+                "token": reset_token,
+                "expires_at": expires_at.isoformat(),
+                "created_at": datetime.now(timezone.utc).isoformat()
+            })
+            
+            # Mock email sending
+            await db.emails.insert_one({
+                "to": data.email,
+                "subject": "Flight380 - Password Reset",
+                "body": f"Click here to reset your password: https://flight380.co.uk/reset-password?token={reset_token}",
+                "timestamp": datetime.now(timezone.utc).isoformat()
+            })
+        
+        return {"success": True, "message": "If an account exists with this email, you will receive a password reset link."}
+        
+    except Exception as e:
+        logger.error(f"Forgot password error: {e}")
+        return {"success": True, "message": "If an account exists with this email, you will receive a password reset link."}
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
