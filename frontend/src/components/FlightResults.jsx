@@ -1202,13 +1202,13 @@ export const FlightResults = ({
             </div>
           )}
 
-          {/* Separate View - Mix & Match for Round Trip */}
+          {/* Separate View - Mix & Match for Round Trip - Mobile Responsive */}
           {isRoundTrip && viewMode === 'separate' && (
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 pb-24 lg:pb-4">
               {/* Outbound Flights */}
               <div>
-                <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                  <PlaneTakeoff className="h-5 w-5 text-brand-600" />
+                <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-3 sm:mb-4 flex items-center gap-2">
+                  <PlaneTakeoff className="h-4 w-4 sm:h-5 sm:w-5 text-brand-600" />
                   Outbound Flights
                 </h3>
                 <div className="space-y-3">
@@ -1226,8 +1226,8 @@ export const FlightResults = ({
 
               {/* Return Flights */}
               <div>
-                <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                  <PlaneLanding className="h-5 w-5 text-brand-600" />
+                <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-3 sm:mb-4 flex items-center gap-2">
+                  <PlaneLanding className="h-4 w-4 sm:h-5 sm:w-5 text-brand-600" />
                   Return Flights
                 </h3>
                 <div className="space-y-3">
