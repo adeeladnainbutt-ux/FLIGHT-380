@@ -1290,7 +1290,7 @@ export const FlightResults = ({
                 onClick={onModifySearch}
                 variant="outline"
                 size="sm"
-                className="border-brand-600 text-brand-600 hover:bg-brand-50 font-medium"
+                className="hidden sm:flex border-brand-600 text-brand-600 hover:bg-brand-50 font-medium"
               >
                 <Edit3 className="h-4 w-4 mr-1" />
                 Modify
