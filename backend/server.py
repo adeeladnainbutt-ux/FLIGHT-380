@@ -311,6 +311,107 @@ async def search_flights(request: FlightSearchRequest):
             }
         }
 
+@api_router.post("/flights/multi-city-search")
+async def search_multi_city_flights(request: MultiCitySearchRequest):
+    """Search for multi-city flights using Amadeus API"""
+    try:
+        # Map travel class to Amadeus format
+        travel_class_map = {
+            'economy': 'ECONOMY',
+            'premium-economy': 'PREMIUM_ECONOMY',
+            'business': 'BUSINESS',
+            'first': 'FIRST'
+        }
+        
+        amadeus_class = travel_class_map.get(request.travel_class.lower(), 'ECONOMY')
+        total_adults = request.adults + request.youth
+        
+        all_leg_flights = []
+        
+        # Search for each leg separately
+        for leg_index, leg in enumerate(request.legs):
+            origin_airports = leg.origin_airports if leg.origin_airports else [leg.origin]
+            destination_airports = leg.destination_airports if leg.destination_airports else [leg.destination]
+            
+            leg_flights = []
+            seen_flights = set()
+            
+            # Search all origin-destination combinations for this leg
+            for origin in origin_airports:
+                for destination in destination_airports:
+                    try:
+                        result = await amadeus_service.search_flights(
+                            origin=origin,
+                            destination=destination,
+                            departure_date=leg.departure_date,
+                            return_date=None,  # One-way for each leg
+                            adults=total_adults,
+                            children=request.children,
+                            infants=request.infants,
+                            travel_class=amadeus_class,
+                            non_stop=request.direct_flights
+                        )
+                        
+                        if result.get('success'):
+                            formatted_flights = amadeus_service.format_flight_results(result)
+                            for flight in formatted_flights:
+                                flight_key = f"{flight.get('departure_time')}_{flight.get('arrival_time')}_{flight.get('from')}_{flight.get('to')}_{flight.get('price')}"
+                                if flight_key not in seen_flights:
+                                    seen_flights.add(flight_key)
+                                    flight['leg_index'] = leg_index
+                                    flight['leg_origin'] = leg.origin
+                                    flight['leg_destination'] = leg.destination
+                                    leg_flights.append(flight)
+                    except Exception as search_error:
+                        logger.warning(f"Multi-city search failed for leg {leg_index} ({origin}-{destination}): {str(search_error)}")
+                        continue
+            
+            # Sort leg flights by price
+            leg_flights.sort(key=lambda x: x.get('price', float('inf')))
+            all_leg_flights.append(leg_flights)
+        
+        # Check if we have flights for all legs
+        if all(len(leg) > 0 for leg in all_leg_flights):
+            # Flatten all flights with leg information
+            combined_flights = []
+            for leg_index, leg_flights in enumerate(all_leg_flights):
+                for flight in leg_flights:
+                    combined_flights.append(flight)
+            
+            # Save search record
+            search_record = {
+                'type': 'multi-city',
+                'legs': [{'origin': leg.origin, 'destination': leg.destination, 'date': leg.departure_date} for leg in request.legs],
+                'passengers': total_adults + request.children + request.infants,
+                'results_count': len(combined_flights),
+                'timestamp': datetime.utcnow()
+            }
+            await db.flight_searches.insert_one(search_record)
+            
+            return {
+                'success': True,
+                'flights': combined_flights,
+                'count': len(combined_flights),
+                'legs_count': len(request.legs),
+                'meta': {
+                    'type': 'multi-city',
+                    'legs': [{'origin': leg.origin, 'destination': leg.destination} for leg in request.legs]
+                }
+            }
+        else:
+            missing_legs = [i for i, leg in enumerate(all_leg_flights) if len(leg) == 0]
+            return {
+                'success': False,
+                'error': {'message': f'No flights found for leg(s): {", ".join([str(i+1) for i in missing_legs])}'}
+            }
+    
+    except Exception as e:
+        logger.error(f"Multi-city flight search error: {str(e)}")
+        return {
+            'success': False,
+            'error': {'message': str(e)}
+        }
+
 @api_router.get("/airports/search")
 async def search_airports(keyword: str):
     """Search for airports by keyword"""
