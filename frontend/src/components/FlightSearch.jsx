@@ -788,35 +788,38 @@ export const FlightSearch = ({ onSearch, initialData }) => {
                           <Button
                             variant="outline"
                             className="w-full h-12 justify-start text-left font-normal"
+                            onClick={() => setMultiCityPopoverOpen(index, 'to', true)}
                           >
                             <Plane className="mr-2 h-4 w-4 text-slate-500" />
                             {leg.to ? (
-                              <span className="text-sm">
-                                {leg.to.isGroup ? leg.to.name : leg.to.code}
+                              <span className="text-sm font-medium">
+                                {leg.to.isGroup ? leg.to.name : `${leg.to.code} - ${leg.to.city}`}
                               </span>
                             ) : (
-                              <span className="text-slate-500 text-sm">Select</span>
+                              <span className="text-slate-500 text-sm">Select destination</span>
                             )}
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-[350px] p-0">
+                        <PopoverContent className="w-[350px] p-0" align="start" sideOffset={4}>
                           <Command shouldFilter={false}>
                             <CommandInput 
-                              placeholder="Search airport..." 
+                              placeholder="Search airport or city..." 
                               value={multiCitySearchTerms[`${index}-to`] || ''}
                               onValueChange={(value) => updateMultiCitySearchTerm(index, 'to', value)}
                             />
-                            <CommandEmpty>No airport found.</CommandEmpty>
+                            <CommandEmpty>No airport found. Try another search.</CommandEmpty>
                             <CommandGroup className="max-h-64 overflow-auto">
                               {getFilteredMultiCityAirports(index, 'to').map((option) => (
                                 <CommandItem
-                                  key={option.isGroup ? `group-${option.code}` : `airport-${option.code}`}
+                                  key={option.isGroup ? `group-${index}-${option.code}` : `airport-${index}-${option.code}`}
                                   value={option.code}
                                   onSelect={() => {
+                                    console.log('Selected destination:', option);
                                     updateMultiCityLeg(index, 'to', option);
                                     updateMultiCitySearchTerm(index, 'to', '');
                                     setMultiCityPopoverOpen(index, 'to', false);
                                   }}
+                                  className="cursor-pointer"
                                 >
                                   <div className="flex flex-col">
                                     <span className="font-medium">
