@@ -295,17 +295,6 @@ export const FlightResults = ({
     return result;
   }, [flights, filters, sortBy]);
 
-  const parseDuration = (duration) => {
-    if (!duration) return 0;
-    const match = duration.match(/PT(\d+)H(\d+)?M?/);
-    if (match) {
-      const hours = parseInt(match[1]) || 0;
-      const minutes = parseInt(match[2]) || 0;
-      return hours * 60 + minutes;
-    }
-    return 0;
-  };
-
   const formatDuration = (duration) => {
     if (!duration) return 'N/A';
     return duration.replace('PT', '').replace('H', 'h ').replace('M', 'm');
