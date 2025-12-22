@@ -695,7 +695,10 @@ export const FlightSearch = ({ onSearch, initialData }) => {
                     {/* From */}
                     <div className="space-y-2">
                       <Label className="text-sm font-medium">From</Label>
-                      <Popover>
+                      <Popover 
+                        open={isMultiCityPopoverOpen(index, 'from')} 
+                        onOpenChange={(open) => setMultiCityPopoverOpen(index, 'from', open)}
+                      >
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
@@ -727,6 +730,7 @@ export const FlightSearch = ({ onSearch, initialData }) => {
                                   onSelect={() => {
                                     updateMultiCityLeg(index, 'from', option);
                                     updateMultiCitySearchTerm(index, 'from', '');
+                                    setMultiCityPopoverOpen(index, 'from', false);
                                   }}
                                 >
                                   <div className="flex flex-col">
