@@ -1340,7 +1340,7 @@ export const BookingFlow = ({
         </CardContent>
       </Card>
 
-      {/* Passenger Forms - Now properly sequenced: Adults -> Youth -> Children -> Infants */}
+      {/* Passenger Forms - Using memoized component to prevent focus loss */}
       {passengers.map((passenger, index) => {
         // Calculate proper numbering within each type
         let typeCount = 0;
@@ -1351,90 +1351,13 @@ export const BookingFlow = ({
         }
         
         return (
-          <Card key={index}>
-            <CardHeader className="bg-slate-50">
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5 text-brand-600" />
-                Passenger {index + 1} - {passenger.type} {typeCount > 1 ? `(${typeCount})` : ''}
-                <Badge className={`ml-2 ${
-                  passenger.type === 'ADULT' ? 'bg-slate-100' :
-                  passenger.type === 'YOUTH' ? 'bg-blue-100 text-blue-700' :
-                  passenger.type === 'CHILD' ? 'bg-orange-100 text-orange-700' :
-                  'bg-pink-100 text-pink-700'
-                }`}>
-                  {passenger.type === 'ADULT' ? '18+' :
-                   passenger.type === 'YOUTH' ? '12-17' :
-                   passenger.type === 'CHILD' ? '2-11' : '0-2'} years
-                </Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <Label>Title *</Label>
-                  <Select
-                    value={passenger.title}
-                    onValueChange={(value) => updatePassenger(index, 'title', value)}
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select title" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Mr">Mr</SelectItem>
-                      <SelectItem value="Mrs">Mrs</SelectItem>
-                      <SelectItem value="Ms">Ms</SelectItem>
-                      <SelectItem value="Miss">Miss</SelectItem>
-                      <SelectItem value="Dr">Dr</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>First Name *</Label>
-                  <Input
-                    value={passenger.first_name}
-                    onChange={(e) => updatePassenger(index, 'first_name', e.target.value)}
-                    placeholder="First name (as on passport)"
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label>Last Name *</Label>
-                  <Input
-                    value={passenger.last_name}
-                    onChange={(e) => updatePassenger(index, 'last_name', e.target.value)}
-                    placeholder="Last name (as on passport)"
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label>Date of Birth * <span className="text-xs text-slate-500">({passenger.type === 'ADULT' ? '18+' : passenger.type === 'YOUTH' ? '12-17' : passenger.type === 'CHILD' ? '2-11' : '0-2'} years)</span></Label>
-                  <Input
-                    type="date"
-                    value={passenger.date_of_birth}
-                    onChange={(e) => updatePassenger(index, 'date_of_birth', e.target.value)}
-                    className="mt-1 text-lg [&::-webkit-calendar-picker-indicator]:w-6 [&::-webkit-calendar-picker-indicator]:h-6 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                    style={{ fontSize: '16px', padding: '12px' }}
-                    max={passenger.type === 'INFANT' ? new Date().toISOString().split('T')[0] : undefined}
-                  />
-                </div>
-                <div>
-                  <Label>Gender *</Label>
-                  <Select
-                    value={passenger.gender}
-                    onValueChange={(value) => updatePassenger(index, 'gender', value)}
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select gender" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Male">Male</SelectItem>
-                      <SelectItem value="Female">Female</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <PassengerForm
+            key={`passenger-${index}`}
+            passenger={passenger}
+            index={index}
+            typeCount={typeCount}
+            onUpdate={updatePassenger}
+          />
         );
       })}
 
