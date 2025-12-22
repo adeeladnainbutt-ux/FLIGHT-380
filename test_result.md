@@ -316,6 +316,70 @@ test_plan:
   test_all: false
   test_priority: "high_first"
 
+  - task: "Mobile Responsiveness"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/FlightSearch.jsx, /app/frontend/src/components/FlightResults.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Mobile responsiveness fixes implemented: Single column layout on mobile, hamburger menu visible, text readable, buttons tap-friendly. Need to test at mobile viewport (375x667), tablet viewport (768x1024), and desktop viewport (1920x800)."
+
+  - task: "Return Flight Search - Mix & Match (Mixed Airlines)"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/FlightResults.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Mix & Match tab in FlightResults.jsx allows selecting different airlines for outbound/inbound. When in Mix & Match view mode, users can select one outbound flight and one return flight separately. Selected flights can be from different airlines. Combined price is shown and 'Book This Combination' button appears."
+
+  - task: "Passenger Details Input - Focus Loss Bug Fix"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/BookingFlow.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created a separate memoized PassengerForm component using React.memo. Used useCallback for input change handlers. Added stable keys (key='passenger-${index}') to prevent re-rendering. Input fields should now retain focus while typing. PassengerForm component (lines 40-130 approx)."
+
+  - task: "Calendar (Date Picker) Usability"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/ui/calendar.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Calendar component has been made larger (h-10 w-10 day buttons vs h-8 w-8). Font sizes increased (text-base caption, text-sm day cells). Navigation buttons increased (h-9 w-9 vs h-7 w-7). Selected day uses brand red color (#E73121)."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: true
+
+test_plan:
+  current_focus:
+    - "Mobile Responsiveness"
+    - "Return Flight Search - Mix & Match (Mixed Airlines)"
+    - "Passenger Details Input - Focus Loss Bug Fix"
+    - "Calendar (Date Picker) Usability"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
 agent_communication:
   - agent: "main"
     message: "Fixed backend flexible search to return multiple date combinations using parallel API calls. Now testing frontend price matrix rendering. Please test: 1) Search with LHR->CDG, dates Feb 15-22 2026, with flexible dates checkbox enabled. 2) Verify price matrix shows multiple departure and return date combinations. 3) Check that clicking a cell works."
@@ -339,3 +403,5 @@ agent_communication:
     message: "NAVIGATION TESTING COMPLETE: Successfully tested all three navigation and page fixes for Flight380. ✅ LOGO AND HOME NAVIGATION: Flight380 logo (with plane icon and gradient styling) and Home link both successfully navigate to home page from ANY state (Contact, About, Destinations, Deals sections). Both properly reset app state and scroll to home section with search form visible. Tested cross-section navigation and mobile navigation - all working perfectly. ✅ ABOUT SECTION: Complete About section implementation verified - About Us badge, 'Your Trusted Travel Partner' heading, Our Story section with company background (founded in London, A380 naming), all 4 statistics cards (1M+ Happy Customers, 500+ Partner Airlines, 190+ Countries Served, 10+ Years Experience), and Our Values section with 3 values (Customer First, Trust & Transparency, Innovation) with proper icons and descriptions. ✅ CONTACT SECTION: Complete Contact section implementation verified - Contact Us badge, 'Get in Touch' heading, all 4 contact information cards (Head Office with full address, Phone numbers with 24/7 availability, 3 email addresses, Customer Service Hours), and complete contact form with all required fields (First Name, Last Name, Email, Phone, Subject dropdown with 6 options, Booking Reference, Message textarea). All navigation features and content are working as expected with proper brand styling and responsive design."
   - agent: "testing"
     message: "COMPREHENSIVE FILTER SIDEBAR VERIFICATION COMPLETE: Conducted thorough code analysis of FlightResults.jsx to verify all 12 required filters per PDF specifications. ✅ COMPLETE IMPLEMENTATION CONFIRMED: All filters implemented in correct order - 1) Fare Type (IT/Net/Pub), 2) Stops from Origin (Direct/1/2+ Connections with prices), 3) Stops from Destination (round-trip), 4) Baggage (1x/2x/No Hold), 5) Airline (checkboxes with prices), 6-9) Time filters (Outbound/Return Departure/Arrival with Morning/Afternoon/Evening icons), 10) Total Price (Min/Max inputs), 11-12) Connection Length filters (No/Short/Relaxed/Long/Very Long). ✅ ADDITIONAL FEATURES: Clear All button, red scrollbar styling (#E73121), collapsible sections with chevron icons, flight count display, proper round-trip conditional rendering. ✅ TECHNICAL IMPLEMENTATION: Filter sidebar (.w-72 container), scrollable area (.filter-scroll), radio buttons, checkboxes, proper state management, and filtering logic all correctly implemented. Filter sidebar only appears on search results page as designed. Code matches PDF requirements exactly - comprehensive filter implementation is complete and production-ready."
+  - agent: "main"
+    message: "NEW TESTING REQUEST: Please test the following 4 fixes made to Flight380: 1) Mobile Responsiveness - Test at mobile viewport (375x667), tablet viewport (768x1024), desktop viewport (1920x800). Verify single column layout on mobile, hamburger menu visible, text readable, buttons tap-friendly. 2) Return Flight Search - Mix & Match feature in FlightResults.jsx allows selecting different airlines for outbound/inbound. 3) Passenger Details Input - Focus Loss Bug Fix with memoized PassengerForm component using React.memo. 4) Calendar (Date Picker) Usability - Calendar component has been made larger with increased font sizes and brand red color (#E73121)."
