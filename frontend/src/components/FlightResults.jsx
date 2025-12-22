@@ -24,6 +24,7 @@ import {
   PlaneLanding
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { AirlineLogo } from '../utils/airlineLogos';
 
 export const FlightResults = ({ 
   flights, 
