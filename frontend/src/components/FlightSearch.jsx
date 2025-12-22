@@ -165,14 +165,42 @@ export const FlightSearch = ({ onSearch, initialData }) => {
 
   const updateMultiCityLeg = (index, field, value) => {
     setMultiCityLegs(prevLegs => {
-      const newLegs = prevLegs.map((leg, i) => {
-        if (i === index) {
-          return { ...leg, [field]: value };
+      const newLegs = [...prevLegs];
+      
+      // Update the current field
+      newLegs[index] = { ...newLegs[index], [field]: value };
+      
+      // Auto-chain: When "to" is set, auto-fill next leg's "from"
+      if (field === 'to' && value && index < newLegs.length - 1) {
+        newLegs[index + 1] = { ...newLegs[index + 1], from: value };
+      }
+      
+      // Auto-chain: When "date" is set, ensure next leg's date is cleared if it's before this date
+      if (field === 'date' && value && index < newLegs.length - 1) {
+        const nextLegDate = newLegs[index + 1].date;
+        if (nextLegDate && nextLegDate < value) {
+          newLegs[index + 1] = { ...newLegs[index + 1], date: null };
         }
-        return leg;
-      });
+      }
+      
       return newLegs;
     });
+  };
+
+  // Add a new leg with auto-chaining
+  const addMultiCityLeg = () => {
+    if (multiCityLegs.length < 5) {
+      const lastLeg = multiCityLegs[multiCityLegs.length - 1];
+      // Auto-fill the new leg's "from" with the previous leg's "to"
+      setMultiCityLegs([
+        ...multiCityLegs, 
+        { 
+          from: lastLeg?.to || null, 
+          to: null, 
+          date: null 
+        }
+      ]);
+    }
   };
 
   const totalPassengers = adults + youth + children + infants;
