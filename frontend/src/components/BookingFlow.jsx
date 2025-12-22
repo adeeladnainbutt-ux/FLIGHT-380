@@ -183,11 +183,13 @@ export const BookingFlow = ({
     return duration.replace('PT', '').replace('H', 'h ').replace('M', 'm');
   };
 
-  const updatePassenger = (index, field, value) => {
-    const newPassengers = [...passengers];
-    newPassengers[index] = { ...newPassengers[index], [field]: value };
-    setPassengers(newPassengers);
-  };
+  const updatePassenger = useCallback((index, field, value) => {
+    setPassengers(prev => {
+      const newPassengers = [...prev];
+      newPassengers[index] = { ...newPassengers[index], [field]: value };
+      return newPassengers;
+    });
+  }, []);
 
   const validatePassengers = () => {
     for (let i = 0; i < passengers.length; i++) {
