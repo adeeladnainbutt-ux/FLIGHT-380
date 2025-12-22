@@ -722,6 +722,17 @@ export const FlightResults = ({
         {/* Left Sidebar - Filters with VISIBLE Scrollbar - Hidden on mobile */}
         <div className="hidden lg:block w-72 flex-shrink-0">
           <Card className="sticky top-4 overflow-hidden">
+            {/* MODIFY SEARCH - Desktop Sidebar */}
+            <div className="p-3 bg-brand-600 text-white">
+              <Button 
+                onClick={onModifySearch}
+                variant="secondary"
+                className="w-full bg-white text-brand-600 hover:bg-brand-50 font-semibold"
+              >
+                <Edit3 className="h-4 w-4 mr-2" />
+                Modify Search
+              </Button>
+            </div>
             <div className="p-4 border-b bg-slate-50">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
