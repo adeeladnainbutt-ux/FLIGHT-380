@@ -661,8 +661,8 @@ export const FlightResults = ({
 
   return (
     <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
-      {/* Search Summary Bar with Modify Button - MOBILE RESPONSIVE */}
-      <div className="mb-4 sm:mb-6 bg-white rounded-lg shadow-sm border p-3 sm:p-4">
+      {/* Search Summary Bar with Modify Button - FIXED AT TOP */}
+      <div className="sticky top-16 z-30 mb-4 sm:mb-6 bg-white rounded-lg shadow-md border p-3 sm:p-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           {/* Route and Date Info */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
@@ -700,9 +700,9 @@ export const FlightResults = ({
           {/* Modify Button - Always Visible */}
           <Button 
             onClick={onModifySearch}
-            variant="outline"
+            variant="default"
             size="sm"
-            className="border-brand-600 text-brand-600 hover:bg-brand-50 w-full sm:w-auto flex-shrink-0"
+            className="bg-brand-600 hover:bg-brand-700 text-white w-full sm:w-auto flex-shrink-0"
           >
             <Edit3 className="h-4 w-4 mr-2" />
             Modify Search
