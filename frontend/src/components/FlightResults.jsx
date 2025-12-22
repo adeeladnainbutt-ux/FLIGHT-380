@@ -655,7 +655,7 @@ export const FlightResults = ({
                   }}
                 />
                 <Label htmlFor={`m-airline-${airline.code}`} className="text-sm cursor-pointer flex items-center gap-2">
-                  <AirlineLogo airlineCode={airline.code} size="sm" />
+                  <AirlineLogo code={airline.code} className="w-6 h-6" />
                   {airline.name}
                 </Label>
               </div>
