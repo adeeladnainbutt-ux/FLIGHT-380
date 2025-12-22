@@ -35,6 +35,113 @@ import html2canvas from 'html2canvas';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
+// Memoized Passenger Form Component to prevent re-renders and focus loss
+const PassengerForm = React.memo(({ passenger, index, typeCount, onUpdate }) => {
+  const handleInputChange = useCallback((field) => (e) => {
+    onUpdate(index, field, e.target.value);
+  }, [index, onUpdate]);
+
+  const handleSelectChange = useCallback((field) => (value) => {
+    onUpdate(index, field, value);
+  }, [index, onUpdate]);
+
+  return (
+    <Card>
+      <CardHeader className="bg-slate-50 p-4 md:p-6">
+        <CardTitle className="flex flex-wrap items-center gap-2 text-base md:text-lg">
+          <User className="h-4 w-4 md:h-5 md:w-5 text-brand-600" />
+          <span>Passenger {index + 1} - {passenger.type} {typeCount > 1 ? `(${typeCount})` : ''}</span>
+          <Badge className={`text-xs ${
+            passenger.type === 'ADULT' ? 'bg-slate-100' :
+            passenger.type === 'YOUTH' ? 'bg-blue-100 text-blue-700' :
+            passenger.type === 'CHILD' ? 'bg-orange-100 text-orange-700' :
+            'bg-pink-100 text-pink-700'
+          }`}>
+            {passenger.type === 'ADULT' ? '18+' :
+             passenger.type === 'YOUTH' ? '12-17' :
+             passenger.type === 'CHILD' ? '2-11' : '0-2'} years
+          </Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-4 md:p-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <Label className="text-sm font-medium">Title *</Label>
+            <Select
+              value={passenger.title}
+              onValueChange={handleSelectChange('title')}
+            >
+              <SelectTrigger className="mt-1 h-11">
+                <SelectValue placeholder="Select title" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Mr">Mr</SelectItem>
+                <SelectItem value="Mrs">Mrs</SelectItem>
+                <SelectItem value="Ms">Ms</SelectItem>
+                <SelectItem value="Miss">Miss</SelectItem>
+                <SelectItem value="Dr">Dr</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-sm font-medium">First Name *</Label>
+            <Input
+              value={passenger.first_name}
+              onChange={handleInputChange('first_name')}
+              placeholder="First name (as on passport)"
+              className="mt-1 h-11"
+              autoComplete="given-name"
+            />
+          </div>
+          <div>
+            <Label className="text-sm font-medium">Last Name *</Label>
+            <Input
+              value={passenger.last_name}
+              onChange={handleInputChange('last_name')}
+              placeholder="Last name (as on passport)"
+              className="mt-1 h-11"
+              autoComplete="family-name"
+            />
+          </div>
+          <div>
+            <Label className="text-sm font-medium">
+              Date of Birth * 
+              <span className="text-xs text-slate-500 ml-1">
+                ({passenger.type === 'ADULT' ? '18+' : passenger.type === 'YOUTH' ? '12-17' : passenger.type === 'CHILD' ? '2-11' : '0-2'} years)
+              </span>
+            </Label>
+            <Input
+              type="date"
+              value={passenger.date_of_birth}
+              onChange={handleInputChange('date_of_birth')}
+              className="mt-1 h-11 text-base"
+              max={passenger.type === 'INFANT' ? new Date().toISOString().split('T')[0] : undefined}
+              autoComplete="bday"
+            />
+          </div>
+          <div>
+            <Label className="text-sm font-medium">Gender *</Label>
+            <Select
+              value={passenger.gender}
+              onValueChange={handleSelectChange('gender')}
+            >
+              <SelectTrigger className="mt-1 h-11">
+                <SelectValue placeholder="Select gender" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Male">Male</SelectItem>
+                <SelectItem value="Female">Female</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+});
+
+PassengerForm.displayName = 'PassengerForm';
+
 export const BookingFlow = ({ 
   flight, 
   searchParams,
