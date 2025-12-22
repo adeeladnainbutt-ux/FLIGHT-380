@@ -163,9 +163,15 @@ export const FlightSearch = ({ onSearch, initialData }) => {
   };
 
   const updateMultiCityLeg = (index, field, value) => {
-    const newLegs = [...multiCityLegs];
-    newLegs[index][field] = value;
-    setMultiCityLegs(newLegs);
+    setMultiCityLegs(prevLegs => {
+      const newLegs = prevLegs.map((leg, i) => {
+        if (i === index) {
+          return { ...leg, [field]: value };
+        }
+        return leg;
+      });
+      return newLegs;
+    });
   };
 
   const totalPassengers = adults + youth + children + infants;
