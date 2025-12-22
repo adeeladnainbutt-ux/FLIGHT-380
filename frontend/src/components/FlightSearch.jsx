@@ -300,10 +300,10 @@ export const FlightSearch = ({ onSearch, initialData }) => {
                       aria-expanded={openTo}
                       className="w-full justify-between h-12 text-left font-normal"
                     >
-                      <div className="flex items-center gap-2">
-                        <Plane className="h-4 w-4 text-slate-500" />
+                      <div className="flex items-center gap-2 truncate">
+                        <Plane className="h-4 w-4 text-slate-500 flex-shrink-0" />
                         {toAirport ? (
-                          <span>
+                          <span className="truncate">
                             {toAirport.isGroup ? toAirport.name : `${toAirport.code} - ${toAirport.city}`}
                           </span>
                         ) : (
@@ -312,7 +312,7 @@ export const FlightSearch = ({ onSearch, initialData }) => {
                       </div>
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[350px] p-0">
+                  <PopoverContent className="w-[300px] sm:w-[350px] p-0">
                     <Command shouldFilter={false}>
                       <CommandInput 
                         placeholder="Search airport or code..." 
@@ -344,7 +344,10 @@ export const FlightSearch = ({ onSearch, initialData }) => {
                   </PopoverContent>
                 </Popover>
               </div>
+            </div>
 
+            {/* Dates Section */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               {/* Depart Date */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium">Depart</Label>
@@ -357,7 +360,7 @@ export const FlightSearch = ({ onSearch, initialData }) => {
                         !departDate && "text-slate-500"
                       )}
                     >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
                       {departDate ? format(departDate, 'PPP') : 'Select date'}
                     </Button>
                   </PopoverTrigger>
