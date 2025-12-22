@@ -1122,8 +1122,141 @@ export const FlightResults = ({
             </div>
           </div>
 
+          {/* Multi-City View - Shows flights grouped by leg */}
+          {isMultiCity && flightsByLeg && (
+            <div className="space-y-6 pb-24 lg:pb-4">
+              {Object.keys(flightsByLeg).sort((a, b) => Number(a) - Number(b)).map((legIndex) => {
+                const legFlights = flightsByLeg[legIndex];
+                const legNum = Number(legIndex) + 1;
+                const firstFlight = legFlights[0];
+                const selectedFlight = selectedMultiCityFlights[legIndex];
+                
+                return (
+                  <div key={`leg-${legIndex}`} className="space-y-3">
+                    <div className="flex items-center gap-3 p-3 bg-brand-50 rounded-lg">
+                      <Badge className="bg-brand-600 text-white">Journey {legNum}</Badge>
+                      <span className="font-medium text-slate-700">
+                        {firstFlight?.leg_origin || firstFlight?.from} → {firstFlight?.leg_destination || firstFlight?.to}
+                      </span>
+                      <span className="text-sm text-slate-500">
+                        {firstFlight?.departure_time ? formatDate(firstFlight.departure_time) : ''}
+                      </span>
+                      <span className="text-sm text-slate-500 ml-auto">
+                        {legFlights.length} option{legFlights.length !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                    
+                    {legFlights.slice(0, 5).map((flight, index) => (
+                      <Card 
+                        key={flight.id || `${legIndex}-${index}`} 
+                        className={`hover:shadow-lg transition-shadow cursor-pointer ${
+                          selectedFlight?.id === flight.id ? 'border-2 border-brand-600 bg-brand-50' : 'border-l-4 border-l-brand-600'
+                        }`}
+                        onClick={() => {
+                          setSelectedMultiCityFlights(prev => ({
+                            ...prev,
+                            [legIndex]: flight
+                          }));
+                        }}
+                      >
+                        <CardContent className="p-3 sm:p-4">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+                            {/* Airline Logo */}
+                            <div className="flex items-center gap-3 sm:flex-col sm:gap-1 sm:flex-shrink-0 sm:w-16">
+                              <AirlineLogo code={flight.airline_code} className="w-8 h-8 sm:w-10 sm:h-10" />
+                              <div className="text-xs text-slate-600 sm:text-center truncate">{flight.airline}</div>
+                            </div>
+
+                            {/* Flight Details */}
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between sm:justify-start sm:gap-6">
+                                <div className="text-center sm:text-left">
+                                  <div className="text-lg font-bold text-slate-900">{formatTime(flight.departure_time)}</div>
+                                  <div className="text-xs font-semibold text-slate-700">{flight.from}</div>
+                                </div>
+
+                                <div className="flex flex-col items-center px-2">
+                                  <div className="text-xs text-slate-500">{formatDuration(flight.duration)}</div>
+                                  <div className="flex items-center gap-1">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-brand-500"></div>
+                                    <div className="w-10 sm:w-16 h-px bg-slate-300 relative">
+                                      {flight.stops > 0 && (
+                                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-orange-400"></div>
+                                      )}
+                                    </div>
+                                    <div className="w-1.5 h-1.5 rounded-full bg-brand-500"></div>
+                                  </div>
+                                  <div className="text-xs text-brand-600 font-medium">
+                                    {flight.is_direct || flight.stops === 0 ? 'Direct' : `${flight.stops} stop`}
+                                  </div>
+                                  {flight.layovers && flight.layovers.length > 0 && (
+                                    <div className="text-xs text-orange-600 font-medium">
+                                      {flight.layovers.map((l, i) => `${l.airport} (${l.duration_display})`).join(', ')}
+                                    </div>
+                                  )}
+                                </div>
+
+                                <div className="text-center sm:text-left">
+                                  <div className="text-lg font-bold text-slate-900">{formatTime(flight.arrival_time)}</div>
+                                  <div className="text-xs font-semibold text-slate-700">{flight.to}</div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Price & Selection */}
+                            <div className="flex items-center justify-between sm:flex-col sm:items-end gap-2 pt-2 sm:pt-0 border-t sm:border-t-0">
+                              <div className="text-right">
+                                <div className="text-lg font-bold text-brand-600">£{Math.round(flight.price)}</div>
+                                <div className="text-xs text-slate-500">per person</div>
+                              </div>
+                              {selectedFlight?.id === flight.id && (
+                                <Badge className="bg-green-500 text-white">
+                                  <Check className="w-3 h-3 mr-1" /> Selected
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                    
+                    {legFlights.length > 5 && (
+                      <Button variant="outline" className="w-full text-sm">
+                        Show {legFlights.length - 5} more options
+                      </Button>
+                    )}
+                  </div>
+                );
+              })}
+              
+              {/* Book Multi-City Button */}
+              {Object.keys(selectedMultiCityFlights).length === Object.keys(flightsByLeg).length && (
+                <div className="sticky bottom-4 p-4 bg-white rounded-lg shadow-lg border">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-sm text-slate-600">Total for all journeys</div>
+                      <div className="text-2xl font-bold text-brand-600">
+                        £{Math.round(Object.values(selectedMultiCityFlights).reduce((sum, f) => sum + (f?.price || 0), 0))}
+                      </div>
+                    </div>
+                    <Button 
+                      className="bg-brand-600 hover:bg-brand-700 text-white px-8"
+                      onClick={() => onSelectFlight({
+                        type: 'multi-city',
+                        flights: Object.values(selectedMultiCityFlights),
+                        totalPrice: Object.values(selectedMultiCityFlights).reduce((sum, f) => sum + (f?.price || 0), 0)
+                      })}
+                    >
+                      Book Multi-City
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Combined View - Shows full round-trip packages */}
-          {(!isRoundTrip || viewMode === 'combined') && (
+          {!isMultiCity && (!isRoundTrip || viewMode === 'combined') && (
             <div className="space-y-4 pb-24 lg:pb-4">
               {filteredFlights.map((flight, index) => (
                 <Card key={flight.id || index} className="hover:shadow-lg transition-shadow border-l-4 border-l-brand-600">
