@@ -720,8 +720,21 @@ export const FlightResults = ({
               )}
             </div>
           </div>
-          <div className="p-3 max-h-96 overflow-y-auto">
+          {/* Scrollable filter content - increased height and visible scrollbar */}
+          <div 
+            className="p-3 overflow-y-auto" 
+            style={{ 
+              maxHeight: 'calc(100vh - 280px)',
+              minHeight: '300px',
+              scrollbarWidth: 'thin',
+              scrollbarColor: '#E73121 #f1f5f9'
+            }}
+          >
             {renderFilterContent()}
+            {/* Scroll indicator */}
+            <div className="text-center text-xs text-slate-400 pt-3 pb-1">
+              ↑ Scroll for more filters ↑
+            </div>
           </div>
         </Card>
       </div>
