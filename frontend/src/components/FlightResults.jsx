@@ -48,6 +48,8 @@ export const FlightResults = ({
     returnArrivalTime: null,
     connectionLengthOutbound: null,
     connectionLengthReturn: null,
+    departureAirport: [],
+    connectingIn: [],
     minPrice: '',
     maxPrice: ''
   });
