@@ -157,6 +157,17 @@ export const FlightResults = ({
     return new Date(dateTime).getHours();
   };
 
+  const parseDuration = (duration) => {
+    if (!duration) return 0;
+    const match = duration.match(/PT(\d+)H(\d+)?M?/);
+    if (match) {
+      const hours = parseInt(match[1]) || 0;
+      const minutes = parseInt(match[2]) || 0;
+      return hours * 60 + minutes;
+    }
+    return 0;
+  };
+
   // Filter flights
   const filteredFlights = useMemo(() => {
     let result = [...flights];
