@@ -1146,23 +1146,31 @@ export const FlightResults = ({
                       </span>
                     </div>
                     
-                    {legFlights.slice(0, 5).map((flight, index) => (
-                      <Card 
-                        key={flight.id || `${legIndex}-${index}`} 
-                        className={`hover:shadow-lg transition-shadow cursor-pointer ${
-                          selectedFlight?.id === flight.id ? 'border-2 border-brand-600 bg-brand-50' : 'border-l-4 border-l-brand-600'
-                        }`}
-                        onClick={() => {
-                          setSelectedMultiCityFlights(prev => ({
-                            ...prev,
-                            [legIndex]: flight
-                          }));
-                        }}
-                      >
-                        <CardContent className="p-3 sm:p-4">
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
-                            {/* Airline Logo */}
-                            <div className="flex items-center gap-3 sm:flex-col sm:gap-1 sm:flex-shrink-0 sm:w-16">
+                    {legFlights.slice(0, 5).map((flight, flightIndex) => {
+                      // Create a unique flight key for selection comparison
+                      const flightKey = `${flight.departure_time}_${flight.arrival_time}_${flight.airline_code}_${flight.price}`;
+                      const selectedFlightKey = selectedFlight 
+                        ? `${selectedFlight.departure_time}_${selectedFlight.arrival_time}_${selectedFlight.airline_code}_${selectedFlight.price}`
+                        : null;
+                      const isThisFlightSelected = selectedFlightKey === flightKey;
+                      
+                      return (
+                        <Card 
+                          key={`${legIndex}-${flightIndex}-${flightKey}`} 
+                          className={`hover:shadow-lg transition-shadow cursor-pointer ${
+                            isThisFlightSelected ? 'border-2 border-green-500 bg-green-50 ring-2 ring-green-200' : 'border-l-4 border-l-brand-600'
+                          }`}
+                          onClick={() => {
+                            setSelectedMultiCityFlights(prev => ({
+                              ...prev,
+                              [legIndex]: flight
+                            }));
+                          }}
+                        >
+                          <CardContent className="p-3 sm:p-4">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+                              {/* Airline Logo */}
+                              <div className="flex items-center gap-3 sm:flex-col sm:gap-1 sm:flex-shrink-0 sm:w-16">
                               <AirlineLogo code={flight.airline_code} className="w-8 h-8 sm:w-10 sm:h-10" />
                               <div className="text-xs text-slate-600 sm:text-center truncate">{flight.airline}</div>
                             </div>
