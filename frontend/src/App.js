@@ -207,11 +207,31 @@ function App() {
   return (
     <div className="App min-h-screen bg-slate-50">
       <Toaster position="top-right" richColors />
-      <Header onNavigateHome={handleNavigateHome} />
+      <Header 
+        onNavigateHome={handleNavigateHome} 
+        user={user}
+        onSignIn={() => setShowLogin(true)}
+        onSignOut={handleSignOut}
+      />
+      
+      {/* WhatsApp Button */}
+      <WhatsAppButton />
+      
+      {/* Login Modal */}
+      {showLogin && (
+        <LoginPage 
+          onClose={() => setShowLogin(false)}
+          onLoginSuccess={(userData) => {
+            setUser(userData);
+            setShowLogin(false);
+            toast.success(`Welcome, ${userData.name || userData.email}!`);
+          }}
+        />
+      )}
 
       {/* Booking Flow */}
       {showBooking && selectedFlight && (
-        <section className="pt-24 pb-16 bg-slate-50 min-h-screen">
+        <section className="pt-28 pb-16 bg-slate-50 min-h-screen">
           <BookingFlow 
             flight={selectedFlight}
             searchParams={savedSearchData}
