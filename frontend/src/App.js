@@ -8,7 +8,7 @@ import { FlightResults } from './components/FlightResults';
 import { BookingFlow } from './components/BookingFlow';
 import { WhatsAppButton } from './components/WhatsAppButton';
 import { AuthCallback } from './components/AuthCallback';
-import { ContactForm } from './components/ContactForm';
+import { LoginPage } from './components/LoginPage';
 import { Button } from './components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card';
 import { Badge } from './components/ui/badge';
