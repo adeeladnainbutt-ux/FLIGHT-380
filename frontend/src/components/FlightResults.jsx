@@ -1107,6 +1107,17 @@ export const FlightResults = ({
                             <div className="text-xs text-brand-600 font-medium mt-1">
                               {flight.is_direct || flight.stops === 0 ? 'Direct' : `${flight.stops} stop`}
                             </div>
+                            {/* Layover Information */}
+                            {flight.layovers && flight.layovers.length > 0 && (
+                              <div className="text-xs text-orange-600 mt-0.5">
+                                {flight.layovers.map((layover, idx) => (
+                                  <span key={idx}>
+                                    {layover.airport} ({layover.duration_display})
+                                    {idx < flight.layovers.length - 1 && ', '}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
                           </div>
 
                           {/* Arrival */}
