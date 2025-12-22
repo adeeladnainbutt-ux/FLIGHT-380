@@ -829,7 +829,10 @@ export const FlightSearch = ({ onSearch, initialData }) => {
                     {/* Date */}
                     <div className="space-y-2">
                       <Label className="text-sm font-medium">Departure</Label>
-                      <Popover>
+                      <Popover
+                        open={isMultiCityPopoverOpen(index, 'date')}
+                        onOpenChange={(open) => setMultiCityPopoverOpen(index, 'date', open)}
+                      >
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
@@ -839,18 +842,38 @@ export const FlightSearch = ({ onSearch, initialData }) => {
                             )}
                           >
                             <CalendarIcon className="mr-2 h-4 w-4" />
-                            {leg.date ? format(leg.date, 'PP') : 'Select'}
+                            {leg.date ? format(leg.date, 'PP') : 'Select date'}
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
                             mode="single"
                             selected={leg.date}
-                            onSelect={(date) => updateMultiCityLeg(index, 'date', date)}
+                            onSelect={(date) => {
+                              updateMultiCityLeg(index, 'date', date);
+                              setMultiCityPopoverOpen(index, 'date', false);
+                              // Auto-adjust subsequent leg dates if they're earlier
+                              if (date) {
+                                multiCityLegs.forEach((nextLeg, nextIndex) => {
+                                  if (nextIndex > index && nextLeg.date && nextLeg.date < date) {
+                                    updateMultiCityLeg(nextIndex, 'date', null);
+                                  }
+                                });
+                              }
+                            }}
                             disabled={(date) => {
-                              if (index === 0) return date < new Date();
-                              const prevLeg = multiCityLegs[index - 1];
-                              return date < (prevLeg.date || new Date());
+                              const today = new Date();
+                              today.setHours(0, 0, 0, 0);
+                              if (date < today) return true;
+                              if (index > 0) {
+                                const prevLeg = multiCityLegs[index - 1];
+                                if (prevLeg.date) {
+                                  const prevDate = new Date(prevLeg.date);
+                                  prevDate.setHours(0, 0, 0, 0);
+                                  return date < prevDate;
+                                }
+                              }
+                              return false;
                             }}
                             initialFocus
                           />
