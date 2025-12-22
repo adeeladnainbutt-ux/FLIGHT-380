@@ -143,10 +143,10 @@ export const FlightResults = ({
 
   // Time filter options
   const timeOptions = [
-    { value: 'morning', label: 'Morning', time: '05:00 - 11:59' },
-    { value: 'afternoon', label: 'Afternoon', time: '12:00 - 17:59' },
-    { value: 'evening', label: 'Evening', time: '18:00 - 23:59' },
-    { value: 'overnight', label: 'Overnight', time: '00:00 - 04:59' }
+    { value: 'morning', label: 'Morning', time: '05:00 - 11:59', icon: Sun },
+    { value: 'afternoon', label: 'Afternoon', time: '12:00 - 17:59', icon: Sun },
+    { value: 'evening', label: 'Evening', time: '18:00 - 23:59', icon: Sunset },
+    { value: 'overnight', label: 'Overnight', time: '00:00 - 04:59', icon: Moon }
   ];
 
   // Connection length filter options
