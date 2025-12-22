@@ -779,6 +779,10 @@ class UserRegister(BaseModel):
 class ForgotPassword(BaseModel):
     email: EmailStr
 
+class ResetPassword(BaseModel):
+    token: str
+    new_password: str
+
 class SessionRequest(BaseModel):
     session_token: str
     user_data: Dict[str, Any]
