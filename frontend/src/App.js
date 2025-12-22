@@ -160,6 +160,8 @@ function App() {
       const response = await axios.post(`${API}/flights/search`, {
         origin: searchData.origin,
         destination: searchData.destination,
+        origin_airports: searchData.origin_airports || null,
+        destination_airports: searchData.destination_airports || null,
         departure_date: searchData.departure_date,
         return_date: searchData.return_date,
         adults: searchData.adults,
