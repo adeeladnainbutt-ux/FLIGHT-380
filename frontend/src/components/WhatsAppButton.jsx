@@ -11,8 +11,8 @@ export const WhatsAppButton = () => {
   };
 
   return (
-    <div className="fixed bottom-36 right-4 z-[60]">
-      {/* WhatsApp button - positioned above filter button on mobile */}
+    <div className="fixed bottom-20 right-4 z-[60]">
+      {/* WhatsApp button - adjacent to filter button */}
       <button
         onClick={handleClick}
         className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 bg-green-500 hover:bg-green-600 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
