@@ -75,6 +75,24 @@ class FlightSearchRequest(BaseModel):
     flexible_dates: bool = False
     airline: Optional[str] = None
 
+# Multi-City Search Models
+class MultiCityLeg(BaseModel):
+    origin: str
+    destination: str
+    origin_airports: Optional[List[str]] = None
+    destination_airports: Optional[List[str]] = None
+    departure_date: str
+
+class MultiCitySearchRequest(BaseModel):
+    legs: List[MultiCityLeg]
+    adults: int = 1
+    youth: int = 0
+    children: int = 0
+    infants: int = 0
+    travel_class: str = 'ECONOMY'
+    direct_flights: bool = False
+    airline: Optional[str] = None
+
 class AirportSearchRequest(BaseModel):
     keyword: str
 
