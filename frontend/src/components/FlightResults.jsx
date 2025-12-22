@@ -480,9 +480,9 @@ export const FlightResults = ({
         </div>
       </div>
 
-      <div className="flex gap-6">
-        {/* Left Sidebar - Filters with VISIBLE Scrollbar */}
-        <div className="w-72 flex-shrink-0">
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
+        {/* Left Sidebar - Filters with VISIBLE Scrollbar - Hidden on mobile */}
+        <div className="hidden lg:block w-72 flex-shrink-0">
           <Card className="sticky top-4 overflow-hidden">
             <div className="p-4 border-b bg-slate-50">
               <div className="flex items-center justify-between">
