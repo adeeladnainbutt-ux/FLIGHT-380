@@ -347,6 +347,25 @@ export const FlightResults = ({
     return null;
   };
 
+  // Calculate active filter count for mobile button
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filters.fareType) count++;
+    if (filters.stopsOutbound) count++;
+    if (filters.stopsReturn) count++;
+    if (filters.baggage) count++;
+    if (filters.airlines.length > 0) count += filters.airlines.length;
+    if (filters.outboundDepartureTime) count++;
+    if (filters.outboundArrivalTime) count++;
+    if (filters.returnDepartureTime) count++;
+    if (filters.returnArrivalTime) count++;
+    if (filters.connectionLengthOutbound) count++;
+    if (filters.connectionLengthReturn) count++;
+    if (filters.minPrice) count++;
+    if (filters.maxPrice) count++;
+    return count;
+  }, [filters]);
+
   // Get cheapest combination
   const cheapestPrice = useMemo(() => {
     if (filteredFlights.length === 0) return null;
@@ -442,25 +461,6 @@ export const FlightResults = ({
       </CardContent>
     </Card>
   );
-
-  // Calculate active filter count for mobile button
-  const activeFilterCount = useMemo(() => {
-    let count = 0;
-    if (filters.fareType) count++;
-    if (filters.stopsOutbound) count++;
-    if (filters.stopsReturn) count++;
-    if (filters.baggage) count++;
-    if (filters.airlines.length > 0) count += filters.airlines.length;
-    if (filters.outboundDepartureTime) count++;
-    if (filters.outboundArrivalTime) count++;
-    if (filters.returnDepartureTime) count++;
-    if (filters.returnArrivalTime) count++;
-    if (filters.connectionLengthOutbound) count++;
-    if (filters.connectionLengthReturn) count++;
-    if (filters.minPrice) count++;
-    if (filters.maxPrice) count++;
-    return count;
-  }, [filters]);
 
   // Render filter content (used in both desktop sidebar and mobile sheet)
   const renderFilterContent = () => (
