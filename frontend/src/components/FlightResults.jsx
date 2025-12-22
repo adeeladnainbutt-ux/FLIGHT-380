@@ -1082,11 +1082,22 @@ export const FlightResults = ({
             </div>
           )}
 
-          {/* Flights Available Header - Mobile Responsive */}
+          {/* Flights Available Header with MODIFY SEARCH - Mobile Responsive */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
-            <h2 className="text-lg sm:text-2xl font-bold text-slate-900">
-              {filteredFlights.length} Flight{filteredFlights.length !== 1 ? 's' : ''} Available
-            </h2>
+            <div className="flex items-center gap-4">
+              <h2 className="text-lg sm:text-2xl font-bold text-slate-900">
+                {filteredFlights.length} Flight{filteredFlights.length !== 1 ? 's' : ''} Available
+              </h2>
+              <Button
+                onClick={onModifySearch}
+                variant="outline"
+                size="sm"
+                className="border-brand-600 text-brand-600 hover:bg-brand-50 font-medium"
+              >
+                <Edit3 className="h-4 w-4 mr-1" />
+                Modify
+              </Button>
+            </div>
             <div className="flex gap-1 sm:gap-2 overflow-x-auto pb-2 sm:pb-0">
               <Button
                 variant={sortBy === 'price' ? 'default' : 'outline'}
