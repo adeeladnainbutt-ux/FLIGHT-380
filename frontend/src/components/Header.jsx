@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { Phone, Menu, User, LogIn, LogOut } from 'lucide-react';
-import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from './ui/sheet';
 
 export const Header = ({ onNavigateHome, user, onSignIn, onSignOut }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -32,40 +32,35 @@ export const Header = ({ onNavigateHome, user, onSignIn, onSignOut }) => {
   return (
     <header className="fixed top-0 w-full bg-white/95 backdrop-blur-md shadow-sm z-50">
       {/* Top bar with phone number */}
-      <div className="bg-brand-600 text-white py-1.5 px-4">
-        <div className="container mx-auto flex items-center justify-between text-sm">
-          <div className="flex items-center gap-2">
-            <Phone className="h-4 w-4" />
-            <a href="tel:01908220000" className="font-medium hover:underline">
-              01908 220000
-            </a>
-            <span className="hidden sm:inline text-white/80 ml-2">| Available 24/7</span>
-          </div>
-          <div className="hidden sm:block text-white/90">
-            Book with confidence - ATOL Protected
-          </div>
+      <div className="bg-brand-600 text-white py-2 px-4">
+        <div className="container mx-auto flex items-center justify-between">
+          <a href="tel:01908220000" className="flex items-center gap-2 font-semibold text-sm sm:text-base">
+            <Phone className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span>01908 220000</span>
+          </a>
+          <span className="hidden sm:block text-sm text-white/90">ATOL Protected • 24/7 Support</span>
         </div>
       </div>
       
       {/* Main header */}
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        {/* Logo */}
-        <a href="#home" onClick={handleLogoClick} className="flex items-center gap-2 group cursor-pointer">
+      <div className="container mx-auto px-4 h-14 sm:h-16 flex items-center justify-between">
+        {/* Logo - Made BIGGER */}
+        <a href="#home" onClick={handleLogoClick} className="flex items-center gap-2 cursor-pointer flex-shrink-0">
           <img 
             src="/logo-f380.png" 
             alt="Flight380" 
-            className="h-10 sm:h-12 w-auto"
+            className="h-10 sm:h-12 md:h-14 w-auto"
           />
         </a>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-6 lg:gap-8">
+        <nav className="hidden lg:flex items-center gap-6">
           {navLinks.map((link) => (
             <a
               key={link.name}
               href={link.href}
               onClick={(e) => handleNavClick(e, link)}
-              className="text-slate-700 hover:text-brand-600 font-medium transition-colors duration-200 cursor-pointer text-sm lg:text-base"
+              className="text-slate-700 hover:text-brand-600 font-medium transition-colors duration-200 cursor-pointer text-sm"
             >
               {link.name}
             </a>
@@ -73,7 +68,7 @@ export const Header = ({ onNavigateHome, user, onSignIn, onSignOut }) => {
         </nav>
 
         {/* Desktop Actions */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden lg:flex items-center gap-3">
           {user ? (
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
@@ -82,7 +77,7 @@ export const Header = ({ onNavigateHome, user, onSignIn, onSignOut }) => {
                 ) : (
                   <User className="w-8 h-8 p-1 bg-brand-100 rounded-full text-brand-600" />
                 )}
-                <span className="text-sm font-medium text-slate-700 hidden lg:inline">{user.name?.split(' ')[0]}</span>
+                <span className="text-sm font-medium text-slate-700">{user.name?.split(' ')[0]}</span>
               </div>
               <Button 
                 variant="ghost" 
@@ -112,46 +107,52 @@ export const Header = ({ onNavigateHome, user, onSignIn, onSignOut }) => {
 
         {/* Mobile Menu */}
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-          <SheetTrigger asChild className="md:hidden">
-            <Button variant="ghost" size="icon">
+          <SheetTrigger asChild className="lg:hidden">
+            <Button variant="ghost" size="icon" className="h-10 w-10">
               <Menu className="h-6 w-6" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+          <SheetContent side="right" className="w-[85vw] max-w-[320px] p-0">
             <div className="flex flex-col h-full">
+              {/* Mobile Menu Header */}
+              <div className="p-4 border-b bg-brand-50">
+                <img src="/logo-f380.png" alt="Flight380" className="h-10" />
+              </div>
+              
               {/* User info in mobile */}
               {user && (
-                <div className="flex items-center gap-3 py-4 border-b">
+                <div className="flex items-center gap-3 p-4 border-b bg-slate-50">
                   {user.picture ? (
-                    <img src={user.picture} alt={user.name} className="w-10 h-10 rounded-full" />
+                    <img src={user.picture} alt={user.name} className="w-12 h-12 rounded-full" />
                   ) : (
-                    <User className="w-10 h-10 p-2 bg-brand-100 rounded-full text-brand-600" />
+                    <User className="w-12 h-12 p-2 bg-brand-100 rounded-full text-brand-600" />
                   )}
                   <div>
-                    <div className="font-medium text-slate-900">{user.name}</div>
+                    <div className="font-semibold text-slate-900">{user.name}</div>
                     <div className="text-sm text-slate-500">{user.email}</div>
                   </div>
                 </div>
               )}
               
-              <nav className="flex flex-col gap-2 mt-6">
+              <nav className="flex flex-col p-4 gap-1 flex-1">
                 {navLinks.map((link) => (
-                  <a
-                    key={link.name}
-                    href={link.href}
-                    onClick={(e) => handleNavClick(e, link)}
-                    className="text-lg font-medium text-slate-700 hover:text-brand-600 transition-colors py-3 px-2 rounded-lg hover:bg-brand-50"
-                  >
-                    {link.name}
-                  </a>
+                  <SheetClose asChild key={link.name}>
+                    <a
+                      href={link.href}
+                      onClick={(e) => handleNavClick(e, link)}
+                      className="text-base font-medium text-slate-700 hover:text-brand-600 transition-colors py-3 px-3 rounded-lg hover:bg-brand-50"
+                    >
+                      {link.name}
+                    </a>
+                  </SheetClose>
                 ))}
               </nav>
               
-              <div className="mt-auto pb-6">
+              <div className="p-4 border-t bg-slate-50">
                 {/* Phone number in mobile */}
                 <a 
                   href="tel:01908220000" 
-                  className="flex items-center gap-2 text-brand-600 font-semibold mb-4 p-3 bg-brand-50 rounded-lg"
+                  className="flex items-center justify-center gap-2 text-brand-600 font-bold mb-4 p-3 bg-brand-100 rounded-lg text-lg"
                 >
                   <Phone className="h-5 w-5" />
                   01908 220000
@@ -160,7 +161,7 @@ export const Header = ({ onNavigateHome, user, onSignIn, onSignOut }) => {
                 {user ? (
                   <Button 
                     variant="outline" 
-                    className="w-full"
+                    className="w-full h-12"
                     onClick={() => {
                       onSignOut();
                       setMobileMenuOpen(false);
@@ -173,7 +174,7 @@ export const Header = ({ onNavigateHome, user, onSignIn, onSignOut }) => {
                   <div className="flex flex-col gap-3">
                     <Button 
                       variant="outline" 
-                      className="w-full font-medium"
+                      className="w-full h-12 font-medium"
                       onClick={() => {
                         onSignIn();
                         setMobileMenuOpen(false);
@@ -182,13 +183,13 @@ export const Header = ({ onNavigateHome, user, onSignIn, onSignOut }) => {
                       Sign In
                     </Button>
                     <Button 
-                      className="w-full bg-brand-600 hover:bg-brand-700 font-semibold"
+                      className="w-full h-12 bg-brand-600 hover:bg-brand-700 font-semibold"
                       onClick={() => {
                         onSignIn();
                         setMobileMenuOpen(false);
                       }}
                     >
-                      Sign Up
+                      Sign Up Free
                     </Button>
                   </div>
                 )}
