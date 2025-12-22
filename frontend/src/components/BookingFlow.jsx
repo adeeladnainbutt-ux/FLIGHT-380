@@ -35,7 +35,7 @@ import jsPDF from 'jspdf';
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 export const BookingFlow = ({ 
-  flight, 
+  flight: rawFlight, 
   searchParams,
   onBack,
   onComplete 
@@ -56,6 +56,41 @@ export const BookingFlow = ({
   const [contactCity, setContactCity] = useState('');
   const [contactCountry, setContactCountry] = useState('');
   const [contactPostalCode, setContactPostalCode] = useState('');
+
+  // Normalize flight data - handle both Combined view and Mix & Match view structures
+  const flight = React.useMemo(() => {
+    // Mix & Match structure: { outbound: {...}, return: {...}, combinedPrice: number }
+    if (rawFlight.outbound && rawFlight.return) {
+      const outbound = rawFlight.outbound;
+      const returnFlight = rawFlight.return;
+      return {
+        id: `${outbound.id || 'out'}-${returnFlight.id || 'ret'}`,
+        // Outbound flight details
+        airline: outbound.airline,
+        airline_code: outbound.airline_code,
+        from: outbound.from,
+        to: outbound.to,
+        departure_time: outbound.departure_time,
+        arrival_time: outbound.arrival_time,
+        duration: outbound.duration,
+        is_direct: outbound.is_direct,
+        stops: outbound.stops,
+        // Return flight details
+        return_airline: returnFlight.airline || outbound.airline,
+        return_airline_code: returnFlight.return_airline_code || returnFlight.airline_code || outbound.airline_code,
+        return_departure_time: returnFlight.return_departure_time,
+        return_arrival_time: returnFlight.return_arrival_time,
+        return_duration: returnFlight.return_duration,
+        return_is_direct: returnFlight.return_is_direct,
+        return_stops: returnFlight.return_stops,
+        // Price
+        price: rawFlight.combinedPrice,
+        combinedPrice: rawFlight.combinedPrice
+      };
+    }
+    // Combined view structure - already in correct format
+    return rawFlight;
+  }, [rawFlight]);
 
   const passengerCounts = {
     adults: searchParams?.adults || 1,
