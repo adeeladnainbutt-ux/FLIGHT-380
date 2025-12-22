@@ -1064,65 +1064,58 @@ export const FlightResults = ({
 
           {/* Combined View - Shows full round-trip packages */}
           {(!isRoundTrip || viewMode === 'combined') && (
-            <div className="space-y-4">
+            <div className="space-y-4 pb-24 lg:pb-4">
               {filteredFlights.map((flight, index) => (
                 <Card key={flight.id || index} className="hover:shadow-lg transition-shadow border-l-4 border-l-brand-600">
-                  <CardContent className="p-6">
+                  <CardContent className="p-3 sm:p-6">
                     {/* Outbound Flight */}
-                    <div className="flex items-center gap-6 mb-4">
-                      <div className="flex items-center gap-2 text-sm text-slate-600">
-                        <PlaneTakeoff className="h-4 w-4" />
+                    <div className="flex items-center gap-2 sm:gap-6 mb-3 sm:mb-4">
+                      <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-slate-600">
+                        <PlaneTakeoff className="h-3 w-3 sm:h-4 sm:w-4" />
                         <span className="font-medium">Outbound</span>
-                        <span className="text-slate-400">•</span>
-                        <span>{formatDate(flight.departure_time)}</span>
+                        <span className="text-slate-400 hidden sm:inline">•</span>
+                        <span className="hidden sm:inline">{formatDate(flight.departure_time)}</span>
                       </div>
                     </div>
                     
-                    <div className="flex items-start gap-6">
+                    {/* Mobile: Stacked Layout | Desktop: Row Layout */}
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-6">
                       {/* Airline Logo */}
-                      <div className="flex-shrink-0">
-                        <AirlineLogo code={flight.airline_code} className="w-14 h-14" />
-                        <div className="text-xs text-center mt-1 text-slate-600">{flight.airline}</div>
+                      <div className="flex items-center gap-3 sm:flex-col sm:gap-1 sm:flex-shrink-0">
+                        <AirlineLogo code={flight.airline_code} className="w-10 h-10 sm:w-14 sm:h-14" />
+                        <div className="text-xs text-slate-600 sm:text-center">{flight.airline}</div>
                       </div>
 
-                      {/* Flight Details */}
+                      {/* Flight Details - Mobile Responsive */}
                       <div className="flex-1">
-                        <div className="flex items-center gap-8">
+                        <div className="flex items-center justify-between sm:justify-start sm:gap-8">
                           {/* Departure */}
-                          <div>
-                            <div className="text-2xl font-bold text-slate-900">{formatTime(flight.departure_time)}</div>
-                            <div className="text-sm text-slate-600">{formatDate(flight.departure_time)}</div>
-                            <div className="text-sm font-medium text-slate-700">{flight.from}</div>
+                          <div className="text-center sm:text-left">
+                            <div className="text-lg sm:text-2xl font-bold text-slate-900">{formatTime(flight.departure_time)}</div>
+                            <div className="text-xs sm:text-sm text-slate-600">{flight.from}</div>
                           </div>
 
                           {/* Duration & Stops */}
-                          <div className="flex flex-col items-center px-4">
+                          <div className="flex flex-col items-center px-2 sm:px-4">
                             <div className="text-xs text-slate-500 mb-1">{formatDuration(flight.duration)}</div>
-                            <div className="flex items-center gap-2">
-                              <div className="w-2 h-2 rounded-full bg-brand-500"></div>
-                              <div className="w-20 h-px bg-slate-300 relative">
+                            <div className="flex items-center gap-1 sm:gap-2">
+                              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-brand-500"></div>
+                              <div className="w-12 sm:w-20 h-px bg-slate-300 relative">
                                 {!flight.is_direct && flight.stops > 0 && (
-                                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-orange-400"></div>
+                                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-orange-400"></div>
                                 )}
                               </div>
-                              <div className="w-2 h-2 rounded-full bg-brand-500"></div>
+                              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-brand-500"></div>
                             </div>
                             <div className="text-xs text-brand-600 font-medium mt-1">
-                              {flight.is_direct || flight.stops === 0 ? 'Direct' : `${flight.stops} stop${flight.stops > 1 ? 's' : ''}`}
+                              {flight.is_direct || flight.stops === 0 ? 'Direct' : `${flight.stops} stop`}
                             </div>
-                            {/* Layover Display */}
-                            {flight.layover_display && (
-                              <div className="text-xs text-orange-600 mt-0.5">
-                                Layover: {flight.layover_display}
-                              </div>
-                            )}
                           </div>
 
                           {/* Arrival */}
-                          <div>
-                            <div className="text-2xl font-bold text-slate-900">{formatTime(flight.arrival_time)}</div>
-                            <div className="text-sm text-slate-600">{formatDate(flight.arrival_time)}</div>
-                            <div className="text-sm font-medium text-slate-700">{flight.to}</div>
+                          <div className="text-center sm:text-left">
+                            <div className="text-lg sm:text-2xl font-bold text-slate-900">{formatTime(flight.arrival_time)}</div>
+                            <div className="text-xs sm:text-sm text-slate-600">{flight.to}</div>
                           </div>
                         </div>
                       </div>
@@ -1131,52 +1124,45 @@ export const FlightResults = ({
                     {/* Return Flight (if round-trip) */}
                     {isRoundTrip && flight.return_departure_time && (
                       <>
-                        <Separator className="my-4" />
-                        <div className="flex items-center gap-2 text-sm text-slate-600 mb-4">
-                          <PlaneLanding className="h-4 w-4" />
+                        <Separator className="my-3 sm:my-4" />
+                        <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-slate-600 mb-3 sm:mb-4">
+                          <PlaneLanding className="h-3 w-3 sm:h-4 sm:w-4" />
                           <span className="font-medium">Return</span>
-                          <span className="text-slate-400">•</span>
-                          <span>{formatDate(flight.return_departure_time)}</span>
+                          <span className="text-slate-400 hidden sm:inline">•</span>
+                          <span className="hidden sm:inline">{formatDate(flight.return_departure_time)}</span>
                         </div>
                         
-                        <div className="flex items-start gap-6">
-                          <div className="flex-shrink-0">
-                            <AirlineLogo code={flight.return_airline_code || flight.airline_code} className="w-14 h-14" />
+                        <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-6">
+                          <div className="flex items-center gap-3 sm:flex-col sm:gap-1 sm:flex-shrink-0">
+                            <AirlineLogo code={flight.return_airline_code || flight.airline_code} className="w-10 h-10 sm:w-14 sm:h-14" />
                           </div>
 
                           <div className="flex-1">
-                            <div className="flex items-center gap-8">
-                              <div>
-                                <div className="text-2xl font-bold text-slate-900">{formatTime(flight.return_departure_time)}</div>
-                                <div className="text-sm text-slate-600">{formatDate(flight.return_departure_time)}</div>
-                                <div className="text-sm font-medium text-slate-700">{flight.to}</div>
+                            <div className="flex items-center justify-between sm:justify-start sm:gap-8">
+                              <div className="text-center sm:text-left">
+                                <div className="text-lg sm:text-2xl font-bold text-slate-900">{formatTime(flight.return_departure_time)}</div>
+                                <div className="text-xs sm:text-sm text-slate-600">{flight.to}</div>
                               </div>
 
-                              <div className="flex flex-col items-center px-4">
+                              <div className="flex flex-col items-center px-2 sm:px-4">
                                 <div className="text-xs text-slate-500 mb-1">{formatDuration(flight.return_duration)}</div>
-                                <div className="flex items-center gap-2">
-                                  <div className="w-2 h-2 rounded-full bg-brand-500"></div>
-                                  <div className="w-20 h-px bg-slate-300 relative">
+                                <div className="flex items-center gap-1 sm:gap-2">
+                                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-brand-500"></div>
+                                  <div className="w-12 sm:w-20 h-px bg-slate-300 relative">
                                     {flight.return_stops > 0 && (
-                                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-orange-400"></div>
+                                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-orange-400"></div>
                                     )}
                                   </div>
-                                  <div className="w-2 h-2 rounded-full bg-brand-500"></div>
+                                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-brand-500"></div>
                                 </div>
                                 <div className="text-xs text-brand-600 font-medium mt-1">
-                                  {flight.return_is_direct || flight.return_stops === 0 ? 'Direct' : `${flight.return_stops} stop${flight.return_stops > 1 ? 's' : ''}`}
+                                  {flight.return_is_direct || flight.return_stops === 0 ? 'Direct' : `${flight.return_stops} stop`}
                                 </div>
-                                {flight.return_layover_display && (
-                                  <div className="text-xs text-orange-600 mt-0.5">
-                                    Layover: {flight.return_layover_display}
-                                  </div>
-                                )}
                               </div>
 
-                              <div>
-                                <div className="text-2xl font-bold text-slate-900">{formatTime(flight.return_arrival_time)}</div>
-                                <div className="text-sm text-slate-600">{formatDate(flight.return_arrival_time)}</div>
-                                <div className="text-sm font-medium text-slate-700">{flight.from}</div>
+                              <div className="text-center sm:text-left">
+                                <div className="text-lg sm:text-2xl font-bold text-slate-900">{formatTime(flight.return_arrival_time)}</div>
+                                <div className="text-xs sm:text-sm text-slate-600">{flight.from}</div>
                               </div>
                             </div>
                           </div>
@@ -1184,27 +1170,27 @@ export const FlightResults = ({
                       </>
                     )}
 
-                    {/* Price & Action */}
-                    <div className="flex items-center justify-between mt-6 pt-4 border-t">
-                      <div className="flex items-center gap-4 text-sm text-slate-600">
-                        <span className="font-medium">{flight.airline}</span>
+                    {/* Price & Action - Mobile Responsive */}
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-4 sm:mt-6 pt-3 sm:pt-4 border-t">
+                      <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-slate-600 flex-wrap">
                         {flight.number_of_bookable_seats && flight.number_of_bookable_seats < 5 && (
                           <Badge variant="destructive" className="text-xs bg-brand-600">
-                            Only {flight.number_of_bookable_seats} seats left!
+                            {flight.number_of_bookable_seats} seats left
                           </Badge>
                         )}
                         {flight.price === cheapestPrice && (
-                          <Badge className="bg-green-100 text-green-700">Cheapest</Badge>
+                          <Badge className="bg-green-100 text-green-700 text-xs">Cheapest</Badge>
                         )}
                       </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-right">
-                          <div className="text-3xl font-bold text-brand-600">£{Math.round(flight.price)}</div>
-                          <div className="text-xs text-slate-500">{isRoundTrip ? 'total round trip' : 'total price'}</div>
+                      <div className="flex items-center justify-between sm:gap-4">
+                        <div className="text-left sm:text-right">
+                          <div className="text-2xl sm:text-3xl font-bold text-brand-600">£{Math.round(flight.price)}</div>
+                          <div className="text-xs text-slate-500">{isRoundTrip ? 'round trip' : 'total'}</div>
                         </div>
                         <Button
                           onClick={() => onSelectFlight(flight)}
-                          className="bg-brand-600 hover:bg-brand-700 font-semibold px-8"
+                          className="bg-brand-600 hover:bg-brand-700 font-semibold px-4 sm:px-8"
+                          size="sm"
                         >
                           Continue →
                         </Button>
