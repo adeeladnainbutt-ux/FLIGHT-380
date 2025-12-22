@@ -701,7 +701,7 @@ export const FlightResults = ({
               )}
             </div>
           </div>
-          <div className="p-3 max-h-64 overflow-y-auto">
+          <div className="p-3 max-h-96 overflow-y-auto">
             {renderFilterContent()}
           </div>
         </Card>
