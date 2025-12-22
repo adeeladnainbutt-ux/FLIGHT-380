@@ -666,16 +666,28 @@ export const FlightResults = ({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           {/* Route and Date Info */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
-            <div className="flex items-center gap-2">
-              <Plane className="h-4 w-4 sm:h-5 sm:w-5 text-brand-600" />
-              <span className="font-semibold text-sm sm:text-base">{searchParams?.origin}</span>
-              <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 text-slate-400" />
-              <span className="font-semibold text-sm sm:text-base">{searchParams?.destination}</span>
-            </div>
-            <div className="text-xs sm:text-sm text-slate-600">
-              {searchParams?.departure_date && format(new Date(searchParams.departure_date), 'dd MMM yyyy')}
-              {searchParams?.return_date && ` - ${format(new Date(searchParams.return_date), 'dd MMM yyyy')}`}
-            </div>
+            {isMultiCity ? (
+              <div className="flex items-center gap-2 flex-wrap">
+                <Plane className="h-4 w-4 sm:h-5 sm:w-5 text-brand-600" />
+                <Badge className="bg-purple-100 text-purple-700 text-xs">Multi-City</Badge>
+                <span className="text-sm text-slate-600">
+                  {searchParams?.legs?.length || 0} Journeys
+                </span>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-2">
+                  <Plane className="h-4 w-4 sm:h-5 sm:w-5 text-brand-600" />
+                  <span className="font-semibold text-sm sm:text-base">{searchParams?.origin}</span>
+                  <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 text-slate-400" />
+                  <span className="font-semibold text-sm sm:text-base">{searchParams?.destination}</span>
+                </div>
+                <div className="text-xs sm:text-sm text-slate-600">
+                  {searchParams?.departure_date && format(new Date(searchParams.departure_date), 'dd MMM yyyy')}
+                  {searchParams?.return_date && ` - ${format(new Date(searchParams.return_date), 'dd MMM yyyy')}`}
+                </div>
+              </>
+            )}
             <div className="flex gap-2 flex-wrap">
               {isFlexible && (
                 <Badge className="bg-brand-100 text-brand-700 text-xs">±3 Days</Badge>
@@ -685,12 +697,12 @@ export const FlightResults = ({
               )}
             </div>
           </div>
-          {/* Modify Button */}
+          {/* Modify Button - Always Visible */}
           <Button 
             onClick={onModifySearch}
             variant="outline"
             size="sm"
-            className="border-brand-600 text-brand-600 hover:bg-brand-50 w-full sm:w-auto"
+            className="border-brand-600 text-brand-600 hover:bg-brand-50 w-full sm:w-auto flex-shrink-0"
           >
             <Edit3 className="h-4 w-4 mr-2" />
             Modify Search
