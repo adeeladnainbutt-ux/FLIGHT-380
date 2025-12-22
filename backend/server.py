@@ -6,6 +6,10 @@ import os
 import logging
 import random
 import string
+import smtplib
+import asyncio
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from typing import List, Optional, Dict, Any
@@ -24,6 +28,14 @@ db = client[os.environ['DB_NAME']]
 
 # Initialize Amadeus Service
 amadeus_service = AmadeusService()
+
+# SMTP Configuration
+SMTP_HOST = os.environ.get('SMTP_HOST', 'smtp.ionos.co.uk')
+SMTP_PORT = int(os.environ.get('SMTP_PORT', 587))
+SMTP_USERNAME = os.environ.get('SMTP_USERNAME', '')
+SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD', '')
+SENDER_EMAIL = os.environ.get('SENDER_EMAIL', 'noreply@flight380.co.uk')
+COMPANY_EMAIL = os.environ.get('COMPANY_EMAIL', 'info@flight380.co.uk')
 
 # Create the main app without a prefix
 app = FastAPI()
