@@ -115,6 +115,48 @@ class BookingResponse(BaseModel):
     booking_details: Optional[Dict[str, Any]] = None
     emails_sent: Optional[List[Dict[str, Any]]] = None
 
+# Contact Form Model
+class ContactFormRequest(BaseModel):
+    first_name: str
+    last_name: str
+    email: EmailStr
+    phone: Optional[str] = None
+    subject: str
+    booking_reference: Optional[str] = None
+    message: str
+
+# Email sending function using SMTP
+async def send_email_smtp(to_email: str, subject: str, html_body: str, plain_body: str = None):
+    """Send email using SMTP"""
+    try:
+        msg = MIMEMultipart('alternative')
+        msg['From'] = SENDER_EMAIL
+        msg['To'] = to_email
+        msg['Subject'] = subject
+        
+        # Add plain text version
+        if plain_body:
+            part1 = MIMEText(plain_body, 'plain')
+            msg.attach(part1)
+        
+        # Add HTML version
+        part2 = MIMEText(html_body, 'html')
+        msg.attach(part2)
+        
+        # Send email in thread to avoid blocking
+        def send():
+            with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+                server.starttls()
+                server.login(SMTP_USERNAME, SMTP_PASSWORD)
+                server.send_message(msg)
+        
+        await asyncio.to_thread(send)
+        logger.info(f"Email sent successfully to {to_email}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send email to {to_email}: {str(e)}")
+        return False
+
 # Add your routes to the router instead of directly to app
 @api_router.get("/")
 async def root():
