@@ -819,35 +819,35 @@ export const FlightResults = ({
       )}
 
       {/* Connecting In Filter */}
-      {uniqueConnectingAirports.length > 0 && (
-        <>
-          <Separator className="my-3" />
+      <Separator className="my-3" />
 
-          <FilterSection title={`Connecting In (${uniqueConnectingAirports.length})`} name="connectingIn">
-            <div className="space-y-2 max-h-48 overflow-y-auto">
-              {uniqueConnectingAirports.map(airport => (
-                <div key={airport} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`m-connIn-${airport}`}
-                    checked={filters.connectingIn.includes(airport)}
-                    onCheckedChange={(checked) => {
-                      setFilters(prev => ({
-                        ...prev,
-                        connectingIn: checked 
-                          ? [...prev.connectingIn, airport]
-                          : prev.connectingIn.filter(a => a !== airport)
-                      }));
-                    }}
-                  />
-                  <Label htmlFor={`m-connIn-${airport}`} className="text-sm cursor-pointer">
-                    {airport}
-                  </Label>
-                </div>
-              ))}
-            </div>
-          </FilterSection>
-        </>
-      )}
+      <FilterSection title={`Connecting In${uniqueConnectingAirports.length > 0 ? ` (${uniqueConnectingAirports.length})` : ''}`} name="connectingIn">
+        {uniqueConnectingAirports.length > 0 ? (
+          <div className="space-y-2 max-h-48 overflow-y-auto">
+            {uniqueConnectingAirports.map(airport => (
+              <div key={airport} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`m-connIn-${airport}`}
+                  checked={filters.connectingIn.includes(airport)}
+                  onCheckedChange={(checked) => {
+                    setFilters(prev => ({
+                      ...prev,
+                      connectingIn: checked 
+                        ? [...prev.connectingIn, airport]
+                        : prev.connectingIn.filter(a => a !== airport)
+                    }));
+                  }}
+                />
+                <Label htmlFor={`m-connIn-${airport}`} className="text-sm cursor-pointer">
+                  {airport}
+                </Label>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-slate-500">Direct flights only</p>
+        )}
+      </FilterSection>
 
       <Separator className="my-3" />
 
