@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
+import { Badge } from './ui/badge';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
