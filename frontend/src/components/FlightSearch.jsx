@@ -389,7 +389,7 @@ export const FlightSearch = ({ onSearch, initialData }) => {
                           !returnDate && "text-slate-500"
                         )}
                       >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
                         {returnDate ? format(returnDate, 'PPP') : 'Select date'}
                       </Button>
                     </PopoverTrigger>
@@ -409,7 +409,7 @@ export const FlightSearch = ({ onSearch, initialData }) => {
             </div>
 
             {/* Passengers and Class */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               {/* Passengers Selector */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium">Travellers</Label>
@@ -425,7 +425,7 @@ export const FlightSearch = ({ onSearch, initialData }) => {
                       </div>
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[320px] p-4" align="start">
+                  <PopoverContent className="w-[300px] sm:w-[320px] p-4" align="start">
                     <div className="space-y-4">
                       {/* Adults */}
                       <div className="flex items-center justify-between">
