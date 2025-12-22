@@ -43,13 +43,13 @@ export const Header = ({ onNavigateHome, user, onSignIn, onSignOut }) => {
       </div>
       
       {/* Main header */}
-      <div className="container mx-auto px-4 h-16 sm:h-20 flex items-center justify-between">
+      <div className="container mx-auto px-4 h-20 sm:h-24 flex items-center justify-between">
         {/* Logo - EXTRA LARGE */}
         <a href="#home" onClick={handleLogoClick} className="flex items-center gap-2 cursor-pointer flex-shrink-0">
           <img 
             src="/logo-f380.png" 
             alt="Flight380" 
-            className="h-12 sm:h-16 md:h-20 w-auto"
+            className="h-14 sm:h-20 md:h-24 w-auto"
           />
         </a>
 
