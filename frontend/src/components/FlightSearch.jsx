@@ -211,14 +211,19 @@ export const FlightSearch = ({ onSearch, initialData }) => {
         });
       }
     } else if (fromAirport && toAirport && departDate) {
-      // Extract airport code (handle both individual airports and groups)
-      const originCode = fromAirport.isGroup ? fromAirport.airports[0] : fromAirport.code;
-      const destinationCode = toAirport.isGroup ? toAirport.airports[0] : toAirport.code;
+      // Extract airport code(s) - handle both individual airports and groups
+      // For groups, send all airports in the group
+      const originCode = fromAirport.isGroup ? fromAirport.code : fromAirport.code;
+      const originAirports = fromAirport.isGroup ? fromAirport.airports : [fromAirport.code];
+      const destinationCode = toAirport.isGroup ? toAirport.code : toAirport.code;
+      const destinationAirports = toAirport.isGroup ? toAirport.airports : [toAirport.code];
       
       onSearch({
         tripType,
         origin: originCode,
         destination: destinationCode,
+        origin_airports: originAirports,
+        destination_airports: destinationAirports,
         from: fromAirport,
         to: toAirport,
         departDate,
