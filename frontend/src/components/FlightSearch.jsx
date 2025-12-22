@@ -36,6 +36,7 @@ export const FlightSearch = ({ onSearch, initialData }) => {
   const [fromSearchTerm, setFromSearchTerm] = useState('');
   const [toSearchTerm, setToSearchTerm] = useState('');
   const [multiCitySearchTerms, setMultiCitySearchTerms] = useState({});
+  const [multiCityPopovers, setMultiCityPopovers] = useState({});
   const [multiCityLegs, setMultiCityLegs] = useState([
     { from: null, to: null, date: null },
     { from: null, to: null, date: null }
