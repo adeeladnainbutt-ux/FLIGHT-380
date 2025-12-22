@@ -112,6 +112,9 @@ function App() {
     setShowBooking(false);
     setSelectedFlight(null);
     
+    // Scroll to top immediately on mobile
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
     try {
       // Call real Amadeus API via backend
       const response = await axios.post(`${API}/flights/search`, {
@@ -135,9 +138,9 @@ function App() {
         const flexiMessage = searchData.flexiDates ? ' (including ±3 days)' : '';
         toast.success(`Found ${response.data.flights.length} flights for you${flexiMessage}!`);
         
-        // Scroll to results
+        // Scroll to top of results
         setTimeout(() => {
-          document.getElementById('search-results')?.scrollIntoView({ behavior: 'smooth' });
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         }, 100);
       } else {
         toast.error('No flights found. Please try different dates or destinations.');
