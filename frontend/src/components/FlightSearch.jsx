@@ -877,25 +877,34 @@ export const FlightSearch = ({ onSearch, initialData }) => {
                               "w-full h-12 justify-start text-left font-normal",
                               !leg.date && "text-slate-500"
                             )}
+                            onClick={() => setMultiCityPopoverOpen(index, 'date', true)}
                           >
                             <CalendarIcon className="mr-2 h-4 w-4" />
                             {leg.date ? format(leg.date, 'PP') : 'Select date'}
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
+                        <PopoverContent className="w-auto p-0" align="start" sideOffset={4}>
                           <Calendar
                             mode="single"
                             selected={leg.date}
+                            defaultMonth={index > 0 && multiCityLegs[index - 1]?.date 
+                              ? new Date(multiCityLegs[index - 1].date) 
+                              : undefined}
                             onSelect={(date) => {
-                              updateMultiCityLeg(index, 'date', date);
-                              setMultiCityPopoverOpen(index, 'date', false);
-                              // Auto-adjust subsequent leg dates if they're earlier
                               if (date) {
-                                multiCityLegs.forEach((nextLeg, nextIndex) => {
-                                  if (nextIndex > index && nextLeg.date && nextLeg.date < date) {
-                                    updateMultiCityLeg(nextIndex, 'date', null);
-                                  }
-                                });
+                                updateMultiCityLeg(index, 'date', date);
+                                setMultiCityPopoverOpen(index, 'date', false);
+                                
+                                // Auto-open next journey's date picker after a short delay
+                                if (index < multiCityLegs.length - 1) {
+                                  setTimeout(() => {
+                                    // Check if next leg needs a date and has airports selected
+                                    const nextLeg = multiCityLegs[index + 1];
+                                    if (!nextLeg?.date && nextLeg?.from && nextLeg?.to) {
+                                      setMultiCityPopoverOpen(index + 1, 'date', true);
+                                    }
+                                  }, 300);
+                                }
                               }
                             }}
                             disabled={(date) => {
@@ -904,7 +913,7 @@ export const FlightSearch = ({ onSearch, initialData }) => {
                               if (date < today) return true;
                               if (index > 0) {
                                 const prevLeg = multiCityLegs[index - 1];
-                                if (prevLeg.date) {
+                                if (prevLeg?.date) {
                                   const prevDate = new Date(prevLeg.date);
                                   prevDate.setHours(0, 0, 0, 0);
                                   return date < prevDate;
