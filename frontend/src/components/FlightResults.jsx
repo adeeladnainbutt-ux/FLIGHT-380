@@ -698,6 +698,14 @@ export const FlightResults = ({
 
       {/* Mobile Filters - Collapsible section shown on mobile */}
       <div className="lg:hidden mb-4">
+        {/* MODIFY SEARCH - Mobile */}
+        <Button 
+          onClick={onModifySearch}
+          className="w-full mb-3 bg-brand-600 hover:bg-brand-700 text-white font-semibold"
+        >
+          <Edit3 className="h-4 w-4 mr-2" />
+          Modify Search
+        </Button>
         <Card className="overflow-hidden">
           <div className="p-3 border-b bg-slate-50">
             <div className="flex items-center justify-between">
