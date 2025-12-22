@@ -62,6 +62,8 @@ class StatusCheckCreate(BaseModel):
 class FlightSearchRequest(BaseModel):
     origin: str
     destination: str
+    origin_airports: Optional[List[str]] = None  # For airport groups like "All London Airports"
+    destination_airports: Optional[List[str]] = None  # For airport groups
     departure_date: str
     return_date: Optional[str] = None
     adults: int = 1
