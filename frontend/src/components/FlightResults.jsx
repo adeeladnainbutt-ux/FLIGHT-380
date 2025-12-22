@@ -1001,25 +1001,26 @@ export const FlightResults = ({
         </div>
 
         {/* Right Side - Flight Results */}
-        <div className="flex-1">
-          {/* View Toggle for Round Trip */}
+        <div className="flex-1 min-w-0">
+          {/* View Toggle for Round Trip - Mobile Responsive */}
           {isRoundTrip && (
-            <div className="mb-4 flex items-center justify-between">
-              <Tabs value={viewMode} onValueChange={setViewMode} className="w-auto">
-                <TabsList>
-                  <TabsTrigger value="combined">Combined View</TabsTrigger>
-                  <TabsTrigger value="separate">Mix & Match</TabsTrigger>
+            <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <Tabs value={viewMode} onValueChange={setViewMode} className="w-full sm:w-auto">
+                <TabsList className="w-full sm:w-auto grid grid-cols-2 sm:flex">
+                  <TabsTrigger value="combined" className="text-xs sm:text-sm">Combined</TabsTrigger>
+                  <TabsTrigger value="separate" className="text-xs sm:text-sm">Mix & Match</TabsTrigger>
                 </TabsList>
               </Tabs>
               
               {viewMode === 'separate' && selectedOutbound && selectedReturn && (
-                <div className="flex items-center gap-4 bg-green-50 p-3 rounded-lg border border-green-200">
+                <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 bg-green-50 p-3 rounded-lg border border-green-200">
                   <div className="text-sm">
                     <span className="font-medium">Your Selection:</span> £{getCombinedPrice()} total
                   </div>
                   <Button 
                     onClick={() => onSelectFlight({ outbound: selectedOutbound, return: selectedReturn, combinedPrice: getCombinedPrice() })}
-                    className="bg-green-600 hover:bg-green-700"
+                    className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
+                    size="sm"
                   >
                     Book This Combination
                   </Button>
@@ -1028,34 +1029,35 @@ export const FlightResults = ({
             </div>
           )}
 
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-slate-900">
+          {/* Flights Available Header - Mobile Responsive */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
+            <h2 className="text-lg sm:text-2xl font-bold text-slate-900">
               {filteredFlights.length} Flight{filteredFlights.length !== 1 ? 's' : ''} Available
             </h2>
-            <div className="flex gap-2">
+            <div className="flex gap-1 sm:gap-2 overflow-x-auto pb-2 sm:pb-0">
               <Button
                 variant={sortBy === 'price' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setSortBy('price')}
-                className={sortBy === 'price' ? 'bg-brand-600 hover:bg-brand-700' : ''}
+                className={`text-xs sm:text-sm whitespace-nowrap ${sortBy === 'price' ? 'bg-brand-600 hover:bg-brand-700' : ''}`}
               >
-                Lowest Price
+                Price
               </Button>
               <Button
                 variant={sortBy === 'duration' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setSortBy('duration')}
-                className={sortBy === 'duration' ? 'bg-brand-600 hover:bg-brand-700' : ''}
+                className={`text-xs sm:text-sm whitespace-nowrap ${sortBy === 'duration' ? 'bg-brand-600 hover:bg-brand-700' : ''}`}
               >
-                Shortest
+                Duration
               </Button>
               <Button
                 variant={sortBy === 'departure' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setSortBy('departure')}
-                className={sortBy === 'departure' ? 'bg-brand-600 hover:bg-brand-700' : ''}
+                className={`text-xs sm:text-sm whitespace-nowrap ${sortBy === 'departure' ? 'bg-brand-600 hover:bg-brand-700' : ''}`}
               >
-                Departure Time
+                Departure
               </Button>
             </div>
           </div>
