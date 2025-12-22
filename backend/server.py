@@ -583,6 +583,156 @@ async def get_booking_emails(booking_id: str):
 
 
 # ============================================
+# CONTACT FORM ENDPOINT
+# ============================================
+
+@api_router.post("/contact")
+async def submit_contact_form(request: ContactFormRequest):
+    """Handle contact form submission - sends email to company and customer"""
+    try:
+        contact_id = str(uuid.uuid4())
+        timestamp = datetime.now(timezone.utc).isoformat()
+        
+        # Store contact form submission in database
+        contact_record = {
+            "id": contact_id,
+            "first_name": request.first_name,
+            "last_name": request.last_name,
+            "email": request.email,
+            "phone": request.phone,
+            "subject": request.subject,
+            "booking_reference": request.booking_reference,
+            "message": request.message,
+            "created_at": timestamp,
+            "status": "NEW"
+        }
+        await db.contact_submissions.insert_one(contact_record)
+        
+        # Create email content for company (info@flight380.co.uk)
+        company_html = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div style="background: #E73121; padding: 20px; text-align: center;">
+                    <h1 style="color: white; margin: 0;">New Contact Form Submission</h1>
+                </div>
+                <div style="padding: 20px; background: #f9f9f9;">
+                    <h2 style="color: #E73121;">Customer Details</h2>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid #ddd;"><strong>Name:</strong></td>
+                            <td style="padding: 10px; border-bottom: 1px solid #ddd;">{request.first_name} {request.last_name}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid #ddd;"><strong>Email:</strong></td>
+                            <td style="padding: 10px; border-bottom: 1px solid #ddd;"><a href="mailto:{request.email}">{request.email}</a></td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid #ddd;"><strong>Phone:</strong></td>
+                            <td style="padding: 10px; border-bottom: 1px solid #ddd;">{request.phone or 'Not provided'}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid #ddd;"><strong>Subject:</strong></td>
+                            <td style="padding: 10px; border-bottom: 1px solid #ddd;">{request.subject}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid #ddd;"><strong>Booking Reference:</strong></td>
+                            <td style="padding: 10px; border-bottom: 1px solid #ddd;">{request.booking_reference or 'N/A'}</td>
+                        </tr>
+                    </table>
+                    
+                    <h2 style="color: #E73121; margin-top: 20px;">Message</h2>
+                    <div style="background: white; padding: 15px; border-radius: 5px; border: 1px solid #ddd;">
+                        {request.message.replace(chr(10), '<br>')}
+                    </div>
+                    
+                    <p style="margin-top: 20px; font-size: 12px; color: #666;">
+                        Reference ID: {contact_id}<br>
+                        Submitted: {timestamp}
+                    </p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        # Create thank you email for customer
+        customer_html = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div style="background: #E73121; padding: 20px; text-align: center;">
+                    <h1 style="color: white; margin: 0;">Thank You for Contacting Us!</h1>
+                </div>
+                <div style="padding: 20px; background: #f9f9f9;">
+                    <p>Dear {request.first_name},</p>
+                    
+                    <p>Thank you for reaching out to Flight380. We have received your message and our team will get back to you as soon as possible.</p>
+                    
+                    <div style="background: white; padding: 15px; border-radius: 5px; border: 1px solid #ddd; margin: 20px 0;">
+                        <h3 style="color: #E73121; margin-top: 0;">Your Message Details</h3>
+                        <p><strong>Subject:</strong> {request.subject}</p>
+                        <p><strong>Reference ID:</strong> {contact_id}</p>
+                        <p><strong>Your Message:</strong></p>
+                        <p style="color: #666;">{request.message.replace(chr(10), '<br>')}</p>
+                    </div>
+                    
+                    <p>Our customer support team typically responds within 24-48 hours. For urgent enquiries, please call us at:</p>
+                    
+                    <p style="font-size: 18px; color: #E73121; font-weight: bold;">📞 01908 220000</p>
+                    <p><strong>Support Hours:</strong> 08:00 AM – 11:59 PM (GMT)</p>
+                    
+                    <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+                    
+                    <p style="font-size: 12px; color: #666;">
+                        Flight380<br>
+                        277 Dunstable Road, Luton, Bedfordshire, LU4 8BS<br>
+                        <a href="mailto:info@flight380.co.uk">info@flight380.co.uk</a>
+                    </p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        # Send emails
+        company_email_sent = await send_email_smtp(
+            COMPANY_EMAIL,
+            f"[Flight380 Contact] {request.subject} - {request.first_name} {request.last_name}",
+            company_html
+        )
+        
+        customer_email_sent = await send_email_smtp(
+            request.email,
+            "Thank you for contacting Flight380",
+            customer_html
+        )
+        
+        # Update record with email status
+        await db.contact_submissions.update_one(
+            {"id": contact_id},
+            {"$set": {
+                "company_email_sent": company_email_sent,
+                "customer_email_sent": customer_email_sent
+            }}
+        )
+        
+        return {
+            "success": True,
+            "message": "Thank you for your message! We have received your enquiry and will get back to you shortly.",
+            "reference_id": contact_id,
+            "emails_sent": {
+                "company": company_email_sent,
+                "customer": customer_email_sent
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Contact form error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to submit contact form: {str(e)}")
+
+
+# ============================================
 # AUTHENTICATION ENDPOINTS
 # ============================================
 
