@@ -22,10 +22,10 @@ export const MobileFilterButton = ({ children, filterCount = 0, onClearAll }) =>
             )}
           </Button>
         </SheetTrigger>
-        <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl p-0">
+        <SheetContent side="bottom" className="h-[90vh] rounded-t-2xl p-0">
           <SheetHeader className="p-4 border-b sticky top-0 bg-white z-10">
             <div className="flex items-center justify-between">
-              <SheetTitle className="text-lg font-bold">Filters</SheetTitle>
+              <SheetTitle className="text-lg font-bold">All Filters</SheetTitle>
               {filterCount > 0 && (
                 <Button 
                   variant="ghost" 
@@ -38,10 +38,18 @@ export const MobileFilterButton = ({ children, filterCount = 0, onClearAll }) =>
               )}
             </div>
           </SheetHeader>
-          <div className="overflow-y-auto p-4 pb-24" style={{ maxHeight: 'calc(85vh - 140px)' }}>
+          <div 
+            className="overflow-y-auto p-4" 
+            style={{ 
+              height: 'calc(90vh - 140px)',
+              scrollbarWidth: 'thin',
+              scrollbarColor: '#E73121 #f1f5f9',
+              paddingBottom: '100px'
+            }}
+          >
             {children}
           </div>
-          <div className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t">
+          <div className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t shadow-lg">
             <Button 
               className="w-full h-12 bg-brand-600 hover:bg-brand-700 text-base font-semibold"
               onClick={() => setOpen(false)}
