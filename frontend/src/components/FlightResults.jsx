@@ -1168,7 +1168,7 @@ export const FlightResults = ({
                           {/* Arrival */}
                           <div className="text-center sm:text-left">
                             <div className="text-lg sm:text-2xl font-bold text-slate-900">{formatTime(flight.arrival_time)}</div>
-                            <div className="text-xs sm:text-sm text-slate-600">{flight.to}</div>
+                            <div className="text-xs sm:text-sm font-semibold text-slate-700">{flight.to}</div>
                           </div>
                         </div>
                       </div>
