@@ -141,9 +141,10 @@ export const FlightResults = ({
 
   // Time filter options
   const timeOptions = [
-    { value: 'morning', label: 'Morning', time: '05:00 - 11:59', icon: Sun },
-    { value: 'afternoon', label: 'Afternoon', time: '12:00 - 17:59', icon: Sunset },
-    { value: 'evening', label: 'Evening', time: '18:00 - 23:59', icon: Moon }
+    { value: 'morning', label: 'Morning', time: '05:00 - 11:59' },
+    { value: 'afternoon', label: 'Afternoon', time: '12:00 - 17:59' },
+    { value: 'evening', label: 'Evening', time: '18:00 - 23:59' },
+    { value: 'overnight', label: 'Overnight', time: '00:00 - 04:59' }
   ];
 
   // Connection length filter options
@@ -157,9 +158,11 @@ export const FlightResults = ({
 
   // Fare type options
   const fareTypeOptions = [
+    { value: 'Corp', label: 'Corp' },
     { value: 'IT', label: 'IT' },
     { value: 'Net', label: 'Net' },
-    { value: 'Pub', label: 'Pub' }
+    { value: 'Pub', label: 'Pub' },
+    { value: 'VFR', label: 'VFR' }
   ];
 
   // Baggage options
@@ -168,6 +171,37 @@ export const FlightResults = ({
     { value: '2hold', label: '2 x Hold Luggage' },
     { value: 'nohold', label: 'No Hold Luggage' }
   ];
+
+  // Get unique departure airports from flights
+  const uniqueDepartureAirports = useMemo(() => {
+    const airports = new Set();
+    flights.forEach(f => {
+      if (f.from) airports.add(f.from);
+    });
+    return Array.from(airports).sort();
+  }, [flights]);
+
+  // Get unique connecting airports from layovers
+  const uniqueConnectingAirports = useMemo(() => {
+    const airports = new Map();
+    flights.forEach(f => {
+      if (f.layovers) {
+        f.layovers.forEach(layover => {
+          if (layover.airport && !airports.has(layover.airport)) {
+            airports.set(layover.airport, layover.airport);
+          }
+        });
+      }
+      if (f.return_layovers) {
+        f.return_layovers.forEach(layover => {
+          if (layover.airport && !airports.has(layover.airport)) {
+            airports.set(layover.airport, layover.airport);
+          }
+        });
+      }
+    });
+    return Array.from(airports.keys()).sort();
+  }, [flights]);
 
   // Parse time from datetime string
   const getHour = (dateTime) => {
