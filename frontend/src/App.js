@@ -156,23 +156,39 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     
     try {
-      // Call real Amadeus API via backend
-      const response = await axios.post(`${API}/flights/search`, {
-        origin: searchData.origin,
-        destination: searchData.destination,
-        origin_airports: searchData.origin_airports || null,
-        destination_airports: searchData.destination_airports || null,
-        departure_date: searchData.departure_date,
-        return_date: searchData.return_date,
-        adults: searchData.adults,
-        youth: searchData.youth,
-        children: searchData.children,
-        infants: searchData.infants,
-        travel_class: searchData.travel_class,
-        direct_flights: searchData.direct_flights,
-        flexible_dates: searchData.flexiDates || false,
-        airline: searchData.airline?.code || null
-      });
+      let response;
+      
+      // Handle multi-city search differently
+      if (searchData.tripType === 'multi-city' && searchData.legs) {
+        response = await axios.post(`${API}/flights/multi-city-search`, {
+          legs: searchData.legs,
+          adults: searchData.adults,
+          youth: searchData.youth,
+          children: searchData.children,
+          infants: searchData.infants,
+          travel_class: searchData.travel_class,
+          direct_flights: searchData.direct_flights,
+          airline: searchData.airline?.code || null
+        });
+      } else {
+        // Regular one-way or round-trip search
+        response = await axios.post(`${API}/flights/search`, {
+          origin: searchData.origin,
+          destination: searchData.destination,
+          origin_airports: searchData.origin_airports || null,
+          destination_airports: searchData.destination_airports || null,
+          departure_date: searchData.departure_date,
+          return_date: searchData.return_date,
+          adults: searchData.adults,
+          youth: searchData.youth,
+          children: searchData.children,
+          infants: searchData.infants,
+          travel_class: searchData.travel_class,
+          direct_flights: searchData.direct_flights,
+          flexible_dates: searchData.flexiDates || false,
+          airline: searchData.airline?.code || null
+        });
+      }
       
       if (response.data.success) {
         setSearchResults(response.data.flights);
