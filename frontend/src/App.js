@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './App.css';
 import axios from 'axios';
 import { Header } from './components/Header';
@@ -41,6 +42,9 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 function App() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  
   // Auth state
   const [user, setUser] = useState(null);
   const [showLogin, setShowLogin] = useState(false);
@@ -57,6 +61,41 @@ function App() {
   const [showBooking, setShowBooking] = useState(false);
   const [selectedFlight, setSelectedFlight] = useState(null);
   
+  // Restore state from sessionStorage on initial load
+  useEffect(() => {
+    const savedState = sessionStorage.getItem('flightSearchState');
+    if (savedState) {
+      try {
+        const state = JSON.parse(savedState);
+        if (state.searchResults) setSearchResults(state.searchResults);
+        if (state.showResults) setShowResults(state.showResults);
+        if (state.searchParams) setSearchParams(state.searchParams);
+        if (state.savedSearchData) setSavedSearchData(state.savedSearchData);
+        if (state.isFlexibleSearch) setIsFlexibleSearch(state.isFlexibleSearch);
+        if (state.showBooking) setShowBooking(state.showBooking);
+        if (state.selectedFlight) setSelectedFlight(state.selectedFlight);
+      } catch (e) {
+        console.error('Failed to restore state:', e);
+      }
+    }
+  }, []);
+  
+  // Save state to sessionStorage when it changes
+  useEffect(() => {
+    if (searchResults.length > 0 || showResults || showBooking) {
+      const state = {
+        searchResults,
+        showResults,
+        searchParams,
+        savedSearchData,
+        isFlexibleSearch,
+        showBooking,
+        selectedFlight
+      };
+      sessionStorage.setItem('flightSearchState', JSON.stringify(state));
+    }
+  }, [searchResults, showResults, searchParams, savedSearchData, isFlexibleSearch, showBooking, selectedFlight]);
+
   // Check for session_id in URL fragment (Google OAuth callback)
   useEffect(() => {
     if (window.location.hash?.includes('session_id=')) {
