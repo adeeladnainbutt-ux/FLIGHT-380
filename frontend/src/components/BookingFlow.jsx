@@ -114,7 +114,20 @@ export const BookingFlow = ({
   }, [passengerCounts.adults, passengerCounts.youth, passengerCounts.children, passengerCounts.infants]);
 
   const calculatePriceBreakdown = () => {
-    const basePrice = flight.price;
+    // Handle Mix & Match flights (which have outbound/return/combinedPrice structure)
+    // vs Combined flights (which have direct price property)
+    const basePrice = flight.combinedPrice || flight.price || 0;
+    
+    if (!basePrice || basePrice === 0) {
+      return {
+        adult: { count: passengerCounts.adults, unitPrice: 0, total: 0 },
+        youth: { count: passengerCounts.youth, unitPrice: 0, total: 0 },
+        child: { count: passengerCounts.children, unitPrice: 0, total: 0 },
+        infant: { count: passengerCounts.infants, unitPrice: 0, total: 0 },
+        grandTotal: 0
+      };
+    }
+    
     const adultPrice = basePrice / totalPassengers;
     const youthPrice = adultPrice * 0.9;
     const childPrice = adultPrice * 0.75;
