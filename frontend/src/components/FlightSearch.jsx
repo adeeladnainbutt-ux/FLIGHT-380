@@ -138,6 +138,18 @@ export const FlightSearch = ({ onSearch, initialData }) => {
     }));
   };
 
+  // Helper functions for multi-city popover state
+  const isMultiCityPopoverOpen = (legIndex, field) => {
+    return multiCityPopovers[`${legIndex}-${field}`] || false;
+  };
+
+  const setMultiCityPopoverOpen = (legIndex, field, isOpen) => {
+    setMultiCityPopovers(prev => ({
+      ...prev,
+      [`${legIndex}-${field}`]: isOpen
+    }));
+  };
+
   const addMultiCityLeg = () => {
     if (multiCityLegs.length < 5) {
       setMultiCityLegs([...multiCityLegs, { from: null, to: null, date: null }]);
