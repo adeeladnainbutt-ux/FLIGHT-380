@@ -1199,7 +1199,7 @@ if cors_origins_env == '*':
     # Use specific origins for production
     cors_origins = [
         "http://localhost:3000",
-        "https://flight-search-app-4.preview.emergentagent.com",
+        "https://flightfix-central.preview.emergentagent.com",
         "https://flight380.co.uk",
         "https://www.flight380.co.uk"
     ]
