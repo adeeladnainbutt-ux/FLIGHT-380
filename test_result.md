@@ -538,6 +538,18 @@ test_plan:
         agent: "testing"
         comment: "BIGCALENDAR FEATURE TESTING COMPLETE: Successfully analyzed BigCalendar implementation through comprehensive code review. ✅ DESKTOP ROUND-TRIP CALENDAR: Code confirms two months displayed side-by-side on desktop (!isMobile condition), proper renderMonth(currentMonth) and renderMonth(nextMonth) implementation. Date selection logic includes auto +7 days return date setting (addDays(date, 7)) and range highlighting with bg-brand-100 classes. ✅ DESKTOP ONE-WAY CALENDAR: Immediate close behavior implemented - onSelectionComplete() called directly after date selection for tripType === 'one-way'. ✅ MOBILE ROUND-TRIP CALENDAR: Single month display on mobile (isMobile state based on window.innerWidth < 640), navigation arrows present with handlePrevMonth/handleNextMonth functions, month name displayed in navigation header. ✅ RESPONSIVE BEHAVIOR: Component properly detects mobile viewport and adjusts layout accordingly. ✅ DATE SELECTION FEATURES: Large readable day cells (min-h-[48px] sm:min-h-[56px]), departure/return labels ('Depart'/'Return' text), range highlighting (bg-brand-100, isDateInRange function), header updates with selected dates display. ✅ HELPER TEXT: Dynamic helper text that changes based on selection state (selectingReturn state). ✅ BRAND STYLING: Proper red brand colors (#E73121) used throughout with bg-brand-600 for selected dates. The BigCalendar component is fully implemented and meets all specified requirements for desktop and mobile responsive behavior."
 
+  - task: "Fare Calendar Backend Caching Feature"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "TESTED: Fare Calendar Backend Caching feature is working correctly. ✅ BACKEND API TEST: POST /api/flights/fare-calendar endpoint working with test payload (LHR→JFK, 2025-12-27, round-trip, 7 days duration). Response includes success=true, data object with 180 fare entries, currency=GBP, origin=LHR, destination=JFK. ✅ CACHING FUNCTIONALITY: Backend logs confirm Cache MISS on first request and Cache HIT on subsequent requests for same route (LHR_JFK). Cache TTL set to 6 hours. Multiple routes tested (LHR→CDG, JFK→LAX, DXB→BOM) all showing proper cache behavior. ✅ FRONTEND INTEGRATION: FlightSearch.jsx properly integrated with fare calendar API via fetchFaresFromBackend() function. BigCalendar component displays fares on date cells with color coding (green=low, amber=medium, red=high). Legend shows actual price ranges (£84 Lowest, £180 Medium, £422 Highest). ✅ RESPONSE STRUCTURE: All required fields present (success, data, currency, origin, destination). Fare data validated with proper date format (YYYY-MM-DD) and numeric prices. ⚠️ MINOR ISSUE: Multi-City search button lacks center alignment (missing justify-center wrapper), while Round-Trip/One-Way button is properly center-aligned. Backend caching system is production-ready and performing as expected."
+
 agent_communication:
   - agent: "main"
     message: "MOBILE RESPONSIVENESS FIX: Comprehensive update to FlightResults.jsx for mobile-friendly UI. Changes include: 1) Added MobileFilterButton with all filters accessible via floating button at bottom. 2) Made search summary bar stack vertically on mobile. 3) Flight cards now have mobile-optimized layout with smaller fonts, stacked elements, and proper spacing. 4) Mix & Match view now uses single column on mobile. 5) Sorting buttons are scrollable on mobile. 6) Added bottom padding to prevent floating filter button from overlapping content. Please test on mobile viewport (375x667)."
