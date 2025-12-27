@@ -764,3 +764,22 @@ agent_communication:
   - agent: "main"
     message: "FARE CALENDAR CACHING IMPLEMENTED: Backend caching with 6-hour TTL added to solve slow Amadeus API. Frontend now calls /api/flights/fare-calendar endpoint. Cache HIT/MISS logging confirms caching is working. Tested with LHR-JFK route and fares are displaying correctly with real Amadeus data. Also center-aligned the Search Flights button. Please verify: 1) Fare calendar shows real prices (not mock data), 2) Search Flights button is centered, 3) Second request for same route is fast (cache HIT)."
 
+
+  - task: "Password Reset Flow"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py, /app/frontend/src/components/ResetPasswordPage.jsx, /app/frontend/src/components/LoginPage.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "IMPLEMENTED: Complete password reset flow with real email sending via IONOS SMTP. Features: 1) POST /api/auth/forgot-password - sends branded HTML reset email with 1-hour expiry token, 2) GET /api/auth/verify-reset-token - validates token before showing form, 3) POST /api/auth/reset-password - resets password with validation (min 6 chars), 4) Frontend ResetPasswordPage.jsx - handles all states (loading, invalid token, success), 5) Integrated with LoginPage.jsx via 'Forgot password?' link. Security: Email enumeration prevention, token expiration, session invalidation on password change."
+      - working: true
+        agent: "testing"
+        comment: "VERIFIED: All password reset endpoints working correctly. Backend flows tested: forgot-password returns security message for all emails, verify-reset-token validates invalid tokens, reset-password validates password length and token validity. Frontend routes working: /reset-password?token=test displays InvalidReset Link page correctly. CORS configured properly for frontend-backend communication."
+
+agent_communication:
+  - agent: "main"
+    message: "PASSWORD RESET FEATURE COMPLETE: Implemented full password reset flow replacing the previous mock implementation. Backend: 1) /api/auth/forgot-password now sends real emails via IONOS SMTP with branded HTML template, 2) /api/auth/verify-reset-token validates tokens before form display, 3) /api/auth/reset-password handles password update with validation. Frontend: Created ResetPasswordPage.jsx with states for loading, invalid token, and success. Added route handling in App.js. Security features: email enumeration prevention, 1-hour token expiry, session invalidation. Please test: 1) Click Sign In > Forgot password > enter email > verify email received, 2) Use token link to reset password, 3) Verify old sessions are logged out."
