@@ -487,7 +487,7 @@ export const FlightSearch = ({ onSearch, initialData }) => {
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent 
-                    className="w-auto p-0" 
+                    className="w-auto p-0 max-w-[95vw]" 
                     align="start"
                     side="bottom"
                     sideOffset={4}
@@ -502,7 +502,6 @@ export const FlightSearch = ({ onSearch, initialData }) => {
                       fares={fares}
                       faresLoading={faresLoading}
                       currency="£"
-                      className="max-w-[580px]"
                     />
                   </PopoverContent>
                 </Popover>
