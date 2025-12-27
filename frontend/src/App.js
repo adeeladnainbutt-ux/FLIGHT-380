@@ -317,7 +317,7 @@ function App() {
               <Badge className="bg-brand-100 text-brand-700 hover:bg-brand-200 px-4 py-1.5 text-sm font-medium">
                 Book with Confidence
               </Badge>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 leading-tight">
                 Find Your Perfect
                 <span className="block bg-gradient-to-r from-brand-600 to-brand-600 bg-clip-text text-transparent">
                   Flight Deal
