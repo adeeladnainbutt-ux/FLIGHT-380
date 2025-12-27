@@ -10,6 +10,7 @@ function BigCalendar({
   returnDate,
   onDepartSelect,
   onReturnSelect,
+  onSelectionComplete,
   tripType = 'round-trip',
   ...props
 }) {
