@@ -103,14 +103,20 @@ function BigCalendar({
   // Handle click for second date selection (when departure already set but no return)
   const handleSecondClick = (date) => {
     if (isBefore(date, today)) return
+    if (isDragging) return
     
-    // Only handle if we have departure but no return
-    if (departDate && !returnDate && !isDragging) {
-      if (!isBefore(date, departDate) && !isSameDay(date, departDate)) {
+    // If we have departure but no return, selecting return date
+    if (departDate && !returnDate) {
+      if (isAfter(date, departDate) || isSameDay(date, departDate)) {
+        // Clicked on or after departure - set as return (if after) or re-select departure (if same)
+        if (isSameDay(date, departDate)) {
+          // Re-clicked same departure date - do nothing
+          return
+        }
         onReturnSelect(date)
         if (onSelectionComplete) onSelectionComplete()
-      } else if (isBefore(date, departDate)) {
-        // Clicked before departure - reset
+      } else {
+        // Clicked before departure - reset to this as departure
         onDepartSelect(date)
         onReturnSelect(null)
       }
