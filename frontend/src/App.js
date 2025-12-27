@@ -329,7 +329,7 @@ function App() {
                   Flight Deal
                 </span>
               </h1>
-              <p className="text-sm sm:text-base md:text-lg text-slate-600 max-w-2xl mx-auto px-4">
+              <p className="text-sm sm:text-base md:text-lg text-slate-600 max-w-2xl mx-auto px-4 leading-snug">
                 Compare prices from hundreds of airlines and travel agents. Save up to 40% on your next trip.
               </p>
             </div>
