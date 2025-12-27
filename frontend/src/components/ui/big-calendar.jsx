@@ -222,7 +222,7 @@ function BigCalendar({
                     <button
                       onMouseDown={(e) => handleMouseDown(date, e)}
                       onMouseEnter={() => handleMouseEnter(date)}
-                      onMouseUp={() => !isDragging && handleClick(date)}
+                      onClick={(e) => handleClick(date, e)}
                       onTouchStart={(e) => handleMouseDown(date, e)}
                       disabled={isDisabled || !isCurrentMonth}
                       className={cn(
