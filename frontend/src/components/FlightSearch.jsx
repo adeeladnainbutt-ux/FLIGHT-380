@@ -764,13 +764,15 @@ export const FlightSearch = ({ onSearch, initialData }) => {
               </div>
             </div>
 
-            <Button 
-              onClick={handleSearch} 
-              className="w-full h-12 text-base font-semibold bg-gradient-to-r from-brand-600 to-brand-600 hover:from-brand-700 hover:to-brand-700 transition-all duration-300"
-              disabled={!fromAirport || !toAirport || !departDate || (tripType === 'round-trip' && !returnDate)}
-            >
-              Search Flights
-            </Button>
+            <div className="flex justify-center sm:justify-start">
+              <Button 
+                onClick={handleSearch} 
+                className="w-full sm:w-auto sm:min-w-[200px] h-12 text-base font-semibold bg-gradient-to-r from-brand-600 to-brand-600 hover:from-brand-700 hover:to-brand-700 transition-all duration-300"
+                disabled={!fromAirport || !toAirport || !departDate || (tripType === 'round-trip' && !returnDate)}
+              >
+                Search Flights
+              </Button>
+            </div>
           </TabsContent>
         )}
 
