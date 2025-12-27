@@ -12,12 +12,12 @@ function BigCalendar({
   onReturnSelect,
   onSelectionComplete,
   tripType = 'round-trip',
-  fares = {},  // {date: price} object
+  fares = {},
   faresLoading = false,
   currency = '£',
   ...props
 }) {
-  const [currentMonth, setCurrentMonth] = React.useState(new Date())
+  const [startMonth, setStartMonth] = React.useState(new Date())
   const [isMobile, setIsMobile] = React.useState(false)
   
   // Internal selection state
@@ -37,7 +37,7 @@ function BigCalendar({
 
   // Check for mobile screen size
   React.useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 640)
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
@@ -46,15 +46,22 @@ function BigCalendar({
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
-  const nextMonth = addMonths(currentMonth, 1)
+  // Generate 6 months starting from startMonth
+  const months = React.useMemo(() => {
+    const result = []
+    for (let i = 0; i < 6; i++) {
+      result.push(addMonths(startMonth, i))
+    }
+    return result
+  }, [startMonth])
 
   // Find min and max fares for coloring
   const fareValues = Object.values(fares).filter(f => f != null)
   const minFare = fareValues.length > 0 ? Math.min(...fareValues) : 0
   const maxFare = fareValues.length > 0 ? Math.max(...fareValues) : 0
 
-  const handlePrevMonth = () => setCurrentMonth(subMonths(currentMonth, 1))
-  const handleNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1))
+  const handlePrevMonth = () => setStartMonth(subMonths(startMonth, isMobile ? 1 : 3))
+  const handleNextMonth = () => setStartMonth(addMonths(startMonth, isMobile ? 1 : 3))
 
   // Handle date selection
   const handleDateClick = (date) => {
@@ -95,7 +102,6 @@ function BigCalendar({
   // Handle drag start
   const handleMouseDown = (date, e) => {
     if (isBefore(date, today)) return
-    
     if (tripType === 'one-way') return
     
     if (!internalDepart || (internalDepart && internalReturn)) {
@@ -161,9 +167,9 @@ function BigCalendar({
   const isRangeStart = (date) => displayDepart && isSameDay(date, displayDepart)
   const isRangeEnd = (date) => displayReturn && isSameDay(date, displayReturn)
 
-  // Get fare color based on price (green = cheap, red = expensive)
+  // Get fare color based on price
   const getFareColor = (price) => {
-    if (!price || minFare === maxFare) return null
+    if (!price || minFare === maxFare) return 'text-slate-500'
     const ratio = (price - minFare) / (maxFare - minFare)
     if (ratio < 0.33) return 'text-green-600'
     if (ratio < 0.66) return 'text-amber-600'
@@ -194,22 +200,22 @@ function BigCalendar({
     }
 
     return (
-      <div className="flex-1 min-w-[260px] select-none">
-        <div className="text-center mb-3">
-          <h3 className="text-base font-semibold text-slate-900">
-            {format(monthDate, 'MMMM yyyy')}
+      <div className="flex-1 min-w-[160px] select-none">
+        <div className="text-center mb-2">
+          <h3 className="text-sm font-semibold text-slate-900">
+            {format(monthDate, 'MMM yyyy')}
           </h3>
         </div>
 
         <div className="grid grid-cols-7 mb-1">
           {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((dayName, idx) => (
-            <div key={idx} className="text-center text-xs font-medium text-slate-500 py-1">
+            <div key={idx} className="text-center text-[10px] font-medium text-slate-400 py-0.5">
               {dayName}
             </div>
           ))}
         </div>
 
-        <div className="space-y-0.5">
+        <div className="space-y-0">
           {weeks.map((week, weekIndex) => (
             <div key={weekIndex} className="grid grid-cols-7">
               {week.map((date, dayIndex) => {
@@ -231,8 +237,8 @@ function BigCalendar({
                     className={cn(
                       "relative",
                       isInRange && "bg-brand-100",
-                      isStart && displayReturn && "bg-gradient-to-r from-transparent to-brand-100 rounded-l-md",
-                      isEnd && displayDepart && "bg-gradient-to-l from-transparent to-brand-100 rounded-r-md"
+                      isStart && displayReturn && "bg-gradient-to-r from-transparent to-brand-100 rounded-l",
+                      isEnd && displayDepart && "bg-gradient-to-l from-transparent to-brand-100 rounded-r"
                     )}
                   >
                     <button
@@ -242,9 +248,9 @@ function BigCalendar({
                       onTouchStart={(e) => handleMouseDown(date, e)}
                       disabled={isDisabled || !isCurrentMonth}
                       className={cn(
-                        "w-full flex flex-col items-center justify-center rounded-md text-sm font-medium transition-all",
-                        "min-h-[44px] sm:min-h-[52px] p-0.5",
-                        !isCurrentMonth && "text-slate-300 cursor-default",
+                        "w-full flex flex-col items-center justify-center rounded text-xs font-medium transition-all",
+                        "min-h-[36px] p-0.5",
+                        !isCurrentMonth && "text-slate-200 cursor-default",
                         isCurrentMonth && !isDisabled && "hover:bg-brand-50 cursor-pointer",
                         isDisabled && isCurrentMonth && "text-slate-300 cursor-not-allowed",
                         isToday && !isSelected && "ring-1 ring-brand-500 ring-inset",
@@ -252,16 +258,10 @@ function BigCalendar({
                         isInRange && isCurrentMonth && "text-brand-700"
                       )}
                     >
-                      <span className="text-sm sm:text-base leading-tight">{format(date, 'd')}</span>
-                      {isStart && !fare && (
-                        <span className="text-[8px] sm:text-[9px] font-normal leading-tight">Depart</span>
-                      )}
-                      {isEnd && tripType === 'round-trip' && !fare && (
-                        <span className="text-[8px] sm:text-[9px] font-normal leading-tight">Return</span>
-                      )}
+                      <span className="text-xs leading-none">{format(date, 'd')}</span>
                       {fare && isCurrentMonth && !isDisabled && (
                         <span className={cn(
-                          "text-[9px] sm:text-[10px] font-semibold leading-tight",
+                          "text-[8px] font-semibold leading-none mt-0.5",
                           isSelected ? "text-white/90" : fareColor
                         )}>
                           {formatPrice(fare)}
@@ -280,119 +280,103 @@ function BigCalendar({
 
   const hasFullSelection = displayDepart && displayReturn
   const hasDepartureOnly = displayDepart && !displayReturn
+  const monthsToShow = isMobile ? 2 : 6
 
   return (
-    <div className={cn("p-3 sm:p-4", className)} {...props}>
+    <div className={cn("p-3", className)} {...props}>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 mb-4 pb-3 border-b">
-        <div className="flex items-center gap-2">
-          <div className={cn(
-            "px-3 py-1.5 rounded-lg text-center min-w-[120px]",
-            displayDepart ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-700"
-          )}>
-            <div className="text-[10px] font-medium opacity-80">
-              {tripType === 'round-trip' ? 'Departure' : 'Travel Date'}
-            </div>
-            <div className="text-xs sm:text-sm font-semibold">
-              {displayDepart ? format(displayDepart, 'EEE, d MMM') : 'Select date'}
-            </div>
+      <div className="flex items-center justify-center gap-3 mb-3 pb-2 border-b">
+        <div className={cn(
+          "px-3 py-1 rounded text-center min-w-[100px]",
+          displayDepart ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-700"
+        )}>
+          <div className="text-[9px] font-medium opacity-80">Departure</div>
+          <div className="text-xs font-semibold">
+            {displayDepart ? format(displayDepart, 'd MMM yy') : 'Select'}
           </div>
-          
-          {tripType === 'round-trip' && (
-            <>
-              <ChevronRight className="h-4 w-4 text-slate-400" />
-              <div className={cn(
-                "px-3 py-1.5 rounded-lg text-center min-w-[120px]",
-                hasFullSelection ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-700"
-              )}>
-                <div className="text-[10px] font-medium opacity-80">Return</div>
-                <div className="text-xs sm:text-sm font-semibold">
-                  {displayReturn 
-                    ? format(displayReturn, 'EEE, d MMM') 
-                    : hasDepartureOnly 
-                      ? 'Tap to select'
-                      : 'Select date'
-                  }
-                </div>
+        </div>
+        
+        {tripType === 'round-trip' && (
+          <>
+            <ChevronRight className="h-3 w-3 text-slate-400" />
+            <div className={cn(
+              "px-3 py-1 rounded text-center min-w-[100px]",
+              hasFullSelection ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-700"
+            )}>
+              <div className="text-[9px] font-medium opacity-80">Return</div>
+              <div className="text-xs font-semibold">
+                {displayReturn ? format(displayReturn, 'd MMM yy') : hasDepartureOnly ? 'Tap date' : 'Select'}
               </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Loading indicator */}
-      {faresLoading && (
-        <div className="flex items-center justify-center gap-2 text-sm text-slate-500 mb-3">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          <span>Loading fares...</span>
-        </div>
-      )}
-
-      {/* Fare legend */}
-      {Object.keys(fares).length > 0 && !faresLoading && (
-        <div className="flex items-center justify-center gap-4 text-xs mb-3">
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-green-500"></span>
-            <span className="text-slate-600">Low</span>
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-            <span className="text-slate-600">Medium</span>
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-red-500"></span>
-            <span className="text-slate-600">High</span>
-          </span>
-        </div>
-      )}
-
-      {/* Navigation */}
-      <div className="flex items-center justify-between mb-3">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handlePrevMonth}
-          disabled={isSameMonth(currentMonth, today)}
-          className="h-8 w-8"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        {isMobile && (
-          <span className="text-sm font-medium text-slate-600">
-            {format(currentMonth, 'MMM yyyy')}
-          </span>
+            </div>
+          </>
         )}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleNextMonth}
-          className="h-8 w-8"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
       </div>
 
-      {/* Calendar Grid */}
-      <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
-        {renderMonth(currentMonth)}
-        {!isMobile && renderMonth(nextMonth)}
+      {/* Loading & Legend */}
+      <div className="flex items-center justify-between mb-2">
+        {faresLoading ? (
+          <div className="flex items-center gap-1.5 text-xs text-slate-500">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            <span>Loading fares...</span>
+          </div>
+        ) : Object.keys(fares).length > 0 ? (
+          <div className="flex items-center gap-3 text-[10px]">
+            <span className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+              <span className="text-slate-500">Low</span>
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+              <span className="text-slate-500">Med</span>
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+              <span className="text-slate-500">High</span>
+            </span>
+          </div>
+        ) : (
+          <div></div>
+        )}
+        
+        {/* Navigation */}
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handlePrevMonth}
+            disabled={isSameMonth(startMonth, today)}
+            className="h-6 w-6"
+          >
+            <ChevronLeft className="h-3 w-3" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleNextMonth}
+            className="h-6 w-6"
+          >
+            <ChevronRight className="h-3 w-3" />
+          </Button>
+        </div>
+      </div>
+
+      {/* 6-Month Calendar Grid */}
+      <div className={cn(
+        "grid gap-3",
+        isMobile ? "grid-cols-2" : "grid-cols-3 lg:grid-cols-6"
+      )}>
+        {months.slice(0, monthsToShow).map((month, idx) => (
+          <div key={idx}>
+            {renderMonth(month)}
+          </div>
+        ))}
       </div>
 
       {/* Helper Text */}
-      <div className="mt-3 pt-3 border-t text-center text-xs text-slate-500">
+      <div className="mt-2 pt-2 border-t text-center text-[10px] text-slate-500">
         {tripType === 'round-trip' ? (
-          isDragging ? (
-            <span>Drag to your <strong>return date</strong></span>
-          ) : hasDepartureOnly ? (
-            <span>Tap or drag to select <strong>return</strong></span>
-          ) : hasFullSelection ? (
-            <span>Tap to start new selection</span>
-          ) : (
-            <span>Tap departure, then tap/drag to return</span>
-          )
-        ) : (
-          <span>Tap to select <strong>travel date</strong></span>
-        )}
+          hasDepartureOnly ? 'Tap return date' : hasFullSelection ? 'Tap to change' : 'Tap departure → return'
+        ) : 'Tap travel date'}
       </div>
     </div>
   )
