@@ -642,3 +642,32 @@ agent_communication:
 agent_communication:
   - agent: "main"
     message: "FARE CALENDAR MOCK DATA: Implemented mock fare data to unblock the fare calendar feature. The Amadeus test API was too slow to return 6 months of data in real-time. Mock data includes realistic pricing patterns: base fares, weekend premiums, holiday surcharges, occasional deals and premium prices. UI now shows: 1) Two-month calendar with prices on each date, 2) Color-coded fares (green=cheap, amber=medium, red=expensive), 3) Legend with actual Lowest/Medium/Highest prices, 4) Selected fare displayed prominently when departure is chosen. Please test: select airports, open date picker, verify fares load, select departure date, verify fare display."
+
+  - task: "Fare Calendar Backend Caching"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Implemented backend caching for fare calendar data to solve slow Amadeus test API issue. Features: MongoDB cache with 6-hour TTL, fallback to mock data if API times out (30s timeout), cache HIT/MISS logging. Frontend updated to call backend API instead of using hardcoded mock data."
+
+  - task: "Search Flights Button Center Alignment"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/FlightSearch.jsx"
+    stuck_count: 0
+    priority: "low"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Changed Search Flights button from left-aligned on desktop to center-aligned. Changed justify-center sm:justify-start to just justify-center."
+
+agent_communication:
+  - agent: "main"
+    message: "FARE CALENDAR CACHING IMPLEMENTED: Backend caching with 6-hour TTL added to solve slow Amadeus API. Frontend now calls /api/flights/fare-calendar endpoint. Cache HIT/MISS logging confirms caching is working. Tested with LHR-JFK route and fares are displaying correctly with real Amadeus data. Also center-aligned the Search Flights button. Please verify: 1) Fare calendar shows real prices (not mock data), 2) Search Flights button is centered, 3) Second request for same route is fast (cache HIT)."
+
