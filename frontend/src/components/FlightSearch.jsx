@@ -99,9 +99,9 @@ export const FlightSearch = ({ onSearch, initialData }) => {
       const originCode = fromAirport.code;
       const destCode = toAirport.code;
       
-      // Use a default date if none selected
-      const centerDate = departDate || new Date();
-      const dateStr = format(centerDate, 'yyyy-MM-dd');
+      // Start from today for 6-month fare calendar
+      const startDate = new Date();
+      const dateStr = format(startDate, 'yyyy-MM-dd');
       
       setFaresLoading(true);
       setFares({});
