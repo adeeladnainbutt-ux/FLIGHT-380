@@ -42,6 +42,10 @@ export const FlightSearch = ({ onSearch, initialData }) => {
     { from: null, to: null, date: null },
     { from: null, to: null, date: null }
   ]);
+  
+  // Fare calendar state
+  const [fares, setFares] = useState({});
+  const [faresLoading, setFaresLoading] = useState(false);
 
   // Load initial data when modifying search
   useEffect(() => {
