@@ -35,6 +35,8 @@ function BigCalendar({
 
     if (tripType === 'one-way') {
       onDepartSelect(date)
+      // For one-way, close immediately after selection
+      if (onSelectionComplete) onSelectionComplete()
       return
     }
 
@@ -46,6 +48,7 @@ function BigCalendar({
       const autoReturnDate = addDays(date, 7)
       onReturnSelect(autoReturnDate)
       setSelectingReturn(true)
+      // Don't close - let user adjust return date if needed
     } else {
       // Selecting return date
       if (isBefore(date, departDate)) {
@@ -53,9 +56,12 @@ function BigCalendar({
         onDepartSelect(date)
         const autoReturnDate = addDays(date, 7)
         onReturnSelect(autoReturnDate)
+        // Stay in return selection mode
       } else {
         onReturnSelect(date)
         setSelectingReturn(false)
+        // User explicitly selected return date, close the picker
+        if (onSelectionComplete) onSelectionComplete()
       }
     }
   }
