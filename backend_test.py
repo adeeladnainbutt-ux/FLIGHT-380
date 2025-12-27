@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend API Testing for Flight380 - Fare Calendar Caching Feature
-Testing the new fare calendar endpoint with caching functionality
+Backend API Testing for Flight380 - Complete Backend Testing
+Testing all critical endpoints as specified in the review request
 """
 
 import requests
@@ -11,7 +11,8 @@ import sys
 from datetime import datetime, timedelta
 
 # Get backend URL from frontend .env
-BACKEND_URL = "https://quick-flight.preview.emergentagent.com/api"
+BACKEND_URL = "https://quick-flight.preview.emergentagent.com"
+API_BASE_URL = f"{BACKEND_URL}/api"
 
 def test_fare_calendar_caching():
     """Test the fare calendar endpoint with caching functionality"""
