@@ -1344,7 +1344,7 @@ export const FlightResults = ({
 
           {/* Flights Available Header with MODIFY SEARCH - Mobile Responsive */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center justify-between sm:justify-start gap-4 w-full sm:w-auto">
               <h2 className="text-lg sm:text-2xl font-bold text-slate-900">
                 {filteredFlights.length} Flight{filteredFlights.length !== 1 ? 's' : ''} Available
               </h2>
@@ -1352,10 +1352,11 @@ export const FlightResults = ({
                 onClick={onModifySearch}
                 variant="outline"
                 size="sm"
-                className="hidden sm:flex border-brand-600 text-brand-600 hover:bg-brand-50 font-medium"
+                className="flex border-brand-600 text-brand-600 hover:bg-brand-50 font-medium"
               >
                 <Edit3 className="h-4 w-4 mr-1" />
-                Modify
+                <span className="hidden sm:inline">Modify</span>
+                <span className="sm:hidden">Edit</span>
               </Button>
             </div>
             <div className="flex gap-1 sm:gap-2 overflow-x-auto pb-2 sm:pb-0">
