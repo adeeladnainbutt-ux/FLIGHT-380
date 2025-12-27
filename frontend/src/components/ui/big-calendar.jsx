@@ -47,6 +47,13 @@ function BigCalendar({
   // Start drag/selection
   const handleMouseDown = (date, e) => {
     if (isBefore(date, today)) return
+    
+    // Don't start a new drag if we're waiting for return date
+    if (departDate && !returnDate) {
+      // Let onClick handle this
+      return
+    }
+    
     e.preventDefault()
     
     if (tripType === 'one-way') {
