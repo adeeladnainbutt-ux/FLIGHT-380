@@ -8,9 +8,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from './ui/command';
 import { Calendar } from './ui/calendar';
+import { BigCalendar } from './ui/big-calendar';
 import { Checkbox } from './ui/checkbox';
 import { CalendarIcon, MapPin, Users, Plane, Plus, Minus, X } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, addDays } from 'date-fns';
 import { airports, airportGroups, airlines } from '../mock';
 import { cn } from '../lib/utils';
 
