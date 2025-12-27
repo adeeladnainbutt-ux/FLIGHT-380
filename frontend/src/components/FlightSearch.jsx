@@ -449,6 +449,7 @@ export const FlightSearch = ({ onSearch, initialData }) => {
                       returnDate={returnDate}
                       onDepartSelect={handleDepartDateSelect}
                       onReturnSelect={handleReturnDateSelect}
+                      onSelectionComplete={handleDateSelectionComplete}
                       tripType={tripType}
                       className="max-w-[680px]"
                     />
