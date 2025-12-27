@@ -90,6 +90,50 @@ export const FlightSearch = ({ onSearch, initialData }) => {
     }
   }, [initialData]);
 
+  // Fetch fares when airports are selected and date picker opens
+  useEffect(() => {
+    const fetchFares = async () => {
+      if (!fromAirport || !toAirport || !openDatePicker) return;
+      if (tripType === 'multi-city') return; // No fares for multi-city
+      
+      const originCode = fromAirport.code;
+      const destCode = toAirport.code;
+      
+      // Use a default date if none selected
+      const centerDate = departDate || new Date();
+      const dateStr = format(centerDate, 'yyyy-MM-dd');
+      
+      setFaresLoading(true);
+      setFares({});
+      
+      try {
+        const backendUrl = process.env.REACT_APP_BACKEND_URL || '';
+        const response = await fetch(`${backendUrl}/api/flights/fare-calendar`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            origin: originCode,
+            destination: destCode,
+            departure_date: dateStr,
+            one_way: tripType === 'one-way',
+            duration: 7
+          })
+        });
+        
+        const result = await response.json();
+        if (result.success && result.data) {
+          setFares(result.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch fares:', error);
+      } finally {
+        setFaresLoading(false);
+      }
+    };
+    
+    fetchFares();
+  }, [fromAirport, toAirport, openDatePicker, tripType]);
+
   // Combine airport groups and individual airports for search
   const allAirportOptions = [
     ...airportGroups.map(group => ({ ...group, isGroup: true })),
