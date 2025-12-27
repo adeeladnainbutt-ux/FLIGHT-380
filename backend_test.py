@@ -218,21 +218,22 @@ def test_auth_endpoints():
         register_test_passed = False
     
     return auth_test_passed and register_test_passed
+def test_fare_calendar_caching():
     """Test the fare calendar endpoint with caching functionality"""
     print("=" * 60)
-    print("TESTING FARE CALENDAR BACKEND CACHING FEATURE")
+    print("TESTING FARE CALENDAR ENDPOINT WITH CACHING")
     print("=" * 60)
     
     # Test data as specified in the review request
     test_payload = {
         "origin": "LHR",
         "destination": "JFK", 
-        "departure_date": "2025-12-27",
+        "departure_date": "2025-02",
         "one_way": False,
         "duration": 7
     }
     
-    endpoint = f"{BACKEND_URL}/flights/fare-calendar"
+    endpoint = f"{API_BASE_URL}/flights/fare-calendar"
     
     print(f"Testing endpoint: {endpoint}")
     print(f"Test payload: {json.dumps(test_payload, indent=2)}")
@@ -301,12 +302,6 @@ def test_auth_endpoints():
             print(f"Cached: {data2.get('cached', 'Not specified')}")
             print(f"Mock: {data2.get('mock', 'Not specified')}")
             
-            # Compare response times (cached should be faster)
-            time1 = end_time - start_time
-            if hasattr(test_fare_calendar_caching, 'first_response_time'):
-                time_diff = test_fare_calendar_caching.first_response_time - time1
-                print(f"Time improvement: {time_diff:.2f} seconds")
-            
             # Verify data consistency
             fare_data2 = data2.get('data', {})
             if fare_data2:
@@ -328,9 +323,6 @@ def test_auth_endpoints():
     except Exception as e:
         print(f"❌ ERROR: Second request failed - {str(e)}")
         return False
-    
-    # Store first response time for comparison
-    test_fare_calendar_caching.first_response_time = end_time - start_time
     
     print()
     print("✅ FARE CALENDAR CACHING TEST COMPLETED")
