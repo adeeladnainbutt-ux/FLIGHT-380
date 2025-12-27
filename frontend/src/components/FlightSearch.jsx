@@ -32,8 +32,7 @@ export const FlightSearch = ({ onSearch, initialData }) => {
   const [openFrom, setOpenFrom] = useState(false);
   const [openTo, setOpenTo] = useState(false);
   const [openPassengers, setOpenPassengers] = useState(false);
-  const [openDepartDate, setOpenDepartDate] = useState(false);
-  const [openReturnDate, setOpenReturnDate] = useState(false);
+  const [openDatePicker, setOpenDatePicker] = useState(false);
   const [openAirline, setOpenAirline] = useState(false);
   const [fromSearchTerm, setFromSearchTerm] = useState('');
   const [toSearchTerm, setToSearchTerm] = useState('');
