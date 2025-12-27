@@ -56,6 +56,8 @@ function BigCalendar({
   // Handle date selection
   const handleDateClick = (date) => {
     if (isBefore(date, today)) return
+    // Don't handle clicks while dragging
+    if (isDragging) return
     
     if (tripType === 'one-way') {
       setInternalDepart(date)
@@ -65,8 +67,8 @@ function BigCalendar({
     }
 
     // Round-trip logic
-    if (!internalDepart || (internalDepart && internalReturn)) {
-      // No selection or both selected - start fresh with departure
+    if (!internalDepart) {
+      // No departure - set it
       setInternalDepart(date)
       setInternalReturn(null)
       onDepartSelect(date)
@@ -74,7 +76,7 @@ function BigCalendar({
     } else if (internalDepart && !internalReturn) {
       // Have departure, need return
       if (isAfter(date, internalDepart)) {
-        // Valid return date
+        // Valid return date - set and close
         setInternalReturn(date)
         onReturnSelect(date)
         if (onSelectionComplete) onSelectionComplete()
@@ -86,6 +88,12 @@ function BigCalendar({
         onReturnSelect(null)
       }
       // If same day, do nothing
+    } else if (internalDepart && internalReturn) {
+      // Both dates exist - start fresh
+      setInternalDepart(date)
+      setInternalReturn(null)
+      onDepartSelect(date)
+      onReturnSelect(null)
     }
   }
 
