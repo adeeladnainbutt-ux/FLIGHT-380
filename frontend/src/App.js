@@ -143,6 +143,11 @@ function App() {
     return <AuthCallback onAuthSuccess={handleAuthSuccess} onAuthError={handleAuthError} />;
   }
 
+  // If on reset-password page, show ResetPasswordPage
+  if (location.pathname === '/reset-password') {
+    return <ResetPasswordPage />;
+  }
+
   const handleSearch = async (searchData) => {
     console.log('Search data:', searchData);
     setIsLoading(true);
