@@ -683,52 +683,54 @@ export const FlightSearch = ({ onSearch, initialData }) => {
               </div>
             </div>
 
-            {/* Airline Selector */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Preferred Airline (Optional)</Label>
-              <Popover open={openAirline} onOpenChange={setOpenAirline}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full h-12 justify-between text-left font-normal"
-                  >
-                    <span className={selectedAirline ? '' : 'text-slate-500'}>
-                      {selectedAirline ? `${selectedAirline.code} - ${selectedAirline.name}` : 'All Airlines'}
-                    </span>
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[350px] p-0">
-                  <Command>
-                    <CommandInput placeholder="Search airline code or name..." />
-                    <CommandEmpty>No airline found.</CommandEmpty>
-                    <CommandGroup className="max-h-64 overflow-auto">
-                      <CommandItem
-                        onSelect={() => {
-                          setSelectedAirline(null);
-                          setOpenAirline(false);
-                        }}
-                      >
-                        <span className="font-medium">All Airlines</span>
-                      </CommandItem>
-                      {airlines.map((airline) => (
+            {/* Airline Selector - Half Width */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Preferred Airline (Optional)</Label>
+                <Popover open={openAirline} onOpenChange={setOpenAirline}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full h-12 justify-between text-left font-normal"
+                    >
+                      <span className={selectedAirline ? '' : 'text-slate-500'}>
+                        {selectedAirline ? `${selectedAirline.code} - ${selectedAirline.name}` : 'All Airlines'}
+                      </span>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[350px] p-0">
+                    <Command>
+                      <CommandInput placeholder="Search airline code or name..." />
+                      <CommandEmpty>No airline found.</CommandEmpty>
+                      <CommandGroup className="max-h-64 overflow-auto">
                         <CommandItem
-                          key={airline.code}
-                          value={`${airline.code} ${airline.name}`}
                           onSelect={() => {
-                            setSelectedAirline(airline);
+                            setSelectedAirline(null);
                             setOpenAirline(false);
                           }}
                         >
-                          <div className="flex flex-col">
-                            <span className="font-medium">{airline.code} - {airline.name}</span>
-                            <span className="text-xs text-slate-500">{airline.country}</span>
-                          </div>
+                          <span className="font-medium">All Airlines</span>
                         </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+                        {airlines.map((airline) => (
+                          <CommandItem
+                            key={airline.code}
+                            value={`${airline.code} ${airline.name}`}
+                            onSelect={() => {
+                              setSelectedAirline(airline);
+                              setOpenAirline(false);
+                            }}
+                          >
+                            <div className="flex flex-col">
+                              <span className="font-medium">{airline.code} - {airline.name}</span>
+                              <span className="text-xs text-slate-500">{airline.country}</span>
+                            </div>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
             </div>
 
             {/* Options */}
