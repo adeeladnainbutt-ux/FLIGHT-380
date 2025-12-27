@@ -306,13 +306,12 @@ class AmadeusService:
         currency: str = 'GBP'
     ) -> Dict:
         """
-        Get cheapest fares for a date range - optimized for speed
-        Only fetches ~15 dates to avoid rate limiting
+        Get cheapest fares for 6 months - optimized sampling
         
         Args:
             origin: Origin airport code
             destination: Destination airport code  
-            departure_date: Center date for search (YYYY-MM-DD)
+            departure_date: Start date for search (YYYY-MM-DD)
             one_way: True for one-way, False for round-trip
             duration: Trip duration in days (for round-trip)
             currency: Currency code (default GBP)
@@ -321,27 +320,30 @@ class AmadeusService:
             Dictionary with fare calendar data {date: price}
         """
         try:
-            # Parse the center date
-            center_date = datetime.strptime(departure_date, '%Y-%m-%d')
+            # Parse the start date
+            start_date = datetime.strptime(departure_date, '%Y-%m-%d')
             today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
             
-            # Generate fewer dates for faster response: -7 to +21 days, every 2 days
+            # Ensure start date is not in the past
+            if start_date < today:
+                start_date = today
+            
+            # Generate dates for 6 months, sampling every 3 days for speed
             fare_calendar = {}
             dates_to_search = []
             
-            for offset in range(-7, 22, 2):  # Every 2 days
-                search_date = center_date + timedelta(days=offset)
-                if search_date >= today:  # Only future dates
-                    dates_to_search.append(search_date.strftime('%Y-%m-%d'))
+            for offset in range(0, 180, 3):  # 6 months, every 3 days
+                search_date = start_date + timedelta(days=offset)
+                dates_to_search.append(search_date.strftime('%Y-%m-%d'))
             
-            # Limit to 15 dates max
-            dates_to_search = dates_to_search[:15]
+            # Limit to ~60 dates max
+            dates_to_search = dates_to_search[:60]
             
-            # Use thread pool for concurrent searches (3 at a time to avoid rate limits)
+            # Use thread pool for concurrent searches
             loop = asyncio.get_event_loop()
-            with ThreadPoolExecutor(max_workers=3) as executor:
-                for i in range(0, len(dates_to_search), 3):
-                    batch = dates_to_search[i:i+3]
+            with ThreadPoolExecutor(max_workers=4) as executor:
+                for i in range(0, len(dates_to_search), 4):
+                    batch = dates_to_search[i:i+4]
                     futures = []
                     
                     for dep_date in batch:
@@ -378,7 +380,7 @@ class AmadeusService:
                             pass
                     
                     # Small delay between batches
-                    await asyncio.sleep(0.1)
+                    await asyncio.sleep(0.05)
             
             return {
                 'success': True,
