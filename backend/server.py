@@ -435,6 +435,38 @@ async def search_airports(keyword: str):
         }
 
 
+# Fare Calendar Endpoint
+class FareCalendarRequest(BaseModel):
+    origin: str
+    destination: str
+    departure_date: str
+    one_way: bool = False
+    duration: int = 7
+
+@app.post("/api/flights/fare-calendar")
+async def get_fare_calendar(request: FareCalendarRequest):
+    """Get cheapest fares for a date range"""
+    try:
+        result = await amadeus_service.get_fare_calendar(
+            origin=request.origin,
+            destination=request.destination,
+            departure_date=request.departure_date,
+            one_way=request.one_way,
+            duration=request.duration,
+            currency='GBP'
+        )
+        return result
+    
+    except Exception as e:
+        logger.error(f"Fare calendar error: {str(e)}")
+        return {
+            'success': False,
+            'error': {
+                'message': str(e)
+            }
+        }
+
+
 # Booking Endpoints
 def generate_pnr():
     """Generate a 6-character PNR code"""
