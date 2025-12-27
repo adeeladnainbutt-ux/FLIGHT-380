@@ -90,68 +90,81 @@ export const FlightSearch = ({ onSearch, initialData }) => {
     }
   }, [initialData]);
 
-  // Generate mock fare data for 6 months (while Amadeus test API is too slow)
-  const generateMockFares = React.useCallback(() => {
-    const mockFares = {};
-    const today = new Date();
-    const baseFare = 150 + Math.random() * 100; // Base fare between £150-250
-    
-    // Generate fares for 6 months (180 days)
-    for (let i = 0; i < 180; i++) {
-      const date = addDays(today, i);
-      const dateStr = format(date, 'yyyy-MM-dd');
-      const dayOfWeek = date.getDay();
+  // Fetch fares from backend with caching
+  const fetchFaresFromBackend = React.useCallback(async (origin, destination) => {
+    try {
+      const API_URL = process.env.REACT_APP_BACKEND_URL;
+      const today = format(new Date(), 'yyyy-MM-dd');
       
-      // Simulate realistic pricing patterns
-      let fare = baseFare;
+      const response = await fetch(`${API_URL}/api/flights/fare-calendar`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          origin: origin,
+          destination: destination,
+          departure_date: today,
+          one_way: tripType === 'one-way',
+          duration: 7
+        })
+      });
       
-      // Weekends are more expensive
-      if (dayOfWeek === 5 || dayOfWeek === 6) {
-        fare += 30 + Math.random() * 40;
+      const data = await response.json();
+      
+      if (data.success && data.data) {
+        return data.data;
       }
-      
-      // Some random variation
-      fare += (Math.random() - 0.5) * 60;
-      
-      // Holiday periods are more expensive (December, July-August)
-      const month = date.getMonth();
-      if (month === 11 || month === 6 || month === 7) {
-        fare += 50 + Math.random() * 50;
-      }
-      
-      // Occasionally add very low "deal" prices
-      if (Math.random() < 0.08) {
-        fare = 80 + Math.random() * 50;
-      }
-      
-      // Occasionally add premium prices
-      if (Math.random() < 0.05) {
-        fare = 350 + Math.random() * 100;
-      }
-      
-      mockFares[dateStr] = Math.round(fare);
+      return null;
+    } catch (error) {
+      console.error('Error fetching fare calendar:', error);
+      return null;
     }
-    
-    return mockFares;
-  }, []);
+  }, [tripType]);
 
-  // Load mock fares when date picker opens (while real API is too slow)
+  // Load fares from backend when date picker opens
   useEffect(() => {
     if (!fromAirport || !toAirport || !openDatePicker) return;
     if (tripType === 'multi-city') return;
     
-    // Use mock data for now since Amadeus test API is too slow
+    const originCode = fromAirport.isGroup ? fromAirport.airports[0] : fromAirport.code;
+    const destCode = toAirport.isGroup ? toAirport.airports[0] : toAirport.code;
+    
     setFaresLoading(true);
     
-    // Simulate a short loading time for UX
-    const timer = setTimeout(() => {
-      const mockData = generateMockFares();
-      setFares(mockData);
-      setFaresLoading(false);
-    }, 500);
-    
-    return () => clearTimeout(timer);
-  }, [fromAirport, toAirport, openDatePicker, tripType, generateMockFares]);
+    fetchFaresFromBackend(originCode, destCode)
+      .then((fareData) => {
+        if (fareData) {
+          setFares(fareData);
+        } else {
+          // Fallback: generate mock data if API fails
+          const mockFares = {};
+          const today = new Date();
+          const baseFare = 150 + Math.random() * 100;
+          
+          for (let i = 0; i < 180; i++) {
+            const date = addDays(today, i);
+            const dateStr = format(date, 'yyyy-MM-dd');
+            const dayOfWeek = date.getDay();
+            let fare = baseFare;
+            
+            if (dayOfWeek === 5 || dayOfWeek === 6) fare += 30 + Math.random() * 40;
+            fare += (Math.random() - 0.5) * 60;
+            
+            const month = date.getMonth();
+            if (month === 11 || month === 6 || month === 7) fare += 50 + Math.random() * 50;
+            if (Math.random() < 0.08) fare = 80 + Math.random() * 50;
+            if (Math.random() < 0.05) fare = 350 + Math.random() * 100;
+            
+            mockFares[dateStr] = Math.round(fare);
+          }
+          setFares(mockFares);
+        }
+      })
+      .finally(() => {
+        setFaresLoading(false);
+      });
+  }, [fromAirport, toAirport, openDatePicker, tripType, fetchFaresFromBackend]);
 
   // Combine airport groups and individual airports for search
   const allAirportOptions = [
@@ -783,7 +796,7 @@ export const FlightSearch = ({ onSearch, initialData }) => {
               </div>
             </div>
 
-            <div className="flex justify-center sm:justify-start">
+            <div className="flex justify-center">
               <Button 
                 onClick={handleSearch} 
                 className="w-full sm:w-auto sm:min-w-[200px] h-12 text-base font-semibold bg-gradient-to-r from-brand-600 to-brand-600 hover:from-brand-700 hover:to-brand-700 transition-all duration-300"
