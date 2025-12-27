@@ -456,8 +456,8 @@ export const FlightSearch = ({ onSearch, initialData }) => {
 
             {/* Dates Section */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-              {/* Combined Date Picker */}
-              <div className={cn("space-y-2", tripType === 'round-trip' ? "sm:col-span-2" : "")}>
+              {/* Combined Date Picker - now always takes one column */}
+              <div className="space-y-2">
                 <Label className="text-sm font-medium">
                   {tripType === 'round-trip' ? 'Travel Dates' : 'Depart'}
                 </Label>
@@ -473,16 +473,16 @@ export const FlightSearch = ({ onSearch, initialData }) => {
                       <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
                       {tripType === 'round-trip' ? (
                         departDate && returnDate ? (
-                          <span>
-                            {format(departDate, 'EEE, d MMM')} <span className="text-slate-400 mx-1">→</span> {format(returnDate, 'EEE, d MMM')}
+                          <span className="truncate">
+                            {format(departDate, 'd MMM')} → {format(returnDate, 'd MMM')}
                           </span>
                         ) : departDate ? (
-                          <span>{format(departDate, 'EEE, d MMM')} → Select return</span>
+                          <span className="truncate">{format(departDate, 'd MMM')} → Select</span>
                         ) : (
                           'Select dates'
                         )
                       ) : (
-                        departDate ? format(departDate, 'PPP') : 'Select date'
+                        departDate ? format(departDate, 'd MMM yyyy') : 'Select date'
                       )}
                     </Button>
                   </PopoverTrigger>
@@ -499,7 +499,10 @@ export const FlightSearch = ({ onSearch, initialData }) => {
                       onReturnSelect={handleReturnDateSelect}
                       onSelectionComplete={handleDateSelectionComplete}
                       tripType={tripType}
-                      className="max-w-[680px]"
+                      fares={fares}
+                      faresLoading={faresLoading}
+                      currency="£"
+                      className="max-w-[580px]"
                     />
                   </PopoverContent>
                 </Popover>
