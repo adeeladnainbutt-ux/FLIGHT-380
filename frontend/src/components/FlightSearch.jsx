@@ -210,11 +210,10 @@ export const FlightSearch = ({ onSearch, initialData }) => {
 
   const handleReturnDateSelect = (date) => {
     setReturnDate(date);
-    // Close the date picker when return date is selected for round-trip
-    // or when any date is selected for one-way
-    if (tripType === 'one-way' || (tripType === 'round-trip' && departDate)) {
-      setOpenDatePicker(false);
-    }
+  };
+  
+  const handleDateSelectionComplete = () => {
+    setOpenDatePicker(false);
   };
 
   const handleSearch = () => {
