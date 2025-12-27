@@ -581,3 +581,19 @@ frontend:
       - working: true
         agent: "testing"
         comment: "CRITICAL CRASH FIX VERIFICATION COMPLETE: Successfully tested Flight380 application and verified the critical crash fix is working correctly. ✅ HOMEPAGE TEST: Homepage loads without errors, Flight380 branding visible, search form displays correctly with all required elements. ✅ FLIGHT SEARCH TEST: Successfully executed complete flight search flow - Selected One Way tab, filled LHR to CDG route, selected future departure date (January 2026), clicked Search Flights button, search executed successfully returning 50 flights available. ✅ NO JAVASCRIPT CRASH: Most importantly, NO 'Element type is invalid' errors detected in console logs throughout the entire test. The critical crash that was occurring when rendering flight results page has been completely resolved. ✅ CONSOLE LOG VERIFICATION: Console shows only expected errors - 401 authentication errors (normal when not logged in) and airline logo CDN request failures (normal in testing environment). Zero React rendering errors or component crashes detected. ✅ DESKTOP FILTER VERIFICATION: Flight results page loaded successfully with comprehensive filter sidebar visible, including Time filter sections (Morning, Afternoon, Evening, Overnight) with proper icon rendering. All filter components rendered without undefined errors. ✅ SUCCESS CRITERIA MET: Page loads without crashing, search executes without crash, flight results display correctly with 50 flights shown, filter sidebar renders properly with time icons. The icon property fix in timeOptions array (lines 145-150 in FlightResults.jsx) adding Sun, Sun, Sunset, and Moon icons for morning/afternoon/evening/overnight respectively is working perfectly. The critical Element type is invalid crash has been completely eliminated."
+  - task: "Big Calendar - Two months side-by-side with range selection"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/ui/big-calendar.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "IMPLEMENTED: New BigCalendar component with: 1) Two months side-by-side on desktop, single month on mobile, 2) Large day cells with text labels, 3) Auto-set return = departure + 7 days when tapping departure, 4) Header shows selected Depart + Return dates at top, 5) Range highlighting between departure and return dates, 6) One-way support with immediate close on selection."
+
+agent_communication:
+  - agent: "main"
+    message: "NEW CALENDAR FEATURE IMPLEMENTED: Created BigCalendar component (/app/frontend/src/components/ui/big-calendar.jsx) with the following features: 1) Two months side-by-side view on desktop, 2) Single month view on mobile with navigation, 3) Large day cells with Depart/Return labels, 4) Auto +7 days for return date when selecting departure, 5) Range highlighting between dates, 6) Selected dates displayed at top header, 7) One-way mode closes immediately after selection. Please test on desktop (1920x800) and mobile (375x667) viewports to verify calendar functionality for round-trip and one-way modes."
+
