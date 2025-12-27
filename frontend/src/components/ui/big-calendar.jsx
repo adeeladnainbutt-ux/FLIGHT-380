@@ -60,7 +60,7 @@ function BigCalendar({
     setDragStart(date)
     setDragEnd(date)
     onDepartSelect(date)
-    onReturnSelect(date) // Initially same as departure
+    onReturnSelect(null) // Clear return initially
   }
 
   // Handle mouse/touch move - update drag end
