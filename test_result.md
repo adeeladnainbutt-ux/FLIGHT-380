@@ -469,6 +469,18 @@ test_plan:
         agent: "testing"
         comment: "MULTI-CITY FLIGHT SEARCH TESTING COMPLETE: Successfully tested the Multi-City flight search functionality on Flight380 website. ✅ HOMEPAGE NAVIGATION: Successfully navigated to http://localhost:3000 and homepage loaded correctly with Flight380 branding and search form visible. ✅ MULTI-CITY TAB SELECTION: Multi-City tab is clickable and successfully switches to multi-city mode, displaying the appropriate form layout. ✅ MULTI-CITY FORM DISPLAY: Form correctly displays 2 journey cards by default as expected, each with From, To, and Departure date selection fields. ✅ AIRPORT SELECTION INTERFACE: All airport selection buttons (From/To) are clickable and functional, dropdown interfaces can be opened for airport search. ✅ DATE SELECTION INTERFACE: Date picker buttons are clickable and calendar interfaces can be opened for date selection. ✅ SEARCH BUTTON VALIDATION: Search button correctly shows 'Search Multi-City Flights' text and is properly disabled when required fields are empty, demonstrating proper form validation. ✅ ADD ANOTHER FLIGHT: 'Add Another Flight' button is visible for adding additional journey legs (up to 5 total). ✅ FLEXIBLE DATES DISABLED: Flexible dates option is correctly disabled for multi-city searches with proper messaging 'Not available for multi-city'. ✅ FORM STRUCTURE: Multi-city form includes all necessary components - travellers selector, class selector, preferred airline selector, and direct flights option. ⚠️ LIMITATION: Full end-to-end testing with actual airport selection and search execution was limited due to authentication modal overlay that appears during interaction, but all UI components and interfaces are properly implemented and functional. The Multi-City flight search feature is working correctly and ready for production use."
 
+  - task: "Fare Calendar Feature"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/ui/big-calendar.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "FARE CALENDAR TESTING COMPLETE: Successfully verified all requirements for the Fare Calendar feature on Flight380. ✅ DESKTOP VIEWPORT (1920x1080): Calendar displays TWO months side-by-side (December 2025 & January 2026) as required. ✅ PRICE DISPLAY: Each date cell shows prices (£183, £191, £191, £156, £166, £194, £229, etc.) with proper formatting. ✅ LEGEND WITH ACTUAL VALUES: Price legend displays '£84 Lowest' (green), '£180 Medium' (amber), '£422 Highest' (red) with color-coded indicators. ✅ COLOR CODING: Prices are properly color-coded - green for cheap fares, amber for medium, red for expensive. ✅ DATE SELECTION FLOW: Clicking departure date works correctly, selected date shows red background with white text. ✅ FARE INFORMATION: Green banner appears showing fare details for selected date. ✅ HELPER TEXT: Text changes to 'Now tap or drag to select your return date' after departure selection. ✅ CALENDAR BEHAVIOR: Calendar loads within ~500ms with mock fare data, supports both click and drag selection, closes after complete date selection. ✅ DATE INPUT DISPLAY: Selected dates appear in format like '4 Jan → 11 Jan' in the date input field. ✅ ROUND-TRIP FUNCTIONALITY: Full round-trip date selection works with proper range highlighting. The BigCalendar component (lines 7-429 in big-calendar.jsx) is fully functional with comprehensive fare display, responsive design, and smooth user interaction. All test requirements from the review request have been successfully verified."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
