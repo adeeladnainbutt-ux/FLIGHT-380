@@ -92,7 +92,9 @@ function BigCalendar({
   }, [isDragging, dragStartDate, hoverDate, onReturnSelect, onSelectionComplete])
 
   // Handle click for second date selection (when departure already set)
-  const handleClick = (date) => {
+  const handleClick = (date, e) => {
+    // Prevent if it was a drag
+    if (isDragging) return
     if (isBefore(date, today)) return
     
     if (tripType === 'one-way') {
@@ -110,6 +112,13 @@ function BigCalendar({
         // Clicked earlier date - reset to this as departure
         onDepartSelect(date)
       }
+    } else if (!departDate) {
+      // No departure - set it
+      onDepartSelect(date)
+    } else {
+      // Both exist - restart
+      onDepartSelect(date)
+      onReturnSelect(null)
     }
   }
 
