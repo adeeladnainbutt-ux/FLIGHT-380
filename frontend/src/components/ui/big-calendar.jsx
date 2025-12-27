@@ -17,7 +17,7 @@ function BigCalendar({
   currency = '£',
   ...props
 }) {
-  const [startMonth, setStartMonth] = React.useState(new Date())
+  const [currentMonth, setCurrentMonth] = React.useState(new Date())
   const [isMobile, setIsMobile] = React.useState(false)
   
   // Internal selection state
@@ -29,6 +29,11 @@ function BigCalendar({
   const [dragHover, setDragHover] = React.useState(null)
   const wasDragged = React.useRef(false)
 
+  // Calculate max navigable month (6 months from today)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const maxMonth = addMonths(today, 5) // 6 months total (current + 5)
+
   // Sync internal state with props
   React.useEffect(() => {
     setInternalDepart(departDate)
@@ -37,31 +42,26 @@ function BigCalendar({
 
   // Check for mobile screen size
   React.useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    const checkMobile = () => setIsMobile(window.innerWidth < 640)
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  // Navigate by 2 months (or 1 on mobile)
+  const handlePrevMonth = () => {
+    const step = isMobile ? 1 : 2
+    setCurrentMonth(subMonths(currentMonth, step))
+  }
+  
+  const handleNextMonth = () => {
+    const step = isMobile ? 1 : 2
+    setCurrentMonth(addMonths(currentMonth, step))
+  }
 
-  // Generate 6 months starting from startMonth
-  const months = React.useMemo(() => {
-    const result = []
-    for (let i = 0; i < 6; i++) {
-      result.push(addMonths(startMonth, i))
-    }
-    return result
-  }, [startMonth])
-
-  // Find min and max fares for coloring
-  const fareValues = Object.values(fares).filter(f => f != null)
-  const minFare = fareValues.length > 0 ? Math.min(...fareValues) : 0
-  const maxFare = fareValues.length > 0 ? Math.max(...fareValues) : 0
-
-  const handlePrevMonth = () => setStartMonth(subMonths(startMonth, isMobile ? 1 : 3))
-  const handleNextMonth = () => setStartMonth(addMonths(startMonth, isMobile ? 1 : 3))
+  // Check if can navigate
+  const canGoPrev = !isSameMonth(currentMonth, today) && !isBefore(currentMonth, today)
+  const canGoNext = isBefore(currentMonth, maxMonth)
 
   // Handle date selection
   const handleDateClick = (date) => {
@@ -168,6 +168,10 @@ function BigCalendar({
   const isRangeEnd = (date) => displayReturn && isSameDay(date, displayReturn)
 
   // Get fare color based on price
+  const fareValues = Object.values(fares).filter(f => f != null)
+  const minFare = fareValues.length > 0 ? Math.min(...fareValues) : 0
+  const maxFare = fareValues.length > 0 ? Math.max(...fareValues) : 0
+
   const getFareColor = (price) => {
     if (!price || minFare === maxFare) return 'text-slate-500'
     const ratio = (price - minFare) / (maxFare - minFare)
@@ -200,10 +204,10 @@ function BigCalendar({
     }
 
     return (
-      <div className="flex-1 min-w-[200px] select-none">
+      <div className="flex-1 min-w-[280px] select-none">
         {/* Month Header */}
-        <div className="text-center mb-3">
-          <h3 className="text-base font-bold text-slate-900">
+        <div className="text-center mb-4">
+          <h3 className="text-lg font-bold text-slate-900">
             {format(monthDate, 'MMMM yyyy')}
           </h3>
         </div>
@@ -211,7 +215,7 @@ function BigCalendar({
         {/* Weekday Headers */}
         <div className="grid grid-cols-7 mb-2">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((dayName, idx) => (
-            <div key={idx} className="text-center text-xs font-semibold text-slate-500 py-1">
+            <div key={idx} className="text-center text-sm font-semibold text-slate-500 py-1">
               {dayName}
             </div>
           ))}
@@ -220,7 +224,7 @@ function BigCalendar({
         {/* Calendar Days */}
         <div className="space-y-1">
           {weeks.map((week, weekIndex) => (
-            <div key={weekIndex} className="grid grid-cols-7 gap-0.5">
+            <div key={weekIndex} className="grid grid-cols-7 gap-1">
               {week.map((date, dayIndex) => {
                 const isCurrentMonth = isSameMonth(date, monthDate)
                 const isDisabled = isBefore(date, today)
@@ -240,8 +244,8 @@ function BigCalendar({
                     className={cn(
                       "relative",
                       isInRange && "bg-brand-100",
-                      isStart && displayReturn && "bg-gradient-to-r from-transparent to-brand-100 rounded-l-md",
-                      isEnd && displayDepart && "bg-gradient-to-l from-transparent to-brand-100 rounded-r-md"
+                      isStart && displayReturn && "bg-gradient-to-r from-transparent to-brand-100 rounded-l-lg",
+                      isEnd && displayDepart && "bg-gradient-to-l from-transparent to-brand-100 rounded-r-lg"
                     )}
                   >
                     <button
@@ -251,8 +255,8 @@ function BigCalendar({
                       onTouchStart={(e) => handleMouseDown(date, e)}
                       disabled={isDisabled || !isCurrentMonth}
                       className={cn(
-                        "w-full flex flex-col items-center justify-center rounded-md transition-all",
-                        "min-h-[52px] sm:min-h-[58px] p-1",
+                        "w-full flex flex-col items-center justify-center rounded-lg transition-all",
+                        "min-h-[60px] sm:min-h-[68px] p-1",
                         !isCurrentMonth && "text-slate-200 cursor-default",
                         isCurrentMonth && !isDisabled && "hover:bg-brand-50 cursor-pointer",
                         isDisabled && isCurrentMonth && "text-slate-300 cursor-not-allowed",
@@ -261,10 +265,10 @@ function BigCalendar({
                         isInRange && isCurrentMonth && "text-brand-700"
                       )}
                     >
-                      <span className="text-base font-semibold leading-none">{format(date, 'd')}</span>
+                      <span className="text-lg font-semibold leading-none">{format(date, 'd')}</span>
                       {fare && isCurrentMonth && !isDisabled && (
                         <span className={cn(
-                          "text-[10px] font-bold leading-none mt-1",
+                          "text-xs font-bold leading-none mt-1.5",
                           isSelected ? "text-white/90" : fareColor
                         )}>
                           {formatPrice(fare)}
@@ -283,31 +287,33 @@ function BigCalendar({
 
   const hasFullSelection = displayDepart && displayReturn
   const hasDepartureOnly = displayDepart && !displayReturn
-  const monthsToShow = isMobile ? 2 : 6
+  
+  // Show 2 months on desktop, 1 on mobile
+  const nextMonth = addMonths(currentMonth, 1)
 
   return (
-    <div className={cn("p-4 sm:p-5", className)} {...props}>
+    <div className={cn("p-5 sm:p-6", className)} {...props}>
       {/* Header */}
-      <div className="flex items-center justify-center gap-4 mb-4 pb-3 border-b">
+      <div className="flex items-center justify-center gap-4 mb-5 pb-4 border-b">
         <div className={cn(
-          "px-4 py-2 rounded-lg text-center min-w-[130px]",
+          "px-5 py-2.5 rounded-lg text-center min-w-[140px]",
           displayDepart ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-700"
         )}>
           <div className="text-xs font-medium opacity-80">Departure</div>
-          <div className="text-sm font-bold">
+          <div className="text-base font-bold">
             {displayDepart ? format(displayDepart, 'EEE, d MMM') : 'Select date'}
           </div>
         </div>
         
         {tripType === 'round-trip' && (
           <>
-            <ChevronRight className="h-4 w-4 text-slate-400" />
+            <ChevronRight className="h-5 w-5 text-slate-400" />
             <div className={cn(
-              "px-4 py-2 rounded-lg text-center min-w-[130px]",
+              "px-5 py-2.5 rounded-lg text-center min-w-[140px]",
               hasFullSelection ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-700"
             )}>
               <div className="text-xs font-medium opacity-80">Return</div>
-              <div className="text-sm font-bold">
+              <div className="text-base font-bold">
                 {displayReturn ? format(displayReturn, 'EEE, d MMM') : hasDepartureOnly ? 'Tap to select' : 'Select date'}
               </div>
             </div>
@@ -315,8 +321,21 @@ function BigCalendar({
         )}
       </div>
 
-      {/* Loading & Legend Row */}
+      {/* Navigation & Legend Row */}
       <div className="flex items-center justify-between mb-4">
+        {/* Navigation - Left */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handlePrevMonth}
+          disabled={!canGoPrev}
+          className="h-9 px-3"
+        >
+          <ChevronLeft className="h-4 w-4 mr-1" />
+          <span className="text-sm">Prev</span>
+        </Button>
+
+        {/* Legend - Center */}
         {faresLoading ? (
           <div className="flex items-center gap-2 text-sm text-slate-500">
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -338,45 +357,30 @@ function BigCalendar({
             </span>
           </div>
         ) : (
-          <div className="text-xs text-slate-400">Select airports to see fares</div>
+          <div className="text-sm text-slate-400">Select airports to see fares</div>
         )}
-        
-        {/* Navigation */}
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handlePrevMonth}
-            disabled={isSameMonth(startMonth, today)}
-            className="h-8 px-2"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleNextMonth}
-            className="h-8 px-2"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
+
+        {/* Navigation - Right */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleNextMonth}
+          disabled={!canGoNext}
+          className="h-9 px-3"
+        >
+          <span className="text-sm">Next</span>
+          <ChevronRight className="h-4 w-4 ml-1" />
+        </Button>
       </div>
 
-      {/* 6-Month Calendar Grid */}
-      <div className={cn(
-        "grid gap-4",
-        isMobile ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-2 lg:grid-cols-3 xl:grid-cols-6"
-      )}>
-        {months.slice(0, monthsToShow).map((month, idx) => (
-          <div key={idx}>
-            {renderMonth(month)}
-          </div>
-        ))}
+      {/* 2-Month Calendar Grid (larger size) */}
+      <div className="flex flex-col sm:flex-row gap-6 sm:gap-8">
+        {renderMonth(currentMonth)}
+        {!isMobile && renderMonth(nextMonth)}
       </div>
 
       {/* Helper Text */}
-      <div className="mt-4 pt-3 border-t text-center text-sm text-slate-500">
+      <div className="mt-5 pt-4 border-t text-center text-sm text-slate-500">
         {tripType === 'round-trip' ? (
           hasDepartureOnly ? (
             <span>Now tap or drag to select your <strong>return date</strong></span>
