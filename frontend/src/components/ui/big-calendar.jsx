@@ -291,6 +291,15 @@ function BigCalendar({
   // Show 2 months on desktop, 1 on mobile
   const nextMonth = addMonths(currentMonth, 1)
 
+  // Calculate fare statistics
+  const sortedFares = [...fareValues].sort((a, b) => a - b)
+  const lowestFare = sortedFares.length > 0 ? sortedFares[0] : null
+  const highestFare = sortedFares.length > 0 ? sortedFares[sortedFares.length - 1] : null
+  const mediumFare = sortedFares.length > 2 ? sortedFares[Math.floor(sortedFares.length / 2)] : null
+
+  // Get fare for selected departure date
+  const selectedDepartFare = displayDepart ? fares[format(displayDepart, 'yyyy-MM-dd')] : null
+
   return (
     <div className={cn("p-5 sm:p-6", className)} {...props}>
       {/* Header */}
@@ -321,6 +330,21 @@ function BigCalendar({
         )}
       </div>
 
+      {/* Selected Fare Display */}
+      {selectedDepartFare && (
+        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-center">
+          <div className="text-sm text-green-700 font-medium">
+            {tripType === 'round-trip' ? 'Round-trip fare from' : 'One-way fare from'}
+          </div>
+          <div className="text-2xl font-bold text-green-700">
+            {currency}{selectedDepartFare.toFixed(2)}
+          </div>
+          <div className="text-xs text-green-600 mt-1">
+            Cheapest fare for {format(displayDepart, 'd MMM yyyy')}
+          </div>
+        </div>
+      )}
+
       {/* Navigation & Legend Row */}
       <div className="flex items-center justify-between mb-4">
         {/* Navigation - Left */}
@@ -335,25 +359,28 @@ function BigCalendar({
           <span className="text-sm">Prev</span>
         </Button>
 
-        {/* Legend - Center */}
+        {/* Legend - Center with actual prices */}
         {faresLoading ? (
           <div className="flex items-center gap-2 text-sm text-slate-500">
             <Loader2 className="h-4 w-4 animate-spin" />
             <span>Loading fares...</span>
           </div>
         ) : Object.keys(fares).length > 0 ? (
-          <div className="flex items-center gap-4 text-xs">
+          <div className="flex items-center gap-3 sm:gap-5 text-xs sm:text-sm">
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-green-500"></span>
-              <span className="text-slate-600 font-medium">Lowest</span>
+              <span className="text-green-700 font-bold">{currency}{lowestFare ? Math.round(lowestFare) : '-'}</span>
+              <span className="text-slate-500 hidden sm:inline">Lowest</span>
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-              <span className="text-slate-600 font-medium">Medium</span>
+              <span className="text-amber-700 font-bold">{currency}{mediumFare ? Math.round(mediumFare) : '-'}</span>
+              <span className="text-slate-500 hidden sm:inline">Medium</span>
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-red-500"></span>
-              <span className="text-slate-600 font-medium">Highest</span>
+              <span className="text-red-600 font-bold">{currency}{highestFare ? Math.round(highestFare) : '-'}</span>
+              <span className="text-slate-500 hidden sm:inline">Highest</span>
             </span>
           </div>
         ) : (
