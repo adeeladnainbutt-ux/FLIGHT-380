@@ -296,6 +296,138 @@ class AmadeusService:
                 }
             }
     
+    async def get_fare_calendar(
+        self,
+        origin: str,
+        destination: str,
+        departure_date: str,
+        one_way: bool = False,
+        duration: int = 7,
+        currency: str = 'GBP'
+    ) -> Dict:
+        """
+        Get cheapest fares for a date range using Flight Inspiration Search
+        Falls back to multiple Flight Offers Search calls if needed
+        
+        Args:
+            origin: Origin airport code
+            destination: Destination airport code  
+            departure_date: Center date for search (YYYY-MM-DD)
+            one_way: True for one-way, False for round-trip
+            duration: Trip duration in days (for round-trip)
+            currency: Currency code (default GBP)
+        
+        Returns:
+            Dictionary with fare calendar data {date: price}
+        """
+        try:
+            # Parse the center date
+            center_date = datetime.strptime(departure_date, '%Y-%m-%d')
+            today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+            
+            # Generate dates: 30 days before and 30 days after center date
+            fare_calendar = {}
+            dates_to_search = []
+            
+            for offset in range(-15, 46):  # -15 to +45 days from center
+                search_date = center_date + timedelta(days=offset)
+                if search_date >= today:  # Only future dates
+                    dates_to_search.append(search_date.strftime('%Y-%m-%d'))
+            
+            # Use thread pool for concurrent searches
+            loop = asyncio.get_event_loop()
+            with ThreadPoolExecutor(max_workers=5) as executor:
+                # Search in batches to avoid rate limiting
+                for i in range(0, len(dates_to_search), 5):
+                    batch = dates_to_search[i:i+5]
+                    futures = []
+                    
+                    for dep_date in batch:
+                        if one_way:
+                            future = loop.run_in_executor(
+                                executor,
+                                self._get_cheapest_price_sync,
+                                origin,
+                                destination,
+                                dep_date,
+                                None,
+                                currency
+                            )
+                        else:
+                            ret_date = (datetime.strptime(dep_date, '%Y-%m-%d') + timedelta(days=duration)).strftime('%Y-%m-%d')
+                            future = loop.run_in_executor(
+                                executor,
+                                self._get_cheapest_price_sync,
+                                origin,
+                                destination,
+                                dep_date,
+                                ret_date,
+                                currency
+                            )
+                        futures.append((dep_date, future))
+                    
+                    # Collect results
+                    for dep_date, future in futures:
+                        try:
+                            price = await future
+                            if price is not None:
+                                fare_calendar[dep_date] = price
+                        except Exception:
+                            pass  # Skip failed dates
+                    
+                    # Small delay between batches to avoid rate limiting
+                    await asyncio.sleep(0.2)
+            
+            return {
+                'success': True,
+                'data': fare_calendar,
+                'currency': currency,
+                'origin': origin,
+                'destination': destination
+            }
+            
+        except Exception as e:
+            return {
+                'success': False,
+                'error': {
+                    'code': 500,
+                    'message': f'Fare calendar error: {str(e)}'
+                }
+            }
+    
+    def _get_cheapest_price_sync(
+        self,
+        origin: str,
+        destination: str,
+        departure_date: str,
+        return_date: Optional[str],
+        currency: str
+    ) -> Optional[float]:
+        """Synchronous helper to get cheapest price for a specific date"""
+        try:
+            search_params = {
+                'originLocationCode': origin.upper(),
+                'destinationLocationCode': destination.upper(),
+                'departureDate': departure_date,
+                'adults': 1,
+                'currencyCode': currency,
+                'max': 1  # Only need cheapest
+            }
+            
+            if return_date:
+                search_params['returnDate'] = return_date
+            
+            response = self.client.shopping.flight_offers_search.get(**search_params)
+            
+            if response.data and len(response.data) > 0:
+                price = response.data[0].get('price', {}).get('grandTotal')
+                if price:
+                    return float(price)
+            return None
+            
+        except Exception:
+            return None
+    
     def format_flight_results(self, amadeus_data: Dict) -> List[Dict]:
         """
         Format Amadeus flight data for frontend consumption
