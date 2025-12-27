@@ -337,12 +337,12 @@ def test_fare_calendar_response_structure():
     test_payload = {
         "origin": "LHR",
         "destination": "JFK",
-        "departure_date": "2025-12-27", 
+        "departure_date": "2025-02", 
         "one_way": False,
         "duration": 7
     }
     
-    endpoint = f"{BACKEND_URL}/flights/fare-calendar"
+    endpoint = f"{API_BASE_URL}/flights/fare-calendar"
     
     try:
         response = requests.post(endpoint, json=test_payload, timeout=30)
@@ -402,53 +402,6 @@ def test_fare_calendar_response_structure():
         print(f"❌ ERROR: {str(e)}")
         return False
 
-def test_different_routes():
-    """Test caching works for different routes"""
-    print("=" * 60)
-    print("TESTING CACHING FOR DIFFERENT ROUTES")
-    print("=" * 60)
-    
-    routes = [
-        {"origin": "LHR", "destination": "CDG"},
-        {"origin": "JFK", "destination": "LAX"},
-        {"origin": "DXB", "destination": "BOM"}
-    ]
-    
-    endpoint = f"{BACKEND_URL}/flights/fare-calendar"
-    
-    for route in routes:
-        print(f"\n🔍 Testing route: {route['origin']} → {route['destination']}")
-        
-        test_payload = {
-            "origin": route["origin"],
-            "destination": route["destination"],
-            "departure_date": "2025-12-27",
-            "one_way": False,
-            "duration": 7
-        }
-        
-        try:
-            # First request
-            response1 = requests.post(endpoint, json=test_payload, timeout=30)
-            if response1.status_code == 200:
-                data1 = response1.json()
-                print(f"  First request: Success={data1.get('success')}, Cached={data1.get('cached', 'N/A')}")
-                
-                # Second request
-                response2 = requests.post(endpoint, json=test_payload, timeout=30)
-                if response2.status_code == 200:
-                    data2 = response2.json()
-                    print(f"  Second request: Success={data2.get('success')}, Cached={data2.get('cached', 'N/A')}")
-                else:
-                    print(f"  ❌ Second request failed: {response2.status_code}")
-            else:
-                print(f"  ❌ First request failed: {response1.status_code}")
-                
-        except Exception as e:
-            print(f"  ❌ ERROR: {str(e)}")
-    
-    return True
-
 def check_backend_logs():
     """Instructions for checking backend logs for Cache MISS/HIT messages"""
     print("=" * 60)
@@ -464,33 +417,58 @@ def check_backend_logs():
     print()
 
 def main():
-    """Run all fare calendar tests"""
-    print("🚀 STARTING FARE CALENDAR BACKEND TESTS")
+    """Run all backend tests"""
+    print("🚀 STARTING FLIGHT380 BACKEND API TESTS")
     print(f"Backend URL: {BACKEND_URL}")
+    print(f"API Base URL: {API_BASE_URL}")
     print(f"Test Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print()
     
     # Run tests
     tests_passed = 0
-    total_tests = 3
+    total_tests = 6
     
+    # Test 1: Health endpoints
+    if test_health_endpoints():
+        tests_passed += 1
+        print("✅ Health endpoints test: PASSED\n")
+    else:
+        print("❌ Health endpoints test: FAILED\n")
+    
+    # Test 2: Flight search
+    if test_flight_search():
+        tests_passed += 1
+        print("✅ Flight search test: PASSED\n")
+    else:
+        print("❌ Flight search test: FAILED\n")
+    
+    # Test 3: Airport search
+    if test_airport_search():
+        tests_passed += 1
+        print("✅ Airport search test: PASSED\n")
+    else:
+        print("❌ Airport search test: FAILED\n")
+    
+    # Test 4: Authentication endpoints
+    if test_auth_endpoints():
+        tests_passed += 1
+        print("✅ Authentication endpoints test: PASSED\n")
+    else:
+        print("❌ Authentication endpoints test: FAILED\n")
+    
+    # Test 5: Fare calendar response structure
     if test_fare_calendar_response_structure():
         tests_passed += 1
-        print("✅ Response structure test: PASSED\n")
+        print("✅ Fare calendar response structure test: PASSED\n")
     else:
-        print("❌ Response structure test: FAILED\n")
+        print("❌ Fare calendar response structure test: FAILED\n")
     
+    # Test 6: Fare calendar caching
     if test_fare_calendar_caching():
         tests_passed += 1
-        print("✅ Caching functionality test: PASSED\n")
+        print("✅ Fare calendar caching test: PASSED\n")
     else:
-        print("❌ Caching functionality test: FAILED\n")
-    
-    if test_different_routes():
-        tests_passed += 1
-        print("✅ Multiple routes test: PASSED\n")
-    else:
-        print("❌ Multiple routes test: FAILED\n")
+        print("❌ Fare calendar caching test: FAILED\n")
     
     # Show log check instructions
     check_backend_logs()
