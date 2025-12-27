@@ -102,11 +102,12 @@ function BigCalendar({
     if (isBefore(date, today)) return
     
     if (tripType === 'one-way') {
-      handleDateClick(date)
+      // One-way handled by click
       return
     }
     
     // For round-trip, only enable drag if we're starting fresh or have both dates
+    // Don't start drag if we have departure but no return (let click handle that)
     if (!internalDepart || (internalDepart && internalReturn)) {
       e.preventDefault()
       wasDragged.current = false
@@ -115,7 +116,6 @@ function BigCalendar({
       setInternalReturn(null)
       setDragHover(date)
     }
-    // If we have departure but no return, let onClick handle it
   }
 
   // Handle drag move
