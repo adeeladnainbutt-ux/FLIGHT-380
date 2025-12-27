@@ -182,6 +182,12 @@ async def send_email_smtp(to_email: str, subject: str, html_body: str, plain_bod
 async def root():
     return {"message": "Hello World"}
 
+# Health check endpoint for Kubernetes (must be at /health, not /api/health)
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for Kubernetes probes"""
+    return {"status": "healthy", "service": "flight380-backend"}
+
 @api_router.post("/status", response_model=StatusCheck)
 async def create_status_check(input: StatusCheckCreate):
     status_dict = input.model_dump()
