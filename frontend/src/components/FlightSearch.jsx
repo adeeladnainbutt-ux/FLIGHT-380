@@ -1280,13 +1280,15 @@ export const FlightSearch = ({ onSearch, initialData }) => {
               </div>
             </div>
 
-            <Button 
-              onClick={handleSearch} 
-              className="w-full h-12 text-base font-semibold bg-gradient-to-r from-brand-600 to-brand-600 hover:from-brand-700 hover:to-brand-700 transition-all duration-300"
-              disabled={multiCityLegs.filter(leg => leg.from && leg.to && leg.date).length < 2}
-            >
-              Search Multi-City Flights
-            </Button>
+            <div className="flex justify-center">
+              <Button 
+                onClick={handleSearch} 
+                className="w-full sm:w-auto sm:min-w-[200px] h-12 text-base font-semibold bg-gradient-to-r from-brand-600 to-brand-600 hover:from-brand-700 hover:to-brand-700 transition-all duration-300"
+                disabled={multiCityLegs.filter(leg => leg.from && leg.to && leg.date).length < 2}
+              >
+                Search Multi-City Flights
+              </Button>
+            </div>
           </TabsContent>
         )}
       </Tabs>
