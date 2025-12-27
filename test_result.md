@@ -511,6 +511,18 @@ test_plan:
         agent: "testing"
         comment: "CRITICAL CRASH FIX VERIFICATION COMPLETE: Successfully tested Flight380 application and verified the critical crash fix is working correctly. ✅ HOMEPAGE TEST: Homepage loads without errors, Flight380 branding visible, search form displays correctly with all required elements. ✅ FLIGHT SEARCH TEST: Successfully executed complete flight search flow - Selected One Way tab, filled LHR to CDG route, selected future departure date (January 2026), clicked Search Flights button, search executed successfully returning 50 flights available. ✅ NO JAVASCRIPT CRASH: Most importantly, NO 'Element type is invalid' errors detected in console logs throughout the entire test. The critical crash that was occurring when rendering flight results page has been completely resolved. ✅ CONSOLE LOG VERIFICATION: Console shows only expected errors - 401 authentication errors (normal when not logged in) and airline logo CDN request failures (normal in testing environment). Zero React rendering errors or component crashes detected. ✅ DESKTOP FILTER VERIFICATION: Flight results page loaded successfully with comprehensive filter sidebar visible, including Time filter sections (Morning, Afternoon, Evening, Overnight) with proper icon rendering. All filter components rendered without undefined errors. ✅ SUCCESS CRITERIA MET: Page loads without crashing, search executes without crash, flight results display correctly with 50 flights shown, filter sidebar renders properly with time icons. The icon property fix in timeOptions array (lines 145-150 in FlightResults.jsx) adding Sun, Sun, Sunset, and Moon icons for morning/afternoon/evening/overnight respectively is working perfectly. The critical Element type is invalid crash has been completely eliminated."
 
+  - task: "BigCalendar Feature Testing"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/ui/big-calendar.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "NEW TESTING TASK: Need to test BigCalendar feature on Flight380 website. Test requirements: 1) Desktop Round-Trip Calendar (viewport 1920x800) - Two months side-by-side, departure/return date selection with auto +7 days, range highlighting. 2) Desktop One-Way Calendar - Immediate close after date selection. 3) Mobile Round-Trip Calendar (viewport 375x800) - Single month with navigation arrows, proper responsive behavior. Expected features: Large readable day cells, departure/return labels, date range highlighting, header updates with selected dates."
+
 agent_communication:
   - agent: "main"
     message: "MOBILE RESPONSIVENESS FIX: Comprehensive update to FlightResults.jsx for mobile-friendly UI. Changes include: 1) Added MobileFilterButton with all filters accessible via floating button at bottom. 2) Made search summary bar stack vertically on mobile. 3) Flight cards now have mobile-optimized layout with smaller fonts, stacked elements, and proper spacing. 4) Mix & Match view now uses single column on mobile. 5) Sorting buttons are scrollable on mobile. 6) Added bottom padding to prevent floating filter button from overlapping content. Please test on mobile viewport (375x667)."
