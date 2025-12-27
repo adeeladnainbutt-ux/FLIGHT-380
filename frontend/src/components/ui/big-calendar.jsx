@@ -106,14 +106,22 @@ function BigCalendar({
       return
     }
 
-    // If we have a departure date and user taps a date after it, set as return
-    if (departDate && !isBefore(date, departDate)) {
+    // If we have a departure date but no return, and user taps a date after departure, set as return
+    if (departDate && !returnDate && !isBefore(date, departDate)) {
       onReturnSelect(date)
       if (onSelectionComplete) onSelectionComplete()
-    } else {
-      // Tapping a date before departure - reset departure
+    } else if (departDate && !returnDate && isBefore(date, departDate)) {
+      // Tapping a date before departure - reset to this as new departure
       onDepartSelect(date)
-      onReturnSelect(date)
+      onReturnSelect(null)
+    } else if (departDate && returnDate) {
+      // Both dates exist - restart selection
+      onDepartSelect(date)
+      onReturnSelect(null)
+    } else {
+      // No departure yet - set departure
+      onDepartSelect(date)
+      onReturnSelect(null)
     }
   }
 
