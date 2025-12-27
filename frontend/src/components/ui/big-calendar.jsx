@@ -78,19 +78,23 @@ function BigCalendar({
 
   // Handle mouse/touch up - end drag
   const handleMouseUp = React.useCallback(() => {
-    if (isDragging && dragStart && dragEnd) {
+    if (isDragging && dragStart) {
       setIsDragging(false)
       
-      // If drag ended on same date as start, don't close (let user tap again for return)
-      if (!isSameDay(dragStart, dragEnd)) {
-        // User dragged to select a range, close the calendar
+      // If drag ended on same date as start (just a click), keep calendar open for second click
+      if (!dragEnd || isSameDay(dragStart, dragEnd)) {
+        // Just a click - departure is set, wait for return date click
+        onReturnSelect(null)
+      } else {
+        // User dragged to select a range, set return and close
+        onReturnSelect(dragEnd)
         if (onSelectionComplete) onSelectionComplete()
       }
       
       setDragStart(null)
       setDragEnd(null)
     }
-  }, [isDragging, dragStart, dragEnd, onSelectionComplete])
+  }, [isDragging, dragStart, dragEnd, onSelectionComplete, onReturnSelect])
 
   // Handle simple tap (for selecting return date after initial selection)
   const handleDateClick = (date) => {
