@@ -10,8 +10,8 @@ import re
 from datetime import datetime
 
 # Frontend URL
-FRONTEND_URL = "https://fastfare-finder.preview.emergentagent.com"
-BACKEND_URL = "https://fastfare-finder.preview.emergentagent.com/api"
+FRONTEND_URL = "https://quick-flight.preview.emergentagent.com"
+BACKEND_URL = "https://quick-flight.preview.emergentagent.com/api"
 
 def test_frontend_loads():
     """Test that the frontend loads successfully"""

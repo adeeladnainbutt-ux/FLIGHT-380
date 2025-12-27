@@ -1368,7 +1368,7 @@ if cors_origins_env == '*':
     # Use specific origins for production
     cors_origins = [
         "http://localhost:3000",
-        "https://fastfare-finder.preview.emergentagent.com",
+        "https://quick-flight.preview.emergentagent.com",
         "https://fastfare-finder.emergenthost.app",
         "https://flight380.co.uk",
         "https://www.flight380.co.uk"

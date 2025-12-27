@@ -11,7 +11,7 @@ import sys
 from datetime import datetime, timedelta
 
 # Get backend URL from frontend .env
-BACKEND_URL = "https://fastfare-finder.preview.emergentagent.com/api"
+BACKEND_URL = "https://quick-flight.preview.emergentagent.com/api"
 
 def test_fare_calendar_caching():
     """Test the fare calendar endpoint with caching functionality"""
