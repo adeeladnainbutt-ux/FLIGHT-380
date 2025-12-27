@@ -21,6 +21,7 @@ function BigCalendar({
   const [isDragging, setIsDragging] = React.useState(false)
   const [dragStartDate, setDragStartDate] = React.useState(null)
   const [hoverDate, setHoverDate] = React.useState(null)
+  const wasDragged = React.useRef(false)
 
   // Check for mobile screen size
   React.useEffect(() => {
@@ -54,10 +55,10 @@ function BigCalendar({
       return
     }
     
+    wasDragged.current = false
     setIsDragging(true)
     setDragStartDate(date)
     setHoverDate(date)
-    onDepartSelect(date)
   }
 
   // Track hover during drag
@@ -65,8 +66,9 @@ function BigCalendar({
     if (!isDragging || isBefore(date, today)) return
     
     // Only update hover if date is after departure
-    if (dragStartDate && !isBefore(date, dragStartDate)) {
+    if (dragStartDate && !isBefore(date, dragStartDate) && !isSameDay(date, dragStartDate)) {
       setHoverDate(date)
+      wasDragged.current = true
     }
   }
 
@@ -76,49 +78,35 @@ function BigCalendar({
     
     setIsDragging(false)
     
-    if (dragStartDate && hoverDate) {
-      if (isSameDay(dragStartDate, hoverDate)) {
-        // Just clicked, no drag - wait for second click
-        onReturnSelect(null)
-      } else {
-        // Dragged to different date - set return and close
-        onReturnSelect(hoverDate)
-        if (onSelectionComplete) onSelectionComplete()
-      }
+    if (wasDragged.current && dragStartDate && hoverDate && !isSameDay(dragStartDate, hoverDate)) {
+      // User dragged - set departure and return, then close
+      onDepartSelect(dragStartDate)
+      onReturnSelect(hoverDate)
+      if (onSelectionComplete) onSelectionComplete()
+    } else if (dragStartDate) {
+      // Simple click - just set departure, wait for second click for return
+      onDepartSelect(dragStartDate)
+      onReturnSelect(null)
     }
     
     setDragStartDate(null)
     setHoverDate(null)
-  }, [isDragging, dragStartDate, hoverDate, onReturnSelect, onSelectionComplete])
+  }, [isDragging, dragStartDate, hoverDate, onDepartSelect, onReturnSelect, onSelectionComplete])
 
-  // Handle click for second date selection (when departure already set)
-  const handleClick = (date, e) => {
-    // Prevent if it was a drag
-    if (isDragging) return
+  // Handle click for second date selection (when departure already set but no return)
+  const handleSecondClick = (date) => {
     if (isBefore(date, today)) return
     
-    if (tripType === 'one-way') {
-      onDepartSelect(date)
-      if (onSelectionComplete) onSelectionComplete()
-      return
-    }
-    
-    // If departure is set but no return, and clicking a later date
-    if (departDate && !returnDate) {
-      if (!isBefore(date, departDate)) {
+    // Only handle if we have departure but no return
+    if (departDate && !returnDate && !isDragging) {
+      if (!isBefore(date, departDate) && !isSameDay(date, departDate)) {
         onReturnSelect(date)
         if (onSelectionComplete) onSelectionComplete()
-      } else {
-        // Clicked earlier date - reset to this as departure
+      } else if (isBefore(date, departDate)) {
+        // Clicked before departure - reset
         onDepartSelect(date)
+        onReturnSelect(null)
       }
-    } else if (!departDate) {
-      // No departure - set it
-      onDepartSelect(date)
-    } else {
-      // Both exist - restart
-      onDepartSelect(date)
-      onReturnSelect(null)
     }
   }
 
@@ -136,12 +124,13 @@ function BigCalendar({
   }, [isDragging, handleMouseUp])
 
   // Calculate range for display
-  const displayReturnDate = isDragging && hoverDate && !isSameDay(dragStartDate, hoverDate) 
+  const displayDepartDate = isDragging ? dragStartDate : departDate
+  const displayReturnDate = isDragging && wasDragged.current && hoverDate && !isSameDay(dragStartDate, hoverDate) 
     ? hoverDate 
     : returnDate
 
   const isDateInRange = (date) => {
-    const start = departDate
+    const start = displayDepartDate
     const end = displayReturnDate
     if (!start || !end || tripType === 'one-way') return false
     if (isSameDay(start, end)) return false
@@ -149,11 +138,11 @@ function BigCalendar({
   }
 
   const isRangeStart = (date) => {
-    return departDate && isSameDay(date, departDate)
+    return displayDepartDate && isSameDay(date, displayDepartDate)
   }
 
   const isRangeEnd = (date) => {
-    return displayReturnDate && isSameDay(date, displayReturnDate) && !isSameDay(departDate, displayReturnDate)
+    return displayReturnDate && isSameDay(date, displayReturnDate) && !isSameDay(displayDepartDate, displayReturnDate)
   }
 
   const renderMonth = (monthDate) => {
@@ -215,14 +204,14 @@ function BigCalendar({
                     className={cn(
                       "relative",
                       isInRange && "bg-brand-100",
-                      isStart && tripType === 'round-trip' && displayReturnDate && !isSameDay(departDate, displayReturnDate) && "bg-gradient-to-r from-transparent to-brand-100 rounded-l-lg",
-                      isEnd && tripType === 'round-trip' && departDate && "bg-gradient-to-l from-transparent to-brand-100 rounded-r-lg"
+                      isStart && tripType === 'round-trip' && displayReturnDate && !isSameDay(displayDepartDate, displayReturnDate) && "bg-gradient-to-r from-transparent to-brand-100 rounded-l-lg",
+                      isEnd && tripType === 'round-trip' && displayDepartDate && "bg-gradient-to-l from-transparent to-brand-100 rounded-r-lg"
                     )}
                   >
                     <button
                       onMouseDown={(e) => handleMouseDown(date, e)}
                       onMouseEnter={() => handleMouseEnter(date)}
-                      onClick={(e) => handleClick(date, e)}
+                      onClick={() => handleSecondClick(date)}
                       onTouchStart={(e) => handleMouseDown(date, e)}
                       disabled={isDisabled || !isCurrentMonth}
                       className={cn(
@@ -259,6 +248,7 @@ function BigCalendar({
   // Determine display state
   const hasFullSelection = departDate && returnDate && !isSameDay(departDate, returnDate)
   const hasDepartureOnly = departDate && !returnDate
+  const showDraggingReturn = isDragging && wasDragged.current && hoverDate && !isSameDay(dragStartDate, hoverDate)
 
   return (
     <div className={cn("p-4 sm:p-6", className)} {...props}>
@@ -267,13 +257,18 @@ function BigCalendar({
         <div className="flex items-center gap-3">
           <div className={cn(
             "px-4 py-2 rounded-lg text-center min-w-[140px]",
-            departDate ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-700"
+            (departDate || isDragging) ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-700"
           )}>
             <div className="text-xs font-medium opacity-80">
               {tripType === 'round-trip' ? 'Departure' : 'Travel Date'}
             </div>
             <div className="text-sm sm:text-base font-semibold">
-              {departDate ? format(departDate, 'EEE, d MMM') : 'Select date'}
+              {isDragging && dragStartDate 
+                ? format(dragStartDate, 'EEE, d MMM')
+                : departDate 
+                  ? format(departDate, 'EEE, d MMM') 
+                  : 'Select date'
+              }
             </div>
           </div>
           
@@ -282,13 +277,13 @@ function BigCalendar({
               <ChevronRight className="h-5 w-5 text-slate-400" />
               <div className={cn(
                 "px-4 py-2 rounded-lg text-center min-w-[140px]",
-                hasFullSelection || (isDragging && hoverDate && !isSameDay(dragStartDate, hoverDate)) 
+                (hasFullSelection || showDraggingReturn) 
                   ? "bg-brand-600 text-white" 
                   : "bg-slate-100 text-slate-700"
               )}>
                 <div className="text-xs font-medium opacity-80">Return</div>
                 <div className="text-sm sm:text-base font-semibold">
-                  {isDragging && hoverDate && !isSameDay(dragStartDate, hoverDate)
+                  {showDraggingReturn
                     ? format(hoverDate, 'EEE, d MMM')
                     : hasFullSelection 
                       ? format(returnDate, 'EEE, d MMM') 
