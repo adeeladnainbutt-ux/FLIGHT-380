@@ -206,19 +206,15 @@ export const FlightSearch = ({ onSearch, initialData }) => {
 
   const handleDepartDateSelect = (date) => {
     setDepartDate(date);
-    setOpenDepartDate(false);
-    
-    // Auto-open return date calendar for round-trip after selecting departure date
-    if (tripType === 'round-trip' && date) {
-      setTimeout(() => {
-        setOpenReturnDate(true);
-      }, 300);
-    }
   };
 
   const handleReturnDateSelect = (date) => {
     setReturnDate(date);
-    setOpenReturnDate(false);
+    // Close the date picker when return date is selected for round-trip
+    // or when any date is selected for one-way
+    if (tripType === 'one-way' || (tripType === 'round-trip' && departDate)) {
+      setOpenDatePicker(false);
+    }
   };
 
   const handleSearch = () => {
