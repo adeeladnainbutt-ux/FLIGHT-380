@@ -409,10 +409,12 @@ export const FlightSearch = ({ onSearch, initialData }) => {
 
             {/* Dates Section */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-              {/* Depart Date */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Depart</Label>
-                <Popover open={openDepartDate} onOpenChange={setOpenDepartDate}>
+              {/* Combined Date Picker */}
+              <div className={cn("space-y-2", tripType === 'round-trip' ? "sm:col-span-2" : "")}>
+                <Label className="text-sm font-medium">
+                  {tripType === 'round-trip' ? 'Travel Dates' : 'Depart'}
+                </Label>
+                <Popover open={openDatePicker} onOpenChange={setOpenDatePicker}>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
@@ -422,51 +424,38 @@ export const FlightSearch = ({ onSearch, initialData }) => {
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
-                      {departDate ? format(departDate, 'PPP') : 'Select date'}
+                      {tripType === 'round-trip' ? (
+                        departDate && returnDate ? (
+                          <span>
+                            {format(departDate, 'EEE, d MMM')} <span className="text-slate-400 mx-1">→</span> {format(returnDate, 'EEE, d MMM')}
+                          </span>
+                        ) : departDate ? (
+                          <span>{format(departDate, 'EEE, d MMM')} → Select return</span>
+                        ) : (
+                          'Select dates'
+                        )
+                      ) : (
+                        departDate ? format(departDate, 'PPP') : 'Select date'
+                      )}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={departDate}
-                      onSelect={handleDepartDateSelect}
-                      disabled={(date) => date < new Date()}
-                      initialFocus
+                  <PopoverContent 
+                    className="w-auto p-0" 
+                    align="start"
+                    side="bottom"
+                    sideOffset={4}
+                  >
+                    <BigCalendar
+                      departDate={departDate}
+                      returnDate={returnDate}
+                      onDepartSelect={handleDepartDateSelect}
+                      onReturnSelect={handleReturnDateSelect}
+                      tripType={tripType}
+                      className="max-w-[680px]"
                     />
                   </PopoverContent>
                 </Popover>
               </div>
-
-              {/* Return Date */}
-              {tripType === 'round-trip' && (
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Return</Label>
-                  <Popover open={openReturnDate} onOpenChange={setOpenReturnDate}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full h-12 justify-start text-left font-normal",
-                          !returnDate && "text-slate-500"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
-                        {returnDate ? format(returnDate, 'PPP') : 'Select date'}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={returnDate}
-                        onSelect={handleReturnDateSelect}
-                        disabled={(date) => date < (departDate || new Date())}
-                        defaultMonth={departDate || new Date()}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              )}
             </div>
 
             {/* Passengers and Class */}
