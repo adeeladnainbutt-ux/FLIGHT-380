@@ -306,8 +306,8 @@ class AmadeusService:
         currency: str = 'GBP'
     ) -> Dict:
         """
-        Get cheapest fares for a date range using Flight Inspiration Search
-        Falls back to multiple Flight Offers Search calls if needed
+        Get cheapest fares for a date range - optimized for speed
+        Only fetches ~15 dates to avoid rate limiting
         
         Args:
             origin: Origin airport code
@@ -325,21 +325,23 @@ class AmadeusService:
             center_date = datetime.strptime(departure_date, '%Y-%m-%d')
             today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
             
-            # Generate dates: 30 days before and 30 days after center date
+            # Generate fewer dates for faster response: -7 to +21 days, every 2 days
             fare_calendar = {}
             dates_to_search = []
             
-            for offset in range(-15, 46):  # -15 to +45 days from center
+            for offset in range(-7, 22, 2):  # Every 2 days
                 search_date = center_date + timedelta(days=offset)
                 if search_date >= today:  # Only future dates
                     dates_to_search.append(search_date.strftime('%Y-%m-%d'))
             
-            # Use thread pool for concurrent searches
+            # Limit to 15 dates max
+            dates_to_search = dates_to_search[:15]
+            
+            # Use thread pool for concurrent searches (3 at a time to avoid rate limits)
             loop = asyncio.get_event_loop()
-            with ThreadPoolExecutor(max_workers=5) as executor:
-                # Search in batches to avoid rate limiting
-                for i in range(0, len(dates_to_search), 5):
-                    batch = dates_to_search[i:i+5]
+            with ThreadPoolExecutor(max_workers=3) as executor:
+                for i in range(0, len(dates_to_search), 3):
+                    batch = dates_to_search[i:i+3]
                     futures = []
                     
                     for dep_date in batch:
@@ -373,10 +375,10 @@ class AmadeusService:
                             if price is not None:
                                 fare_calendar[dep_date] = price
                         except Exception:
-                            pass  # Skip failed dates
+                            pass
                     
-                    # Small delay between batches to avoid rate limiting
-                    await asyncio.sleep(0.2)
+                    # Small delay between batches
+                    await asyncio.sleep(0.1)
             
             return {
                 'success': True,
