@@ -90,49 +90,68 @@ export const FlightSearch = ({ onSearch, initialData }) => {
     }
   }, [initialData]);
 
-  // Fetch fares when airports are selected and date picker opens
-  useEffect(() => {
-    const fetchFares = async () => {
-      if (!fromAirport || !toAirport || !openDatePicker) return;
-      if (tripType === 'multi-city') return; // No fares for multi-city
-      
-      const originCode = fromAirport.code;
-      const destCode = toAirport.code;
-      
-      // Start from today for 6-month fare calendar
-      const startDate = new Date();
-      const dateStr = format(startDate, 'yyyy-MM-dd');
-      
-      setFaresLoading(true);
-      setFares({});
-      
-      try {
-        const backendUrl = process.env.REACT_APP_BACKEND_URL || '';
-        const response = await fetch(`${backendUrl}/api/flights/fare-calendar`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            origin: originCode,
-            destination: destCode,
-            departure_date: dateStr,
-            one_way: tripType === 'one-way',
-            duration: 7
-          })
-        });
-        
-        const result = await response.json();
-        if (result.success && result.data) {
-          setFares(result.data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch fares:', error);
-      } finally {
-        setFaresLoading(false);
-      }
-    };
+  // Generate mock fare data for 6 months (while Amadeus test API is too slow)
+  const generateMockFares = React.useCallback(() => {
+    const mockFares = {};
+    const today = new Date();
+    const baseFare = 150 + Math.random() * 100; // Base fare between £150-250
     
-    fetchFares();
-  }, [fromAirport, toAirport, openDatePicker, tripType]);
+    // Generate fares for 6 months (180 days)
+    for (let i = 0; i < 180; i++) {
+      const date = addDays(today, i);
+      const dateStr = format(date, 'yyyy-MM-dd');
+      const dayOfWeek = date.getDay();
+      
+      // Simulate realistic pricing patterns
+      let fare = baseFare;
+      
+      // Weekends are more expensive
+      if (dayOfWeek === 5 || dayOfWeek === 6) {
+        fare += 30 + Math.random() * 40;
+      }
+      
+      // Some random variation
+      fare += (Math.random() - 0.5) * 60;
+      
+      // Holiday periods are more expensive (December, July-August)
+      const month = date.getMonth();
+      if (month === 11 || month === 6 || month === 7) {
+        fare += 50 + Math.random() * 50;
+      }
+      
+      // Occasionally add very low "deal" prices
+      if (Math.random() < 0.08) {
+        fare = 80 + Math.random() * 50;
+      }
+      
+      // Occasionally add premium prices
+      if (Math.random() < 0.05) {
+        fare = 350 + Math.random() * 100;
+      }
+      
+      mockFares[dateStr] = Math.round(fare);
+    }
+    
+    return mockFares;
+  }, []);
+
+  // Load mock fares when date picker opens (while real API is too slow)
+  useEffect(() => {
+    if (!fromAirport || !toAirport || !openDatePicker) return;
+    if (tripType === 'multi-city') return;
+    
+    // Use mock data for now since Amadeus test API is too slow
+    setFaresLoading(true);
+    
+    // Simulate a short loading time for UX
+    const timer = setTimeout(() => {
+      const mockData = generateMockFares();
+      setFares(mockData);
+      setFaresLoading(false);
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, [fromAirport, toAirport, openDatePicker, tripType, generateMockFares]);
 
   // Combine airport groups and individual airports for search
   const allAirportOptions = [
