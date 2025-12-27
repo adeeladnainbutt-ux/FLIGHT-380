@@ -1331,36 +1331,196 @@ async def logout_user(request: Request, response: Response, session_token: Optio
 
 @api_router.post("/auth/forgot-password")
 async def forgot_password(data: ForgotPassword):
-    """Send password reset email (mocked)"""
+    """Send password reset email"""
     try:
         user = await db.users.find_one({"email": data.email}, {"_id": 0})
         
         # Always return success to prevent email enumeration
         if user:
+            # Check if user signed up with Google
+            if user.get("auth_type") == "google":
+                logger.info(f"Password reset requested for Google account: {data.email}")
+                # Still return success message to prevent enumeration
+                return {"success": True, "message": "If an account exists with this email, you will receive a password reset link."}
+            
             # Generate reset token
             reset_token = secrets.token_urlsafe(32)
-            expires_at = datetime.now(timezone.utc).replace(hour=datetime.now(timezone.utc).hour + 1)
+            expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
+            
+            # Delete any existing reset tokens for this user
+            await db.password_resets.delete_many({"user_id": user["user_id"]})
             
             await db.password_resets.insert_one({
                 "user_id": user["user_id"],
+                "email": data.email,
                 "token": reset_token,
                 "expires_at": expires_at.isoformat(),
-                "created_at": datetime.now(timezone.utc).isoformat()
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "used": False
             })
             
-            # Mock email sending
-            await db.emails.insert_one({
-                "to": data.email,
-                "subject": "Flight380 - Password Reset",
-                "body": f"Click here to reset your password: https://flight380.co.uk/reset-password?token={reset_token}",
-                "timestamp": datetime.now(timezone.utc).isoformat()
-            })
+            # Build reset URL - use the request origin or fallback to production URL
+            reset_url = f"https://flight380.co.uk/reset-password?token={reset_token}"
+            
+            # Send password reset email
+            html_body = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                    .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                    .header {{ background: linear-gradient(135deg, #dc2626, #ef4444); padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }}
+                    .header img {{ height: 40px; }}
+                    .header h1 {{ color: white; margin: 15px 0 0 0; font-size: 24px; }}
+                    .content {{ background: #f9fafb; padding: 30px; border: 1px solid #e5e7eb; }}
+                    .button {{ display: inline-block; background: #dc2626; color: white; padding: 14px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }}
+                    .button:hover {{ background: #b91c1c; }}
+                    .footer {{ text-align: center; padding: 20px; color: #6b7280; font-size: 12px; }}
+                    .warning {{ background: #fef3c7; border: 1px solid #f59e0b; padding: 12px; border-radius: 6px; margin-top: 20px; font-size: 13px; }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>Password Reset Request</h1>
+                    </div>
+                    <div class="content">
+                        <p>Hello {user.get('name', 'Valued Customer')},</p>
+                        <p>We received a request to reset your password for your Flight380 account. Click the button below to create a new password:</p>
+                        <p style="text-align: center;">
+                            <a href="{reset_url}" class="button">Reset My Password</a>
+                        </p>
+                        <p>Or copy and paste this link into your browser:</p>
+                        <p style="word-break: break-all; background: #e5e7eb; padding: 10px; border-radius: 4px; font-size: 13px;">{reset_url}</p>
+                        <div class="warning">
+                            <strong>⚠️ Important:</strong> This link will expire in 1 hour. If you didn't request this password reset, please ignore this email or contact our support team.
+                        </div>
+                    </div>
+                    <div class="footer">
+                        <p>Flight380 - Your Trusted Travel Partner</p>
+                        <p>📞 01908 220000 | ✉️ info@flight380.co.uk</p>
+                        <p>© 2025 Flight380. All rights reserved.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+            
+            plain_body = f"""
+            Password Reset Request - Flight380
+            
+            Hello {user.get('name', 'Valued Customer')},
+            
+            We received a request to reset your password. Click the link below to create a new password:
+            
+            {reset_url}
+            
+            This link will expire in 1 hour.
+            
+            If you didn't request this password reset, please ignore this email.
+            
+            Flight380 - Your Trusted Travel Partner
+            Phone: 01908 220000
+            Email: info@flight380.co.uk
+            """
+            
+            email_sent = await send_email_smtp(
+                data.email,
+                "Flight380 - Password Reset Request",
+                html_body,
+                plain_body
+            )
+            
+            if email_sent:
+                logger.info(f"Password reset email sent to {data.email}")
+            else:
+                logger.warning(f"Failed to send password reset email to {data.email}")
         
         return {"success": True, "message": "If an account exists with this email, you will receive a password reset link."}
         
     except Exception as e:
         logger.error(f"Forgot password error: {e}")
         return {"success": True, "message": "If an account exists with this email, you will receive a password reset link."}
+
+@api_router.post("/auth/reset-password")
+async def reset_password(data: ResetPassword):
+    """Reset password with token"""
+    try:
+        # Find the reset token
+        reset_record = await db.password_resets.find_one({
+            "token": data.token,
+            "used": False
+        }, {"_id": 0})
+        
+        if not reset_record:
+            raise HTTPException(status_code=400, detail="Invalid or expired reset link. Please request a new password reset.")
+        
+        # Check if token is expired
+        expires_at = datetime.fromisoformat(reset_record["expires_at"])
+        if datetime.now(timezone.utc) > expires_at:
+            # Mark token as used
+            await db.password_resets.update_one(
+                {"token": data.token},
+                {"$set": {"used": True}}
+            )
+            raise HTTPException(status_code=400, detail="Reset link has expired. Please request a new password reset.")
+        
+        # Validate new password
+        if len(data.new_password) < 6:
+            raise HTTPException(status_code=400, detail="Password must be at least 6 characters long.")
+        
+        # Update user's password
+        new_password_hash = hash_password(data.new_password)
+        result = await db.users.update_one(
+            {"user_id": reset_record["user_id"]},
+            {"$set": {"password_hash": new_password_hash}}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=400, detail="Failed to update password. Please try again.")
+        
+        # Mark token as used
+        await db.password_resets.update_one(
+            {"token": data.token},
+            {"$set": {"used": True, "used_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        
+        # Delete all sessions for this user (force re-login)
+        await db.sessions.delete_many({"user_id": reset_record["user_id"]})
+        
+        logger.info(f"Password reset successful for user {reset_record['user_id']}")
+        
+        return {"success": True, "message": "Password has been reset successfully. Please sign in with your new password."}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Reset password error: {e}")
+        raise HTTPException(status_code=500, detail="An error occurred. Please try again.")
+
+@api_router.get("/auth/verify-reset-token")
+async def verify_reset_token(token: str):
+    """Verify if a reset token is valid"""
+    try:
+        reset_record = await db.password_resets.find_one({
+            "token": token,
+            "used": False
+        }, {"_id": 0})
+        
+        if not reset_record:
+            return {"valid": False, "message": "Invalid or expired reset link."}
+        
+        # Check if token is expired
+        expires_at = datetime.fromisoformat(reset_record["expires_at"])
+        if datetime.now(timezone.utc) > expires_at:
+            return {"valid": False, "message": "Reset link has expired."}
+        
+        return {"valid": True, "email": reset_record.get("email", "")}
+        
+    except Exception as e:
+        logger.error(f"Verify reset token error: {e}")
+        return {"valid": False, "message": "An error occurred."}
 
 
 # Include the router in the main app
