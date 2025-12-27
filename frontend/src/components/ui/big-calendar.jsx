@@ -230,6 +230,11 @@ function BigCalendar({
         >
           <ChevronLeft className="h-5 w-5" />
         </Button>
+        {isMobile && (
+          <span className="text-sm font-medium text-slate-600">
+            {format(currentMonth, 'MMMM yyyy')}
+          </span>
+        )}
         <Button
           variant="ghost"
           size="icon"
@@ -240,10 +245,10 @@ function BigCalendar({
         </Button>
       </div>
 
-      {/* Two Month Grid */}
+      {/* Calendar Grid - One month on mobile, two on desktop */}
       <div className="flex flex-col sm:flex-row gap-6 sm:gap-8">
         {renderMonth(currentMonth)}
-        {renderMonth(nextMonth)}
+        {!isMobile && renderMonth(nextMonth)}
       </div>
 
       {/* Helper Text */}
