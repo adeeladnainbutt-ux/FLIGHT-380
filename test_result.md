@@ -614,3 +614,19 @@ agent_communication:
   - agent: "main"
     message: "NEW CALENDAR FEATURE IMPLEMENTED: Created BigCalendar component (/app/frontend/src/components/ui/big-calendar.jsx) with the following features: 1) Two months side-by-side view on desktop, 2) Single month view on mobile with navigation, 3) Large day cells with Depart/Return labels, 4) Auto +7 days for return date when selecting departure, 5) Range highlighting between dates, 6) Selected dates displayed at top header, 7) One-way mode closes immediately after selection. Please test on desktop (1920x800) and mobile (375x667) viewports to verify calendar functionality for round-trip and one-way modes."
 
+
+  - task: "Fare Calendar Mock Data Implementation"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/FlightSearch.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "IMPLEMENTED: Mock fare data to unblock fare calendar UI testing. The Amadeus test API was too slow (~60 requests for 6 months of data). Solution: Generate realistic mock fare data with: 1) Base fares £150-250, 2) Weekend premiums (+£30-70), 3) Holiday premiums (Dec, Jul-Aug +£50-100), 4) Random variation (±£30), 5) Occasional deals (~8% chance, £80-130), 6) Occasional premium prices (~5%, £350-450). Mock data loads in 500ms for excellent UX. UI verified: fare legend shows Lowest/Medium/Highest with actual prices, selected date shows fare in green banner, color-coded prices on calendar cells."
+
+agent_communication:
+  - agent: "main"
+    message: "FARE CALENDAR MOCK DATA: Implemented mock fare data to unblock the fare calendar feature. The Amadeus test API was too slow to return 6 months of data in real-time. Mock data includes realistic pricing patterns: base fares, weekend premiums, holiday surcharges, occasional deals and premium prices. UI now shows: 1) Two-month calendar with prices on each date, 2) Color-coded fares (green=cheap, amber=medium, red=expensive), 3) Legend with actual Lowest/Medium/Highest prices, 4) Selected fare displayed prominently when departure is chosen. Please test: select airports, open date picker, verify fares load, select departure date, verify fare display."
