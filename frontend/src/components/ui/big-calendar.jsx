@@ -1,6 +1,6 @@
 import * as React from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSameMonth, isSameDay, isWithinInterval, isBefore, isAfter } from "date-fns"
+import { format, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSameMonth, isSameDay, isWithinInterval, isBefore } from "date-fns"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
@@ -16,6 +16,15 @@ function BigCalendar({
 }) {
   const [currentMonth, setCurrentMonth] = React.useState(new Date())
   const [selectingReturn, setSelectingReturn] = React.useState(false)
+  const [isMobile, setIsMobile] = React.useState(false)
+
+  // Check for mobile screen size
+  React.useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
