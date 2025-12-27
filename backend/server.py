@@ -1369,6 +1369,7 @@ if cors_origins_env == '*':
     cors_origins = [
         "http://localhost:3000",
         "https://fastfare-finder.preview.emergentagent.com",
+        "https://fastfare-finder.emergenthost.app",
         "https://flight380.co.uk",
         "https://www.flight380.co.uk"
     ]
